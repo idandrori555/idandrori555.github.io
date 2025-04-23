@@ -7,25 +7,51 @@
     <title>Idan's Projects</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .project-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .project-link {
+            color: #3b82f6;
+            /* Tailwind's blue-500 */
+            transition: color 0.2s ease;
+        }
+
+        .project-link:hover {
+            color: #2563eb;
+            /* Tailwind's blue-700 */
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100 font-inter flex flex-col items-center min-h-screen py-8">
-    <h1 class="text-3xl font-semibold text-gray-800 mb-8">Projects</h1>
-    <ul class="project-list max-w-2xl w-full space-y-6">
-        <li class="project-card bg-white rounded-lg shadow-md p-6 transition-transform duration-300">
+    <h1
+        class="text-4xl font-semibold text-gray-800 mb-12 text-center bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
+        Idan's Projects</h1>
+    <ul class="project-list max-w-3xl w-full space-y-8">
+        <li class="project-card bg-white rounded-xl shadow-md p-8 hover:shadow-lg transition-all duration-300">
             <a href="moovit_bus_pass.html"
-                class="block text-xl font-semibold text-blue-600 hover:text-blue-800 transition-colors">Moovit Bus
-                Pass</a>
-            <p class="text-gray-600 mt-2">Soon..</p>
+                class="project-link text-2xl font-semibold hover:text-blue-700 transition-colors duration-200 block mb-2">Moovit
+                Bus Pass</a>
+            <p class="text-gray-600 text-lg mb-2">A simple static web app that generates a bus pass for the current hour
+                and date.</p>
+            <p class="text-gray-600 text-lg">Soon..</p>
         </li>
-        <li class="project-card bg-white rounded-lg shadow-md p-6 transition-transform duration-300">
+        <li class="project-card bg-white rounded-xl shadow-md p-8 hover:shadow-lg transition-all duration-300">
             <a href="magshi_date.html"
-                class="block text-xl font-semibold text-blue-600 hover:text-blue-800 transition-colors">Magshi Date</a>
-            <p class="text-gray-600 mt-2">A clean, bilingual web app for checking upcoming Magshimim lessons by date.
+                class="project-link text-2xl font-semibold hover:text-blue-700 transition-colors duration-200 block mb-2">Magshi
+                Date</a>
+            <p class="text-gray-600 text-lg">A clean, bilingual web app for checking upcoming Magshimim lessons by date.
             </p>
         </li>
     </ul>
-    <p class="text-gray-500 mt-8">More projects will be added soon!</p>
+    <p class="text-gray-500 mt-12 text-lg text-center">More projects will be added soon!</p>
 </body>
 
 </html>
