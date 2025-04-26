@@ -70,7 +70,7 @@ const commands = {
 
   whoami: () => {
     log(
-      "Hey, I'm Idan, a 16-year-old full-stack developer from Israel.\nI build cool stuff on both the server side and what you see on the website."
+      "Hey, I'm Idan, a 16-year-old full-stack developer from Israel.\nI build cool stuff on both the server side and what you see on the website.",
     );
   },
 
@@ -83,7 +83,7 @@ const commands = {
   },
 
   ip: async () => {
-    const ip = await (await fetch("http://ifconfig.me/ip")).text();
+    const ip = await (await fetch("https://ifconfig.me/ip")).text();
     log(`IP: ${ip}`);
   },
 
@@ -106,7 +106,7 @@ const commands = {
 
   tech: () => {
     log(
-      "Technologies I use:\n- TypeScript\n- Express\n- Vite \n- SQLite\n- Firebase\n- Deno"
+      "Technologies I use:\n- TypeScript\n- Express\n- Vite \n- SQLite\n- Firebase\n- Deno",
     );
   },
 };
