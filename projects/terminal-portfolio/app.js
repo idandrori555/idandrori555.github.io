@@ -75,7 +75,9 @@ const commands = {
   },
 
   projects: () => {
-    log(toLink("Projects here (click)", "http://idandrori555.github.io"));
+    log(
+      toLink("Projects here (click)", "http://idandrori555.github.io", 0, true),
+    );
   },
 
   pwd: () => {
