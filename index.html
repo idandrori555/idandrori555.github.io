@@ -1,37 +1,52 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>פרויקטים</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <!-- Tailwind CSS CDN for quick styling. We'll configure it via tailwind.js -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Tailwind configuration for dark mode -->
+    <script src="./tailwind.js" defer></script>
+    <!-- Your main script for dark mode toggle and other functionalities -->
+    <script src="./script.js" defer></script>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>פרויקטים</title>
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="script.js" defer></script>
-  <script src="./tailwind.js" defer></script>
-</head>
+  <!-- 
+    The 'dark' class on the 'html' element will activate dark mode styles.
+    The body now includes dark mode specific background and text colors.
+ -->
+  <body
+    class="font-heebo min-h-screen py-12 px-4 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+  >
+    <header class="max-w-5xl mx-auto text-center mb-16 px-4">
+      <h1
+        class="text-5xl font-bold mb-6 bg-gradient-to-r from-primary-600 to-blue-500 text-transparent bg-clip-text inline-block"
+      >
+        פרויקטים
+      </h1>
+      <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+        אוסף של פרויקטים שפיתחתי במהלך השנים, הכוללים אפליקציות, כלים ועוד.
+      </p>
+    </header>
 
-<body class="font-heebo min-h-screen py-12 px-4 ">
-  <header class="max-w-5xl mx-auto text-center mb-16 px-4">
-    <h1
-      class="text-5xl font-bold mb-6 bg-gradient-to-r from-primary-600 to-blue-500 text-transparent bg-clip-text inline-block">
-      פרויקטים
-    </h1>
-    <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-      אוסף של פרויקטים שפיתחתי במהלך השנים, הכוללים אפליקציות, כלים ועוד.
-    </p>
-  </header>
+    <main class="max-w-5xl mx-auto">
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md"
+      ></div>
+    </main>
 
-  <main class="max-w-5xl mx-auto">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 px-4"></div>
-  </main>
-
-  <footer class="max-w-5xl mx-auto mt-20 px-4 pb-8">
-    <div class="border-t border-gray-200 pt-8 text-center">
-      <p class="text-gray-500">פרויקטים נוספים בקרוב!</p>
-    </div>
-  </footer>
-</body>
-
+    <footer class="max-w-5xl mx-auto mt-20 px-4 pb-8">
+      <div
+        class="border-t border-gray-200 dark:border-gray-700 pt-8 text-center"
+      >
+        <p class="text-gray-500 dark:text-gray-400">פרויקטים נוספים בקרוב!</p>
+      </div>
+    </footer>
+  </body>
 </html>
