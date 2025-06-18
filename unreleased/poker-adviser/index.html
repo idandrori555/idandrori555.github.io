@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
+    <title>קונכיית השגב</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Playpen+Sans+Hebrew:wght@100..800&display=swap");
+
+      * {
+        font-family: "Playpen Sans Hebrew", cursive;
+        font-optical-sizing: auto;
+        font-weight: 800;
+        font-style: normal;
+      }
+      body {
+        margin: 0;
+        overflow: hidden; /* Prevent body scroll */
+      }
+
+      .poker-shell-bg {
+        background-image: url("https://images.unsplash.com/photo-1511193311914-0346f16efe90?q=80&w=2073&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+        background-size: cover;
+        background-position: center;
+        /* Using `absolute` to fill the viewport and allow `overflow: hidden` on body */
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .image-overlay {
+        opacity: 0.8;
+        position: absolute; /* Needed for the pseudo-element overlay */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Gradient for the button */
+      .ask-button-gradient-enabled {
+        background: linear-gradient(to right bottom, #28a745, #20c997);
+      }
+
+      .ask-button-gradient-disabled {
+        background: linear-gradient(to right bottom, #6c757d, #495057);
+      }
+
+      /* Basic reset for animations */
+      .animated-element {
+        will-change: opacity, transform;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="poker-shell-bg">
+      <!-- Image Overlay for opacity effect, consistent with React Native -->
+      <div class="image-overlay"></div>
+
+      <div
+        class="relative z-10 flex flex-col justify-center items-center p-5 sm:p-8 md:p-10 w-full"
+      >
+        <div
+          class="bg-white bg-opacity-95 p-6 sm:p-8 md:p-10 lg:p-12 rounded-3xl border-2 border-green-200 shadow-xl max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl w-11/12 min-h-[40vh] flex flex-col justify-between items-center transform transition-all duration-300 ease-in-out"
+        >
+          <h1
+            class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-green-800 text-center mb-6 sm:mb-8 tracking-wide"
+          >
+            🃏 קונכיית השגב 🃏
+          </h1>
+
+          <button
+            id="askButton"
+            class="w-full relative rounded-2xl overflow-hidden shadow-lg shadow-green-400/50 transform transition-transform duration-100 ease-out active:scale-95"
+            disabled
+          >
+            <div
+              id="askButtonGradient"
+              class="ask-button-gradient-enabled w-full py-4 sm:py-5 px-6 sm:px-8 rounded-2xl flex justify-center items-center min-h-[56px] transition-colors duration-200 ease-in-out"
+            >
+              <span
+                id="buttonText"
+                class="text-white font-bold text-lg sm:text-xl text-center tracking-wide"
+              >
+                שאל את הקונכייה! ♠️
+              </span>
+            </div>
+          </button>
+
+          <div
+            id="answerDisplay"
+            class="w-full mt-6 sm:mt-8 animated-element opacity-0 translate-y-5"
+          >
+            <div
+              class="bg-green-50 border-2 border-green-500 rounded-2xl p-6 sm:p-8 shadow-md shadow-green-300/40 flex flex-col items-center"
+            >
+              <p
+                class="text-base sm:text-lg font-semibold text-gray-600 mb-2 text-center"
+              >
+                התשובה:
+              </p>
+              <p
+                id="currentAnswer"
+                class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-green-800 text-center tracking-wide"
+              ></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Constants for answers and sounds
+      const answers = [
+        {
+          answer: "פולד רציני",
+          // Placeholder for actual sound file.
+          // You'll need to host these files online or provide base64 data.
+          // For example, if you have 'fold.mp3' and 'call.mp3' hosted:
+          soundSrc: "./assets/fold.mp3",
+        },
+        {
+          answer: "קול בזריז",
+          soundSrc: "./assets/call.mp3",
+        },
+      ];
+
+      // DOM element references
+      const askButton = document.getElementById("askButton");
+      const buttonTextSpan = document.getElementById("buttonText");
+      const askButtonGradient = document.getElementById("askButtonGradient");
+      const answerDisplay = document.getElementById("answerDisplay");
+      const currentAnswerText = document.getElementById("currentAnswer");
+
+      // State variables
+      let isAnswerVisible = false;
+      let isButtonDisabled = false;
+      let buttonText = "שאל את הקונכייה! ♠️";
+      let currentAnswer = "";
+
+      // Audio players
+      // In a real scenario, you'd load your actual MP3 files here.
+      // For demonstration, I'm using placeholder URLs.
+      const foldSound = new Audio(answers[0].soundSrc);
+      const callSound = new Audio(answers[1].soundSrc);
+
+      // Animation utility (simplified to mimic Animated.timing)
+      function animateValue(
+        startValue,
+        endValue,
+        duration,
+        easingFn,
+        onUpdate,
+        onComplete
+      ) {
+        let startTime = null;
+
+        function step(currentTime) {
+          if (!startTime) startTime = currentTime;
+          const progress = Math.min((currentTime - startTime) / duration, 1);
+          const easedProgress = easingFn(progress);
+          onUpdate(startValue + (endValue - startValue) * easedProgress);
+
+          if (progress < 1) {
+            requestAnimationFrame(step);
+          } else {
+            if (onComplete) onComplete();
+          }
+        }
+        requestAnimationFrame(step);
+      }
+
+      // Easing functions (simplified versions of common easings)
+      const Easing = {
+        ease: (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+        easeOut: (t) => t * (2 - t),
+        easeIn: (t) => t * t,
+      };
+
+      // Function to update the button's visual state
+      function updateButtonState() {
+        askButton.disabled = isButtonDisabled;
+        buttonTextSpan.textContent = buttonText;
+        if (isButtonDisabled) {
+          askButtonGradient.classList.remove("ask-button-gradient-enabled");
+          askButtonGradient.classList.add("ask-button-gradient-disabled");
+        } else {
+          askButtonGradient.classList.remove("ask-button-gradient-disabled");
+          askButtonGradient.classList.add("ask-button-gradient-enabled");
+        }
+      }
+
+      // Handle the ask action
+      const handleAsk = async () => {
+        // Reset previous state
+        isAnswerVisible = false;
+        currentAnswer = "";
+        answerDisplay.style.opacity = 0;
+        answerDisplay.style.transform = "translateY(20px)";
+        currentAnswerText.textContent = "";
+
+        isButtonDisabled = true;
+        buttonText = "הקונכייה חושבת... 🤔";
+        updateButtonState();
+
+        // Button press animation (scale down)
+        animateValue(1, 0.95, 100, Easing.easeOut, (value) => {
+          askButton.style.transform = `scale(${value})`;
+        });
+
+        setTimeout(async () => {
+          const randomIndex = Math.floor(Math.random() * answers.length);
+          const randomAnswerData = answers[randomIndex];
+
+          currentAnswer = randomAnswerData.answer;
+          currentAnswerText.textContent = currentAnswer;
+          isAnswerVisible = true;
+
+          // Determine which sound to play
+          const soundToPlay = randomIndex === 0 ? foldSound : callSound;
+
+          try {
+            soundToPlay.volume = 1.0;
+            soundToPlay
+              .play()
+              .catch((error) => console.error("Error playing sound:", error));
+          } catch (error) {
+            console.error(`Error playing answer sound:`, error);
+          }
+
+          // Parallel animations for answer fade-in and button scale-up
+          let animationsCompleted = 0;
+          const totalAnimations = 2;
+
+          const onAnimationComplete = () => {
+            animationsCompleted++;
+            if (animationsCompleted === totalAnimations) {
+              isButtonDisabled = false;
+              buttonText = "שאל את הקונכייה! ♠️";
+              updateButtonState();
+            }
+          };
+
+          // Answer fade-in and slide-up animation
+          animateValue(
+            0,
+            1,
+            500,
+            Easing.ease,
+            (value) => {
+              answerDisplay.style.opacity = value;
+              answerDisplay.style.transform = `translateY(${
+                20 * (1 - value)
+              }px)`;
+            },
+            onAnimationComplete
+          );
+
+          // Button scale-up animation
+          animateValue(
+            0.95,
+            1,
+            200,
+            Easing.easeIn,
+            (value) => {
+              askButton.style.transform = `scale(${value})`;
+            },
+            onAnimationComplete
+          );
+        }, 2000); // 2-second delay
+      };
+
+      // Event listener for the button
+      askButton.addEventListener("click", handleAsk);
+
+      // Initial state setup on load
+      window.onload = () => {
+        updateButtonState(); // Set initial button text and enabled state
+        askButton.disabled = false; // Enable button after load
+      };
+    </script>
+  </body>
+</html>
