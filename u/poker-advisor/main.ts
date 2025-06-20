@@ -7,7 +7,7 @@ interface AnswerOption {
 type EasingFunction = (t: number) => number;
 type AnimationCallback = (value: number) => void;
 
-const ASSETS_PATH = "../assets";
+const ASSETS_PATH = "./assets";
 
 // Constants for answers and sounds
 const answers: AnswerOption[] = [
