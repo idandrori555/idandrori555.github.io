@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>מחשבון חובות פוקר</title>
+  <title>Poker Debt Settler</title>
   <!-- Updated to the standard Tailwind Play CDN script -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
 
 <body class="p-4 md:p-8 flex items-center justify-center min-h-screen">
   <div class="container bg-gray-800 p-6 rounded-lg shadow-2xl space-y-6">
-    <h1 class="text-3xl font-bold text-center text-indigo-400 mb-6">מחשבון חובות פוקר</h1>
+    <h1 class="text-3xl font-bold text-center text-indigo-400 mb-6">🃏 Poker Debt Settler</h1>
 
     <div id="players-input" class="space-y-4">
       <!-- Player input fields will be added here by JavaScript -->
@@ -40,32 +40,32 @@
 
     <button id="add-player-btn"
       class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out">
-      הוסף שחקן
+      Add Player
     </button>
 
     <button id="calculate-btn"
       class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out mt-4">
-      חשב תשלומים
+      Calculate Payments
     </button>
 
     <div id="results" class="mt-8 p-4 bg-gray-700 rounded-lg shadow-inner hidden">
-      <h2 class="text-xl font-semibold text-center text-indigo-300 mb-4">💰 מי משלם למי:</h2>
+      <h2 class="text-xl font-semibold text-center text-indigo-300 mb-4">💰 Who Pays Whom:</h2>
       <ul id="transactions-list" class="space-y-3">
         <!-- Transaction results will be displayed here -->
       </ul>
       <div id="no-transactions-message" class="text-center text-gray-400 italic hidden">
-        כולם בשוויון! אין צורך בתשלומים.
+        Everyone's square! No payments needed.
       </div>
     </div>
 
     <!-- Custom Alert Modal -->
     <div id="custom-alert-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
       <div class="bg-gray-800 p-6 rounded-lg shadow-lg w-11/12 md:w-1/3">
-        <h3 id="alert-title" class="text-xl font-semibold text-red-400 mb-3">שגיאה!</h3>
+        <h3 id="alert-title" class="text-xl font-semibold text-red-400 mb-3">Error!</h3>
         <p id="alert-message" class="text-gray-200 mb-5"></p>
         <button id="alert-ok-btn"
           class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md">
-          אישור
+          OK
         </button>
       </div>
     </div>
@@ -87,7 +87,7 @@
     let playerCount = 0;
     const playersInputDiv = document.getElementById('players-input');
     const addPlayerBtn = document.getElementById('add-player-btn');
-    const calculateBtn = document.getElementById('calculate-btn'); // Corrected
+    const calculateBtn = document = document.getElementById('calculate-btn');
     const resultsDiv = document.getElementById('results');
     const transactionsList = document.getElementById('transactions-list');
     const noTransactionsMessage = document.getElementById('no-transactions-message');
@@ -105,16 +105,16 @@
       // Adjusted input widths and added labels for better clarity
       playerDiv.innerHTML = `
                 <div class="flex flex-col">
-                    <label for="name-${playerCount}" class="text-sm font-medium text-gray-300 mb-1">שם שחקן</label>
-                    <input type="text" id="name-${playerCount}" placeholder="לדוגמה, עידן" class="name-input w-full p-2 rounded-md bg-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label for="name-${playerCount}" class="text-sm font-medium text-gray-300 mb-1">Player Name</label>
+                    <input type="text" id="name-${playerCount}" placeholder="e.g., Idan" class="name-input w-full p-2 rounded-md bg-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div class="flex flex-col">
-                    <label for="buyin-${playerCount}" class="text-sm font-medium text-gray-300 mb-1">סכום כניסה</label>
-                    <input type="number" id="buyin-${playerCount}" placeholder="לדוגמה, 10" class="buyin-input w-full p-2 rounded-md bg-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" min="0">
+                    <label for="buyin-${playerCount}" class="text-sm font-medium text-gray-300 mb-1">Buy-in</label>
+                    <input type="number" id="buyin-${playerCount}" placeholder="e.g., 10" class="buyin-input w-full p-2 rounded-md bg-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" min="0">
                 </div>
                 <div class="flex flex-col">
-                    <label for="final-${playerCount}" class="text-sm font-medium text-gray-300 mb-1">סכום סופי</label>
-                    <input type="number" id="final-${playerCount}" placeholder="לדוגמה, 0" class="final-input w-full p-2 rounded-md bg-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" min="0">
+                    <label for="final-${playerCount}" class="text-sm font-medium text-gray-300 mb-1">Final Amount</label>
+                    <input type="number" id="final-${playerCount}" placeholder="e.g., 0" class="final-input w-full p-2 rounded-md bg-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" min="0">
                 </div>
                 <button class="remove-player-btn bg-red-500 hover:bg-red-600 text-white p-2 rounded-md shadow-sm transition duration-300 ease-in-out w-full md:mt-auto md:self-end">
                     <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m14 0H5m4 0V3a1 1 0 011-1h4a1 1 0 011 1v4m-6 0h6"></path></svg>
@@ -154,7 +154,7 @@
         const finalAmount = parseFloat(finalInput.value);
 
         if (!name || isNaN(buyIn) || isNaN(finalAmount) || buyIn < 0 || finalAmount < 0) {
-          showAlert('שגיאת קלט', 'אנא מלא את כל פרטי השחקנים במספרים חיוביים תקינים עבור סכום הכניסה והסכום הסופי.');
+          showAlert('Input Error', 'Please fill in all player details with valid positive numbers for buy-in and final amounts.');
           isValid = false;
           return;
         }
@@ -167,7 +167,7 @@
       }
 
       if (players.length < 2) {
-        showAlert('שגיאת קלט', 'אנא הוסף לפחות שני שחקנים לחישוב תשלומים.');
+        showAlert('Input Error', 'Please add at least two players to calculate payments.');
         return;
       }
 
