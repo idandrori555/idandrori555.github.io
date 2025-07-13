@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-Time Fact-Checker</title>
+    <!-- Tailwind CSS CDN for utility-first styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter for a clean, modern typeface -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Apply Inter font family globally and set base text properties */
+      body {
+        font-family: "Inter", sans-serif;
+        @apply text-base leading-relaxed;
+      }
+
+      a {
+        display: none;
+      }
+
+      /* Enhanced gradient background */
+      .gradient-bg {
+        background: linear-gradient(
+          135deg,
+          #0f172a 0%,
+          #1e293b 50%,
+          #334155 100%
+        );
+        min-height: 100vh;
+      }
+
+      /* Glass morphism effect for main container */
+      .glass-container {
+        background: rgba(30, 41, 59, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+
+      /* Enhanced pulse animation for the recording indicator */
+      .pulse-enhanced {
+        animation: pulse-enhanced 2s infinite;
+      }
+
+      @keyframes pulse-enhanced {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8);
+        }
+        50% {
+          transform: scale(1.05);
+          box-shadow: 0 0 0 15px rgba(239, 68, 68, 0.2);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        }
+      }
+
+      /* Floating animation for claim cards */
+      .claim-card {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: top;
+        animation: slideInFromTop 0.5s ease-out;
+      }
+
+      @keyframes slideInFromTop {
+        from {
+          opacity: 0;
+          transform: translateY(-20px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .claim-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Enhanced button hover effects */
+      .btn-glow {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .btn-glow:hover {
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+      }
+
+      .btn-glow::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.1),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .btn-glow:hover::before {
+        left: 100%;
+      }
+
+      /* Custom scrollbar for transcript area */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(71, 85, 105, 0.3);
+        border-radius: 3px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.5);
+        border-radius: 3px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(148, 163, 184, 0.7);
+      }
+
+      /* Typing indicator animation */
+      .typing-indicator {
+        opacity: 0.7;
+        animation: typing 1.5s infinite;
+      }
+
+      @keyframes typing {
+        0%,
+        100% {
+          opacity: 0.7;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      /* Status bar with gradient */
+      .status-bar {
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradient-shift 3s ease-in-out infinite;
+      }
+
+      @keyframes gradient-shift {
+        0%,
+        100% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+      }
+
+      /* Enhanced tag styling */
+      .tag-verified {
+        background: linear-gradient(135deg, #10b981, #059669);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      }
+
+      .tag-false {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      }
+
+      .tag-controversial {
+        background: linear-gradient(
+          135deg,
+          #f59e0b,
+          #d97706
+        ); /* Original yellow/orange */
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      }
+
+      /* Microphone wave animation */
+      .mic-wave {
+        animation: wave 1.5s ease-in-out infinite;
+      }
+
+      @keyframes wave {
+        0%,
+        100% {
+          transform: scaleY(1);
+        }
+        50% {
+          transform: scaleY(1.2);
+        }
+      }
+
+      /* Input field focus effect */
+      .input-focus {
+        transition: all 0.3s ease;
+        position: relative;
+      }
+
+      .input-focus:focus {
+        transform: scale(1.02);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+      }
+
+      /* Floating elements */
+      .float-animation {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      /* New: Animation for words added to transcription */
+      @keyframes word-fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .word-fade-in {
+        animation: word-fade-in 0.3s ease-out forwards;
+        display: inline-block; /* Crucial for transform to work on inline content */
+      }
+    </style>
+  </head>
+
+  <body
+    class="gradient-bg flex flex-col items-center justify-center min-h-screen p-4"
+  >
+    <div class="w-full max-w-5xl glass-container rounded-3xl p-8 flex flex-col">
+      <!-- Header Section -->
+      <header
+        class="flex flex-col lg:flex-row justify-between items-center mb-8 border-b border-slate-600/30 pb-6 gap-6"
+      >
+        <div class="text-center lg:text-left">
+          <h1
+            class="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-blue-600 bg-clip-text text-transparent mb-2"
+          >
+            Real-Time Fact-Checker
+          </h1>
+          <p class="text-slate-400 text-sm font-medium">
+            Powered by AI • Real-time verification
+          </p>
+        </div>
+
+        <!-- API Key Input and Save Button -->
+        <div
+          class="flex flex-col md:flex-row items-center space-y-3 md:space-y-0 md:space-x-3 bg-slate-800/50 p-4 rounded-2xl border border-slate-600/30"
+        >
+          <div class="relative w-full md:w-auto">
+            <input
+              type="password"
+              id="api-key-input"
+              placeholder="Enter Gemini API Key"
+              class="input-focus w-full lg:w-64 text-sm bg-slate-700/70 border-slate-600/50 text-slate-100 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-3 pr-12 placeholder-slate-400"
+            />
+          </div>
+          <button
+            id="save-key-btn"
+            class="btn-glow text-sm bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 w-full md:w-auto"
+          >
+            Save
+          </button>
+
+          <!-- Gemini Model Selection Dropdown -->
+          <div class="relative w-full md:w-auto">
+            <select
+              id="model-select"
+              class="input-focus w-full text-sm bg-slate-700/70 border-slate-600/50 text-slate-100 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-3 pr-10 appearance-none cursor-pointer"
+            >
+              <option value="gemini-2.0-flash">
+                Gemini 2.0 Flash (Default)
+              </option>
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+              <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+              <option value="gemini-2.0-pro">Gemini 2.0 Pro</option>
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+            </select>
+            <div
+              class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400"
+            >
+              <svg
+                class="fill-current h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="flex-grow">
+        <!-- Control Buttons -->
+        <div
+          class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 mb-8"
+        >
+          <button
+            id="start-btn"
+            class="btn-glow w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl"
+            disabled
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+              ></path>
+            </svg>
+            <span>Start Listening</span>
+          </button>
+
+          <button
+            id="stop-btn"
+            class="btn-glow w-full sm:w-auto bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl hidden"
+          >
+            <div id="mic-icon-wrapper" class="relative">
+              <svg
+                class="w-6 h-6 mic-wave"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                ></path>
+              </svg>
+              <div
+                id="recording-indicator"
+                class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full pulse-enhanced hidden"
+              ></div>
+            </div>
+            <span>Stop Listening</span>
+          </button>
+        </div>
+
+        <!-- Status Message Display -->
+        <div
+          id="status"
+          class="text-center text-slate-300 mb-6 h-8 font-medium"
+        >
+          <span class="status-bar">Enter your API Key to begin.</span>
+        </div>
+
+        <!-- Transcription Display Area -->
+        <div
+          class="bg-slate-800/60 p-6 rounded-2xl min-h-[200px] max-h-[350px] overflow-y-auto border border-slate-600/30 shadow-inner backdrop-blur-sm mb-6 custom-scrollbar"
+        >
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-slate-200 flex items-center">
+              <svg
+                class="w-5 h-5 mr-2 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                ></path>
+              </svg>
+              Live Transcription
+            </h3>
+            <div class="flex space-x-1">
+              <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+              <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <div class="w-2 h-2 bg-red-400 rounded-full"></div>
+            </div>
+          </div>
+          <div id="transcript-content">
+            <p
+              id="transcript"
+              class="text-slate-200 whitespace-pre-wrap text-base leading-relaxed"
+            ></p>
+          </div>
+        </div>
+
+        <!-- AI Results Container -->
+        <div id="results-container" class="space-y-4">
+          <!-- AI results will be injected here dynamically -->
+        </div>
+      </main>
+
+      <!-- Footer Section -->
+      <footer
+        class="text-center text-xs text-slate-400 mt-8 pt-6 border-t border-slate-600/30"
+      >
+        <div class="flex items-center justify-center space-x-2 mb-2">
+          <svg
+            class="w-4 h-4 text-green-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          <span class="font-semibold text-slate-300">Privacy Protected</span>
+        </div>
+        <p class="max-w-2xl mx-auto">
+          Your audio is processed locally in your browser. Only transcribed text
+          is sent to the AI for analysis. No audio is ever recorded or stored.
+        </p>
+      </footer>
+    </div>
+
+    <script>
+      // --- DOM Element References ---
+      const startBtn = document.getElementById("start-btn");
+      const stopBtn = document.getElementById("stop-btn");
+      const statusEl = document.getElementById("status");
+      const transcriptEl = document.getElementById("transcript"); // This is the <p> tag inside transcript-content
+      const resultsContainer = document.getElementById("results-container");
+      const apiKeyInput = document.getElementById("api-key-input");
+      const saveKeyBtn = document.getElementById("save-key-btn");
+      const transcriptionContainerDiv = document.getElementById(
+        "transcription-container"
+      ); // The scrollable div
+      const modelSelect = document.getElementById("model-select"); // New: Reference to the model select dropdown
+
+      // --- Web Speech API Setup ---
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      let recognition;
+      let mediaStream = null; // To hold the microphone stream
+
+      // --- State Management Variables ---
+      let isListening = false;
+      let finalTranscript = ""; // Still useful for overall text reference
+      let interimSpan = null; // Reference to the span holding interim results
+      let claimCounter = 0;
+      let geminiApiKey = "";
+      let selectedGeminiModel = "gemini-2.0-flash"; // New: Default Gemini model
+
+      // --- Initialization Logic ---
+      if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = "en-US"; // Default language, can be changed for Hebrew
+
+        recognition.onstart = () => {
+          isListening = true;
+          statusEl.innerHTML =
+            '<span class="status-bar">🎤 Listening... Speak into your microphone.</span>';
+          startBtn.classList.add("hidden");
+          stopBtn.classList.remove("hidden");
+
+          // Clear transcription area and reset interimSpan at start
+          transcriptEl.innerHTML = "";
+          if (interimSpan && interimSpan.parentNode) {
+            interimSpan.parentNode.removeChild(interimSpan);
+          }
+          interimSpan = null;
+        };
+
+        recognition.onend = () => {
+          isListening = false;
+          statusEl.innerHTML =
+            "<span class=\"status-bar\">Click 'Start Listening' to begin.</span>";
+          startBtn.classList.remove("hidden");
+          stopBtn.classList.add("hidden");
+
+          // Ensure interim span is removed when listening stops
+          if (interimSpan && interimSpan.parentNode) {
+            interimSpan.parentNode.removeChild(interimSpan);
+          }
+          interimSpan = null;
+
+          // Stop the microphone stream when recognition ends
+          if (mediaStream) {
+            mediaStream.getTracks().forEach((track) => track.stop());
+            mediaStream = null;
+          }
+        };
+
+        recognition.onerror = (event) => {
+          console.error("Speech recognition error:", event.error);
+          let errorMessage = `Error: ${event.error}.`;
+          if (event.error === "not-allowed") {
+            errorMessage +=
+              " Microphone access was denied. Please check your browser or device settings.";
+          } else if (event.error === "no-speech") {
+            errorMessage += " No speech detected. Please try again.";
+          } else if (event.error === "audio-capture") {
+            errorMessage +=
+              " Failed to capture audio. Ensure your microphone is connected and working.";
+          }
+          statusEl.innerHTML = `<span class="text-red-400">${errorMessage}</span>`;
+          if (isListening) {
+            recognition.stop();
+          }
+        };
+
+        recognition.onresult = (event) => {
+          let currentInterimText = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              const chunk = event.results[i][0].transcript.trim();
+              if (chunk) {
+                // Remove the interim span if it exists before adding final text
+                if (interimSpan && interimSpan.parentNode) {
+                  transcriptEl.removeChild(interimSpan);
+                  interimSpan = null; // Clear reference
+                }
+
+                // Create a new span for the final word/chunk with animation
+                const finalWordSpan = document.createElement("span");
+                finalWordSpan.classList.add("text-slate-100", "word-fade-in");
+                finalWordSpan.textContent = chunk + ". ";
+                transcriptEl.appendChild(finalWordSpan);
+
+                finalTranscript += chunk + ". "; // Update overall final transcript string
+                processText(chunk + ".");
+              }
+            } else {
+              currentInterimText += event.results[i][0].transcript;
+            }
+          }
+
+          // Handle interim text
+          if (currentInterimText) {
+            if (!interimSpan) {
+              // Create interim span if it doesn't exist
+              interimSpan = document.createElement("span");
+              interimSpan.classList.add("text-slate-400", "typing-indicator");
+              transcriptEl.appendChild(interimSpan);
+            }
+            interimSpan.textContent = currentInterimText;
+          } else if (interimSpan) {
+            // If there's no interim text but the span exists, remove it
+            if (interimSpan.parentNode) {
+              transcriptEl.removeChild(interimSpan);
+            }
+            interimSpan = null;
+          }
+
+          // Scroll to the bottom of the transcription container
+          transcriptionContainerDiv.scrollTop =
+            transcriptionContainerDiv.scrollHeight;
+        };
+      } else {
+        statusEl.innerHTML =
+          '<span class="text-red-400">Speech recognition not supported in this browser. Please use Chrome or Edge.</span>';
+        startBtn.disabled = true;
+      }
+
+      // --- API Key and Model Persistence (Local Storage) ---
+      // Load API key from local storage on page load
+      const savedApiKey = localStorage.getItem("geminiApiKey");
+      if (savedApiKey) {
+        geminiApiKey = savedApiKey;
+        apiKeyInput.value = savedApiKey;
+        startBtn.disabled = false;
+        statusEl.innerHTML =
+          "<span class=\"status-bar\">✅ API Key loaded. Click 'Start Listening' to begin.</span>";
+        apiKeyInput.classList.add("border-green-500");
+      }
+
+      // Load selected model from local storage on page load
+      const savedModel = localStorage.getItem("selectedGeminiModel");
+      if (savedModel) {
+        selectedGeminiModel = savedModel;
+        modelSelect.value = savedModel; // Set the dropdown to the saved value
+      } else {
+        modelSelect.value = selectedGeminiModel; // Ensure dropdown reflects default
+      }
+
+      // --- Event Listeners ---
+      saveKeyBtn.addEventListener("click", () => {
+        const key = apiKeyInput.value.trim();
+        if (key) {
+          geminiApiKey = key;
+          localStorage.setItem("geminiApiKey", key); // Save key to local storage
+          startBtn.disabled = false;
+          statusEl.innerHTML =
+            "<span class=\"status-bar\">✅ API Key saved. Click 'Start Listening' to begin.</span>";
+          apiKeyInput.classList.remove("border-red-500");
+          apiKeyInput.classList.add("border-green-500");
+        } else {
+          startBtn.disabled = true;
+          statusEl.innerHTML =
+            '<span class="text-red-400">Please enter a valid API Key.</span>';
+          apiKeyInput.classList.remove("border-green-500");
+          apiKeyInput.classList.add("border-red-500");
+        }
+      });
+
+      // New: Event listener for model selection change
+      modelSelect.addEventListener("change", () => {
+        selectedGeminiModel = modelSelect.value;
+        localStorage.setItem("selectedGeminiModel", selectedGeminiModel); // Save selected model
+        statusEl.innerHTML = `<span class="status-bar">Model changed to: ${selectedGeminiModel}.</span>`;
+      });
+
+      startBtn.addEventListener("click", async () => {
+        if (!isListening && recognition && geminiApiKey) {
+          // Request microphone permissions
+          try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({
+              audio: true,
+            });
+            statusEl.innerHTML =
+              '<span class="status-bar">Microphone access granted. Starting listening...</span>';
+
+            finalTranscript = "";
+            transcriptEl.innerHTML = ""; // Clear transcription display
+            resultsContainer.innerHTML = "";
+            claimCounter = 0;
+            recognition.start(); // Start speech recognition only after getting microphone access
+          } catch (err) {
+            console.error("Microphone access denied:", err);
+            statusEl.innerHTML = `<span class="text-red-400">Microphone access denied.`;
+            // Ensure buttons are reset if permission is denied
+            startBtn.classList.remove("hidden");
+            stopBtn.classList.add("hidden");
+          }
+        } else if (!geminiApiKey) {
+          statusEl.innerHTML =
+            '<span class="text-red-400">Please save your API key before starting.</span>';
+          apiKeyInput.classList.add("border-red-500");
+        }
+      });
+
+      stopBtn.addEventListener("click", () => {
+        if (isListening && recognition) {
+          recognition.stop();
+        }
+      });
+
+      // --- AI Processing Logic ---
+      /**
+       * Processes a chunk of transcribed text by sending it to the Gemini API.
+       * @param {string} text The transcribed text chunk to analyze.
+       */
+      async function processText(text) {
+        if (!text || text.length < 10) return;
+
+        statusEl.innerHTML = `<span class="status-bar">🔍 Analyzing: "${text.substring(
+          0,
+          30
+        )}..."</span>`;
+
+        try {
+          // New: Use selectedGeminiModel in the API URL
+          const response = await callGeminiAPI(text, selectedGeminiModel);
+          statusEl.innerHTML = isListening
+            ? '<span class="status-bar">🎤 Listening...</span>'
+            : "<span class=\"status-bar\">Click 'Start Listening' to begin.</span>";
+
+          if (response && response.isClaim) {
+            // Pass the selectedGeminiModel to displayResults
+            displayResults(response, selectedGeminiModel);
+          } else {
+            console.log("Ignored non-claim or non-verifiable statement:", text);
+          }
+        } catch (error) {
+          console.error("AI API Error:", error);
+          statusEl.innerHTML =
+            '<span class="text-red-400">Error analyzing text. Check API key and console for details.</span>';
+          displayError(error.message);
+        }
+      }
+
+      /**
+       * Calls the Gemini API to fact-check the provided text.
+       * It sends a prompt and expects a structured JSON response.
+       * @param {string} text The transcribed text to analyze.
+       * @param {string} model The Gemini model to use for the API call.
+       * @returns {Promise<Object>} A promise that resolves with the AI's analysis.
+       */
+      async function callGeminiAPI(text, model) {
+        // New: Use the passed model parameter in the API URL
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+
+        const prompt = `You are a rigorous fact-checking engine. First, determine if the following text contains a verifiable factual claim. A factual claim is a statement that can be proven true or false with objective evidence, not an opinion, question, or command.
+If it does not contain a factual claim, set "isClaim" to false and other string fields to empty.
+If it is a factual claim, set "isClaim" to true, identify the claim, determine its veracity (TRUE, FALSE, or CONTROVERSIAL), and provide a neutral explanation in simple, human language, avoiding jargon. Keep the explanation very brief and concise, ideally one to two sentences, suitable for quick, on-the-fly reading. If the claim is controversial, explain why it is controversial and present both sides neutrally in a similarly brief manner.
+Your response must be in the specified JSON format. Text to analyze: "${text}"`;
+
+        const payload = {
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                isClaim: {
+                  type: "BOOLEAN",
+                  description:
+                    "True if the text contains a verifiable factual claim.",
+                },
+                veracityCategory: {
+                  type: "STRING",
+                  enum: ["TRUE", "FALSE", "CONTROVERSIAL"],
+                  description:
+                    "The veracity of the claim: TRUE, FALSE, or CONTROVERSIAL. Empty if isClaim is false.",
+                },
+                claim: {
+                  type: "STRING",
+                  description:
+                    "The factual claim identified. Empty if isClaim is false.",
+                },
+                explanation: {
+                  type: "STRING",
+                  description:
+                    "A brief, neutral explanation in simple, human language. Empty if isClaim is false.",
+                },
+              },
+              required: ["isClaim", "veracityCategory", "claim", "explanation"],
+            },
+          },
+        };
+
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const errorBody = await response.json();
+          console.error("API Error Response:", errorBody);
+          throw new Error(
+            `API request failed: ${
+              errorBody.error?.message || response.statusText
+            }`
+          );
+        }
+
+        const result = await response.json();
+
+        if (result.candidates && result.candidates.length > 0) {
+          const content = result.candidates[0].content;
+          if (content && content.parts && content.parts.length > 0) {
+            return JSON.parse(content.parts[0].text);
+          }
+        }
+
+        throw new Error(
+          "Invalid response format from API or no candidates returned."
+        );
+      }
+
+      // --- Enhanced UI Display Logic ---
+      // Modified to accept and display the model used
+      function displayResults(data, modelUsed) {
+        claimCounter++;
+
+        let bgColor, textColor, borderColor, tagText, tagClass, icon;
+
+        switch (data.veracityCategory) {
+          case "TRUE":
+            bgColor = "bg-gradient-to-br from-emerald-900/80 to-green-900/60";
+            textColor = "text-emerald-100";
+            borderColor = "border-emerald-500/50";
+            tagText = "✓ VERIFIED";
+            tagClass = "tag-verified";
+            icon = "✅";
+            break;
+          case "FALSE":
+            bgColor = "bg-gradient-to-br from-red-900/80 to-pink-900/60";
+            textColor = "text-red-100";
+            borderColor = "border-red-500/50";
+            tagText = "✗ FALSE";
+            tagClass = "tag-false";
+            icon = "❌";
+            break;
+          case "CONTROVERSIAL":
+            // Updated styling for controversial claims (more yellow-like orange)
+            bgColor =
+              "bg-gradient-to-br from-amber-900/80 to-yellow-900/60"; /* More yellow in gradient */
+            textColor = "text-amber-100"; /* Lighter yellow text for contrast */
+            borderColor = "border-amber-500/50"; /* A distinct yellow border */
+            tagText = "⚠ CONTROVERSIAL";
+            tagClass = "tag-controversial";
+            icon = "⚠️";
+            break;
+          default:
+            bgColor = "bg-gradient-to-br from-slate-800/80 to-slate-700/60";
+            textColor = "text-slate-200";
+            borderColor = "border-slate-500/50";
+            tagText = "? UNKNOWN";
+            tagClass = "bg-slate-500";
+            icon = "❓";
+            break;
+        }
+
+        const resultCard = `
+          <div class="claim-card ${bgColor} p-6 rounded-2xl border-l-4 ${borderColor} shadow-lg backdrop-blur-sm border border-slate-600/30">
+            <div class="flex justify-between items-start pb-4 mb-4 border-b border-slate-600/30">
+              <div class="flex items-start space-x-3">
+                <span class="text-2xl">${icon}</span>
+                <div>
+                  <h2 class="font-bold ${textColor} text-xl mb-1">
+                    Claim #${claimCounter}
+                  </h2>
+                  <p class="font-semibold ${textColor} text-lg">
+                    "${data.claim}"
+                  </p>
+                </div>
+              </div>
+              <span class="text-xs font-bold text-white ${tagClass} px-3 py-1.5 rounded-full whitespace-nowrap">
+                ${tagText}
+              </span>
+            </div>
+            <div class="pl-11 pt-2">
+              <h3 class="font-semibold text-slate-300 text-base mb-2">Analysis:</h3>
+              <p class="text-base ${textColor} opacity-90 leading-relaxed">
+                ${data.explanation}
+              </p>
+              <p class="text-xs text-slate-400 mt-2">
+                Model: ${modelUsed}
+              </p>
+            </div>
+          </div>
+        `;
+
+        resultsContainer.insertAdjacentHTML("beforeend", resultCard);
+        resultsContainer.scrollTop = resultsContainer.scrollHeight;
+      }
+
+      function displayError(errorMessage) {
+        const errorCard = `
+          <div class="claim-card bg-gradient-to-br from-red-900/80 to-pink-900/60 p-6 rounded-2xl border-l-4 border-red-500/50 shadow-lg backdrop-blur-sm border border-slate-600/30">
+            <div class="flex items-start space-x-3">
+              <span class="text-2xl">💥</span>
+              <div>
+                <p class="font-semibold text-red-100 text-lg mb-2">An Error Occurred</p>
+                <p class="text-sm text-red-200 opacity-90">${errorMessage}</p>
+              </div>
+            </div>
+          </div>
+        `;
+        resultsContainer.insertAdjacentHTML("beforeend", errorCard);
+        resultsContainer.scrollTop = resultsContainer.scrollHeight;
+      }
+    </script>
+  </body>
+</html>
