@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fact Check - HTML Version</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom CSS for animations and theme */
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+    @keyframes pulse-strong {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 0 15px rgba(239, 68, 68, 0.3);
+      }
+
+      50% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0), 0 0 25px rgba(239, 68, 68, 0.5);
+      }
+    }
+
+    .animate-pulse-strong {
+      animation: pulse-strong 2s infinite;
+    }
+
+    /* Hide scrollbar but allow scrolling */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      /* IE and Edge */
+      scrollbar-width: none;
+      /* Firefox */
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900 text-white">
+
+  <!-- Main Application Container -->
+  <div id="app-container" class="container mx-auto max-w-3xl p-4 pt-6 md:pt-12 flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-6 sm:gap-4">
+      <div class="flex items-center gap-3 self-start">
+        <div
+          class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center border border-blue-500/30 flex-shrink-0">
+          <!-- CheckCircle Icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="w-6 h-6 text-blue-400">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-100">Fact Check</h1>
+          <p class="text-sm text-gray-400">Real-time speech fact-checker</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <select id="language-picker"
+          class="bg-gray-800 border border-gray-700 rounded-md p-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"></select>
+        <select id="model-picker"
+          class="bg-gray-800 border border-gray-700 rounded-md p-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"></select>
+        <button id="settings-button" class="p-2 rounded-full hover:bg-gray-700 transition-colors flex-shrink-0"
+          aria-label="Settings">
+          <!-- Settings Icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="w-6 h-6 text-gray-400">
+            <path
+              d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+            </path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col">
+      <!-- Results List -->
+      <div id="results-list" class="flex-grow space-y-4 overflow-y-auto no-scrollbar pr-2 -mr-2">
+        <!-- Placeholder message -->
+        <div id="placeholder" class="text-center py-16">
+          <p class="text-gray-500">Press the microphone to start fact-checking.</p>
+          <p id="api-key-prompt" class="text-yellow-500 text-sm mt-2 hidden">Please configure your API key in settings.
+          </p>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="mt-auto pt-8 pb-4 sticky bottom-0 bg-gradient-to-t from-gray-900 via-gray-900 to-transparent">
+        <!-- The interim transcript display has been removed -->
+        <div class="flex justify-center items-center">
+          <button id="mic-button"
+            class="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out shadow-lg focus:outline-none focus:ring-4 bg-blue-600 text-white shadow-blue-500/30 ring-blue-500/50"
+            aria-label="Start listening">
+            <!-- Mic Icon -->
+            <span id="mic-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="w-7 h-7 sm:w-8 sm:h-8">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" x2="12" y1="19" y2="22"></line>
+              </svg></span>
+            <!-- Stop Icon -->
+            <span id="stop-icon" class="hidden"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" class="w-7 h-7 sm:w-8 sm:h-8">
+                <circle cx="12" cy="12" r="10"></circle>
+                <rect width="6" height="6" x="9" y="9"></rect>
+              </svg></span>
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- API Key Settings Modal -->
+  <div id="settings-modal"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 w-full max-w-md">
+      <h2 class="text-xl font-bold mb-4">API Settings</h2>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-300 mb-2">API Provider</label>
+        <div class="flex rounded-md bg-gray-900 p-1">
+          <button data-provider="gemini"
+            class="api-provider-button w-full px-3 py-1 text-sm rounded-md transition-colors">Gemini</button>
+          <button data-provider="openai"
+            class="api-provider-button w-full px-3 py-1 text-sm rounded-md transition-colors">OpenAI</button>
+          <button data-provider="anthropic"
+            class="api-provider-button w-full px-3 py-1 text-sm rounded-md transition-colors">Anthropic</button>
+        </div>
+      </div>
+
+      <div id="gemini-settings" class="api-settings-section space-y-2">
+        <label for="gemini-api-key" class="block text-sm font-medium text-gray-300">Gemini API Key</label>
+        <input id="gemini-api-key" type="password" placeholder="Enter Gemini API key"
+          class="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <div id="openai-settings" class="api-settings-section space-y-2 hidden">
+        <label for="openai-api-key" class="block text-sm font-medium text-gray-300">OpenAI API Key</label>
+        <input id="openai-api-key" type="password" placeholder="Enter OpenAI API key"
+          class="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <div id="anthropic-settings" class="api-settings-section space-y-2 hidden">
+        <label for="anthropic-api-key" class="block text-sm font-medium text-gray-300">Anthropic API Key</label>
+        <input id="anthropic-api-key" type="password" placeholder="Enter Anthropic API key"
+          class="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <div class="flex justify-end gap-3 mt-6">
+        <button id="cancel-settings-button"
+          class="px-4 py-2 rounded-md bg-gray-600 hover:bg-gray-500 transition-colors">Cancel</button>
+        <button id="save-settings-button"
+          class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 transition-colors font-semibold">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Browser Not Supported Message -->
+  <div id="unsupported-browser"
+    class="bg-gray-900 text-white min-h-screen flex-col items-center justify-center p-4 hidden">
+    <div class="text-center max-w-md">
+      <!-- AlertTriangle Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-16 h-16 mx-auto text-yellow-400 mb-4">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <h1 class="text-2xl font-bold mb-2">Browser Not Supported</h1>
+      <p class="text-gray-400">
+        This feature uses the Web Speech API, which is not available in your current browser. Please try using Google
+        Chrome or another supported browser.
+      </p>
+    </div>
+  </div>
+
+  <!-- Template for a result item -->
+  <template id="result-item-template">
+    <div class="result-item border rounded-lg p-4 transition-all duration-500">
+      <blockquote class="statement italic text-gray-300 mb-3 border-l-4 border-gray-600 pl-4"></blockquote>
+      <div class="flex items-center gap-3 mb-2">
+        <span class="icon"></span>
+        <h3 class="classification font-bold text-lg"></h3>
+      </div>
+      <p class="reason text-gray-400 text-sm"></p>
+    </div>
+  </template>
+
+  <!-- Template for a loading skeleton -->
+  <template id="loading-item-template">
+    <div class="bg-gray-800/50 border border-gray-700 rounded-lg p-4 animate-pulse">
+      <p class="italic text-gray-400 statement-loading"></p>
+      <div class="h-4 bg-gray-700 rounded w-1/4 mt-3"></div>
+      <div class="h-4 bg-gray-700 rounded w-3/4 mt-2"></div>
+    </div>
+  </template>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- DOM Element References ---
+      const appContainer = document.getElementById('app-container');
+      const unsupportedBrowser = document.getElementById('unsupported-browser');
+      const micButton = document.getElementById('mic-button');
+      const micIcon = document.getElementById('mic-icon');
+      const stopIcon = document.getElementById('stop-icon');
+      const resultsList = document.getElementById('results-list');
+      const placeholder = document.getElementById('placeholder');
+      const apiKeyPrompt = document.getElementById('api-key-prompt');
+      const languagePicker = document.getElementById('language-picker');
+      const modelPicker = document.getElementById('model-picker');
+
+      // Settings Modal Elements
+      const settingsModal = document.getElementById('settings-modal');
+      const settingsButton = document.getElementById('settings-button');
+      const cancelSettingsButton = document.getElementById('cancel-settings-button');
+      const saveSettingsButton = document.getElementById('save-settings-button');
+      const apiProviderButtons = document.querySelectorAll('.api-provider-button');
+      const apiSettingsSections = document.querySelectorAll('.api-settings-section');
+      const geminiApiKeyInput = document.getElementById('gemini-api-key');
+      const openaiApiKeyInput = document.getElementById('openai-api-key');
+      const anthropicApiKeyInput = document.getElementById('anthropic-api-key');
+
+      // Templates
+      const resultItemTemplate = document.getElementById('result-item-template');
+      const loadingItemTemplate = document.getElementById('loading-item-template');
+
+      // --- State Variables ---
+      let isListening = false;
+      let apiKeys = {gemini: '', openai: '', anthropic: ''};
+      let recognition;
+      let currentLang = 'en-US';
+      let currentProvider = 'gemini';
+      let currentModel = '';
+
+      // --- Supported Languages & Models ---
+      const supportedLanguages = [
+        {code: 'en-US', name: 'English (US)'},
+        {code: 'he-IL', name: 'עברית (IL)'},
+      ];
+
+      const providerModels = {
+        gemini: [
+          {id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash'},
+          {id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash'},
+          {id: 'gemini-2.5-pro', name: 'Gemini 2.5 pro'},
+        ],
+        openai: [
+          {id: 'gpt-4o', name: 'GPT-4o'},
+          {id: 'gpt-4-turbo', name: 'GPT-4 Turbo'},
+          {id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo'},
+        ],
+        anthropic: [
+          {id: 'claude-3-opus-20240229', name: 'Claude 3 Opus'},
+          {id: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet'},
+          {id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku'},
+        ]
+      };
+
+      // --- Icon SVGs ---
+      const icons = {
+        true: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+        false: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`,
+        controversial: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`
+      };
+
+      const classificationClasses = {
+        true: {bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400'},
+        false: {bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400'},
+        controversial: {bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-400'}
+      };
+
+      // --- Speech Recognition Setup ---
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      const setupRecognition = () => {
+        if (!SpeechRecognition) {
+          appContainer.classList.add('hidden');
+          unsupportedBrowser.classList.remove('hidden');
+          unsupportedBrowser.classList.add('flex');
+          return;
+        }
+
+        if (recognition) {
+          recognition.stop();
+        }
+
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = currentLang;
+
+        recognition.onresult = (event) => {
+          let finalTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            }
+          }
+          if (finalTranscript.trim()) {
+            handleFactCheck(finalTranscript.trim());
+          }
+        };
+
+        recognition.onend = () => {
+          if (isListening) {
+            recognition.start();
+          }
+        };
+
+        recognition.onerror = (event) => {
+          console.error("Speech recognition error", event.error);
+          if (event.error === 'no-speech' || event.error === 'network') {
+            if (isListening) recognition.start();
+          } else {
+            toggleListen();
+          }
+        };
+      };
+
+      // --- Core Functions ---
+      const toggleListen = () => {
+        isListening = !isListening;
+        if (isListening) {
+          setupRecognition();
+          recognition.start();
+          micButton.classList.remove('bg-blue-600', 'shadow-blue-500/30', 'ring-blue-500/50');
+          micButton.classList.add('bg-red-600', 'shadow-red-500/30', 'ring-red-500/50', 'animate-pulse-strong');
+          micIcon.classList.add('hidden');
+          stopIcon.classList.remove('hidden');
+          placeholder.classList.add('hidden');
+        } else {
+          if (recognition) {
+            recognition.stop();
+          }
+          micButton.classList.add('bg-blue-600', 'shadow-blue-500/30', 'ring-blue-500/50');
+          micButton.classList.remove('bg-red-600', 'shadow-red-500/30', 'ring-red-500/50', 'animate-pulse-strong');
+          micIcon.classList.remove('hidden');
+          stopIcon.classList.add('hidden');
+          if (resultsList.children.length === 1) {
+            placeholder.classList.remove('hidden');
+          }
+        }
+      };
+
+      const getSystemPrompt = () => {
+        const langName = supportedLanguages.find(l => l.code === currentLang)?.name || 'English';
+        const jsonStructure = `{ "is_statement": boolean, "classification": "...", "reason": "...", "statement": "..." }`;
+        return `You are a pro-Israeli fact-checker with deep knowledge of Israeli history. Analyze the user's text. First, determine if it's a declarative statement. If not, respond with { "is_statement": false }. If it is, fact-check it. Your response must be in ${langName}, be as short as possible, and strictly follow this JSON format: ${jsonStructure}. Valid classifications are 'True', 'False', or another fitting single-word description.`;
+      };
+
+      const handleFactCheck = async (statement) => {
+        if (statement.trim().split(' ').length < 3) {
+          console.log("Ignoring short input:", statement);
+          return;
+        }
+
+        placeholder.classList.add('hidden');
+        const resultId = `result-${Date.now()}`;
+
+        const loadingClone = loadingItemTemplate.content.cloneNode(true);
+        const loadingElement = loadingClone.firstElementChild;
+        loadingElement.id = resultId;
+        loadingElement.querySelector('.statement-loading').textContent = `"${statement}"`;
+        resultsList.prepend(loadingElement);
+        resultsList.scrollTop = 0;
+
+        let apiResult;
+        const apiKey = apiKeys[currentProvider];
+
+        if (!apiKey) {
+          apiResult = {
+            is_statement: true,
+            classification: 'Controversial',
+            reason: `Please set your ${currentProvider.charAt(0).toUpperCase() + currentProvider.slice(1)} API key in the settings.`,
+            statement
+          };
+        } else {
+          try {
+            let response;
+            const systemPrompt = getSystemPrompt();
+
+            if (currentProvider === 'gemini') {
+              const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
+              const payload = {
+                contents: [{role: "user", parts: [{text: `${systemPrompt} User text: "${statement}"`}]}],
+                generationConfig: {responseMimeType: "application/json"}
+              };
+              response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+              });
+              if (!response.ok) throw new Error(`Gemini API Error: ${response.status}`);
+              const result = await response.json();
+              apiResult = JSON.parse(result.candidates[0].content.parts[0].text);
+
+            } else if (currentProvider === 'openai') {
+              const apiUrl = 'https://api.openai.com/v1/chat/completions';
+              const payload = {
+                model: currentModel,
+                messages: [
+                  {role: "system", content: systemPrompt},
+                  {role: "user", content: statement}
+                ],
+                response_format: {type: "json_object"}
+              };
+              response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(payload)
+              });
+              if (!response.ok) throw new Error(`OpenAI API Error: ${response.status}`);
+              const result = await response.json();
+              apiResult = JSON.parse(result.choices[0].message.content);
+
+            } else if (currentProvider === 'anthropic') {
+              const apiUrl = 'https://api.anthropic.com/v1/messages';
+              const payload = {
+                model: currentModel,
+                max_tokens: 1024,
+                system: systemPrompt,
+                messages: [{role: "user", content: statement}]
+              };
+              response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-api-key': apiKey,
+                  'anthropic-version': '2023-06-01'
+                },
+                body: JSON.stringify(payload)
+              });
+              if (!response.ok) throw new Error(`Anthropic API Error: ${response.status}`);
+              const result = await response.json();
+              // Anthropic doesn't enforce JSON output, so we need to find it
+              const jsonString = result.content[0].text.match(/\{.*\}/s)[0];
+              apiResult = JSON.parse(jsonString);
+            }
+
+          } catch (error) {
+            console.error(`Error with ${currentProvider} API:`, error);
+            apiResult = {
+              is_statement: true,
+              classification: 'Controversial',
+              reason: 'Could not connect to the fact-checking service. Please check your API key, network connection, and selected model.',
+              statement
+            };
+          }
+        }
+
+        const elementToProcess = document.getElementById(resultId);
+        if (apiResult && apiResult.is_statement) {
+          updateResultInDOM(resultId, apiResult);
+        } else {
+          if (elementToProcess) elementToProcess.remove();
+          console.log("Ignoring non-statement:", statement);
+        }
+      };
+
+      const updateResultInDOM = (resultId, data) => {
+        const resultElement = document.getElementById(resultId);
+        if (!resultElement) return;
+
+        const clone = resultItemTemplate.content.cloneNode(true);
+        const newElement = clone.firstElementChild;
+
+        const classification = data.classification?.toLowerCase() || 'controversial';
+        const classes = classificationClasses[classification] || classificationClasses.controversial;
+
+        newElement.classList.add(classes.bg, classes.border);
+        newElement.querySelector('.statement').textContent = `"${data.statement || 'N/A'}"`;
+        newElement.querySelector('.classification').textContent = data.classification || 'Unknown';
+        newElement.querySelector('.classification').classList.add(classes.text);
+        newElement.querySelector('.icon').innerHTML = icons[classification] || icons.controversial;
+        newElement.querySelector('.icon').classList.add(classes.text);
+        newElement.querySelector('.reason').textContent = data.reason || 'No reason provided.';
+
+        resultElement.replaceWith(newElement);
+      };
+
+      // --- Settings Modal Logic ---
+      const updateProviderUI = () => {
+        // Buttons
+        apiProviderButtons.forEach(btn => {
+          if (btn.dataset.provider === currentProvider) {
+            btn.classList.add('bg-blue-600', 'text-white');
+            btn.classList.remove('text-gray-400');
+          } else {
+            btn.classList.remove('bg-blue-600', 'text-white');
+            btn.classList.add('text-gray-400');
+          }
+        });
+        // Sections
+        apiSettingsSections.forEach(sec => {
+          sec.classList.toggle('hidden', sec.id !== `${currentProvider}-settings`);
+        });
+        // Model Picker
+        populateModelPicker();
+        checkApiKeyPrompt();
+      };
+
+      const populateModelPicker = () => {
+        modelPicker.innerHTML = '';
+        const models = providerModels[currentProvider] || [];
+        models.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model.id;
+          option.textContent = model.name;
+          modelPicker.appendChild(option);
+        });
+        const savedModel = localStorage.getItem(`fact-checker-model-${currentProvider}`);
+        currentModel = savedModel || models[0]?.id;
+        modelPicker.value = currentModel;
+      };
+
+      const toggleSettingsModal = (show) => {
+        settingsModal.classList.toggle('hidden', !show);
+      };
+
+      const checkApiKeyPrompt = () => {
+        const key = apiKeys[currentProvider];
+        apiKeyPrompt.classList.toggle('hidden', !!key);
+      };
+
+      // --- Initialization ---
+      const init = () => {
+        // Populate Language Picker
+        supportedLanguages.forEach(lang => {
+          const option = document.createElement('option');
+          option.value = lang.code;
+          option.textContent = lang.name;
+          languagePicker.appendChild(option);
+        });
+
+        // Load saved settings
+        currentLang = localStorage.getItem('fact-checker-lang') || 'en-US';
+        languagePicker.value = currentLang;
+
+        currentProvider = localStorage.getItem('fact-checker-provider') || 'gemini';
+
+        apiKeys.gemini = localStorage.getItem('gemini-api-key') || '';
+        apiKeys.openai = localStorage.getItem('openai-api-key') || '';
+        apiKeys.anthropic = localStorage.getItem('anthropic-api-key') || '';
+        geminiApiKeyInput.value = apiKeys.gemini;
+        openaiApiKeyInput.value = apiKeys.openai;
+        anthropicApiKeyInput.value = apiKeys.anthropic;
+
+        updateProviderUI();
+
+        // Add event listeners
+        languagePicker.addEventListener('change', (e) => {
+          currentLang = e.target.value;
+          localStorage.setItem('fact-checker-lang', currentLang);
+          if (isListening) {
+            toggleListen(); toggleListen();
+          }
+        });
+
+        modelPicker.addEventListener('change', (e) => {
+          currentModel = e.target.value;
+          localStorage.setItem(`fact-checker-model-${currentProvider}`, currentModel);
+        });
+
+        apiProviderButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            currentProvider = btn.dataset.provider;
+            updateProviderUI();
+          });
+        });
+
+        micButton.addEventListener('click', toggleListen);
+        settingsButton.addEventListener('click', () => toggleSettingsModal(true));
+        cancelSettingsButton.addEventListener('click', () => toggleSettingsModal(false));
+
+        saveSettingsButton.addEventListener('click', () => {
+          apiKeys.gemini = geminiApiKeyInput.value;
+          apiKeys.openai = openaiApiKeyInput.value;
+          apiKeys.anthropic = anthropicApiKeyInput.value;
+
+          localStorage.setItem('gemini-api-key', apiKeys.gemini);
+          localStorage.setItem('openai-api-key', apiKeys.openai);
+          localStorage.setItem('anthropic-api-key', apiKeys.anthropic);
+          localStorage.setItem('fact-checker-provider', currentProvider);
+
+          toggleSettingsModal(false);
+          checkApiKeyPrompt();
+        });
+
+        setupRecognition();
+      };
+
+      init();
+    });
+  </script>
+</body>
+
+</html>
