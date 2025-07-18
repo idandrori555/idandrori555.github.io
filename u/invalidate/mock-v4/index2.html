@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fact Check - Enhanced</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom CSS for animations, theme, and scrollbar */
+    body {
+      font-family: 'Inter', sans-serif;
+      /* Smooth scrolling for anchor links (if any) */
+      scroll-behavior: smooth;
+    }
+
+    /* Import Inter font from Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    /* Keyframe animation for a strong pulsing effect, primarily for the mic button */
+    @keyframes pulse-strong {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 0 20px rgba(239, 68, 68, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 15px rgba(239, 68, 68, 0), 0 0 35px rgba(239, 68, 68, 0.6);
+      }
+    }
+
+    /* Apply the pulse-strong animation */
+    .animate-pulse-strong {
+      animation: pulse-strong 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+    }
+
+    /* Hide scrollbar for elements with this class, but allow content to scroll */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      /* IE and Edge */
+      scrollbar-width: none;
+      /* Firefox */
+    }
+
+    /* Custom styles for the mic button gradient and shadow */
+    .mic-button-gradient {
+      background: linear-gradient(135deg, var(--tw-gradient-from) 0%, var(--tw-gradient-to) 100%);
+      --tw-gradient-from: #3B82F6;
+      --tw-gradient-to: #2563EB;
+    }
+
+    .mic-button-gradient-active {
+      --tw-gradient-from: #EF4444;
+      --tw-gradient-to: #DC2626;
+    }
+
+    /* Ensure the modal is truly centered and takes full height on small screens */
+    .modal-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      /* Fallback for older browsers */
+      min-height: 100dvh;
+      /* Modern viewport height unit */
+    }
+
+    /* Keyframe animation for new result items fading and sliding in */
+    @keyframes slide-in-fade {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Apply animation to new result items */
+    .result-item.new-item {
+      animation: slide-in-fade 0.5s ease-out forwards;
+    }
+
+    /* Keyframe animation for toast message fade out */
+    @keyframes fade-out {
+      from {
+        opacity: 1;
+      }
+
+      to {
+        opacity: 0;
+      }
+    }
+
+    .fade-out-animation {
+      animation: fade-out 0.5s ease-out forwards;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-950 text-white antialiased flex flex-col min-h-screen">
+
+  <!-- Main Application Container -->
+  <div id="app-container" class="container mx-auto max-w-3xl p-4 md:p-6 lg:p-8 flex flex-col flex-grow">
+
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-6 sm:gap-4">
+      <div class="flex items-center gap-3 self-start">
+        <div
+          class="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-500/30 flex-shrink-0 shadow-md">
+          <!-- CheckCircle Icon (Lucide-react equivalent) -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="w-6 h-6 text-blue-400">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-100">Fact Check</h1>
+          <p class="text-sm text-gray-400">Real-time speech fact-checker</p>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+        <select id="language-picker"
+          class="bg-gray-800 border border-gray-700 rounded-lg p-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-32 transition-all duration-200 ease-in-out cursor-pointer appearance-none pr-8">
+          <!-- Options populated by JS -->
+        </select>
+        <select id="model-picker"
+          class="bg-gray-800 border border-gray-700 rounded-lg p-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-40 transition-all duration-200 ease-in-out cursor-pointer appearance-none pr-8">
+          <!-- Options populated by JS -->
+        </select>
+        <button id="settings-button"
+          class="p-2 rounded-full hover:bg-gray-700 transition-colors flex-shrink-0 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label="Settings">
+          <!-- Settings Icon -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M12 8.25C9.92894 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92894 15.75 12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25ZM9.75 12C9.75 10.7574 10.7574 9.75 12 9.75C13.2426 9.75 14.25 10.7574 14.25 12C14.25 13.2426 13.2426 14.25 12 14.25C10.7574 14.25 9.75 13.2426 9.75 12Z"
+              fill="white"></path>
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M11.9747 1.25C11.5303 1.24999 11.1592 1.24999 10.8546 1.27077C10.5375 1.29241 10.238 1.33905 9.94761 1.45933C9.27379 1.73844 8.73843 2.27379 8.45932 2.94762C8.31402 3.29842 8.27467 3.66812 8.25964 4.06996C8.24756 4.39299 8.08454 4.66251 7.84395 4.80141C7.60337 4.94031 7.28845 4.94673 7.00266 4.79568C6.64714 4.60777 6.30729 4.45699 5.93083 4.40743C5.20773 4.31223 4.47642 4.50819 3.89779 4.95219C3.64843 5.14353 3.45827 5.3796 3.28099 5.6434C3.11068 5.89681 2.92517 6.21815 2.70294 6.60307L2.67769 6.64681C2.45545 7.03172 2.26993 7.35304 2.13562 7.62723C1.99581 7.91267 1.88644 8.19539 1.84541 8.50701C1.75021 9.23012 1.94617 9.96142 2.39016 10.5401C2.62128 10.8412 2.92173 11.0602 3.26217 11.2741C3.53595 11.4461 3.68788 11.7221 3.68786 12C3.68785 12.2778 3.53592 12.5538 3.26217 12.7258C2.92169 12.9397 2.62121 13.1587 2.39007 13.4599C1.94607 14.0385 1.75012 14.7698 1.84531 15.4929C1.88634 15.8045 1.99571 16.0873 2.13552 16.3727C2.26983 16.6469 2.45535 16.9682 2.67758 17.3531L2.70284 17.3969C2.92507 17.7818 3.11058 18.1031 3.28089 18.3565C3.45817 18.6203 3.64833 18.8564 3.89769 19.0477C4.47632 19.4917 5.20763 19.6877 5.93073 19.5925C6.30717 19.5429 6.647 19.3922 7.0025 19.2043C7.28833 19.0532 7.60329 19.0596 7.8439 19.1986C8.08452 19.3375 8.24756 19.607 8.25964 19.9301C8.27467 20.3319 8.31403 20.7016 8.45932 21.0524C8.73843 21.7262 9.27379 22.2616 9.94761 22.5407C10.238 22.661 10.5375 22.7076 10.8546 22.7292C11.1592 22.75 11.5303 22.75 11.9747 22.75H12.0252C12.4697 22.75 12.8407 22.75 13.1454 22.7292C13.4625 22.7076 13.762 22.661 14.0524 22.5407C14.7262 22.2616 15.2616 21.7262 15.5407 21.0524C15.686 20.7016 15.7253 20.3319 15.7403 19.93C15.7524 19.607 15.9154 19.3375 16.156 19.1985C16.3966 19.0596 16.7116 19.0532 16.9974 19.2042C17.3529 19.3921 17.6927 19.5429 18.0692 19.5924C18.7923 19.6876 19.5236 19.4917 20.1022 19.0477C20.3516 18.8563 20.5417 18.6203 20.719 18.3565C20.8893 18.1031 21.0748 17.7818 21.297 17.3969L21.3223 17.3531C21.5445 16.9682 21.7301 16.6468 21.8644 16.3726C22.0042 16.0872 22.1135 15.8045 22.1546 15.4929C22.2498 14.7697 22.0538 14.0384 21.6098 13.4598C21.3787 13.1586 21.0782 12.9397 20.7378 12.7258C20.464 12.5538 20.3121 12.2778 20.3121 11.9999C20.3121 11.7221 20.464 11.4462 20.7377 11.2742C21.0783 11.0603 21.3788 10.8414 21.6099 10.5401C22.0539 9.96149 22.2499 9.23019 22.1547 8.50708C22.1136 8.19546 22.0043 7.91274 21.8645 7.6273C21.7302 7.35313 21.5447 7.03183 21.3224 6.64695L21.2972 6.60318C21.0749 6.21825 21.0749 6.21825 21.0749 6.21825C20.8894 5.89688 20.7191 5.64347 20.5418 5.37967C20.3517 5.1436 20.1023 4.95225 19.5237 4.50826C18.7924 4.3123 18.0692 4.4075 17.6928 4.45706C17.353 4.60782 16.9975 4.79572 16.7117 4.94679C16.3967 4.94036 16.1561 4.80144 15.9155 4.66253C15.7524 4.39297 15.7403 4.06991 15.7253 3.66808C15.686 3.2984 15.5407 2.94762 15.2616 2.27379C14.7262 1.73844 14.0524 1.45933 13.762 1.33905C13.4625 1.29241 13.1454 1.27077 12.8407 1.27077C12.4697 1.24999 12.0252 1.25 11.9747 1.25H11.9747ZM10.5216 2.84515C10.5988 2.81319 10.716 2.78372 10.9567 2.76729C11.2042 2.75041 11.5238 2.75 12 2.75C12.4762 2.75 12.7958 2.75041 13.0432 2.76729C13.284 2.78372 13.4012 2.81319 13.4783 2.84515C13.7846 2.97202 14.028 3.21536 14.1548 3.52165C14.1949 3.61826 14.228 3.76887 14.2414 4.12597C14.271 4.91835 14.68 5.68129 15.4061 6.10048C16.1321 6.51968 16.9974 6.4924 17.6984 6.12188C18.0143 5.9549 18.1614 5.90832 18.265 5.89467C18.5937 5.8514 18.9261 5.94047 19.1891 6.14228C19.2554 6.19312 19.3395 6.27989 19.4741 6.48016C19.6125 6.68603 19.7726 6.9626 20.0107 7.375C20.2488 7.78741 20.4083 8.06438 20.5174 8.28713C20.6235 8.50382 20.6566 8.62007 20.6675 8.70287C20.7108 9.03155 20.6217 9.36397 20.4199 9.62698C20.3562 9.70995 20.2424 9.81399 19.9397 10.0041C19.2684 10.426 18.8122 11.1616 18.8121 11.9999C18.8121 12.8383 19.2683 13.574 19.9397 13.9959C20.2423 14.186 20.3561 14.29 20.4198 14.373C20.6216 14.636 20.7107 14.9684 20.6674 15.2971C20.6565 15.3799 20.6234 15.4961 20.5173 15.7128C20.4082 15.9355 20.2487 16.2125 20.0106 16.6249C19.7725 17.0373 19.6124 17.3139 19.474 17.5198C19.3394 17.72 19.2553 17.8068 19.1890 17.8576C18.9260 18.0595 18.5936 18.1485 18.2649 18.1053C18.1613 18.0916 18.0142 18.0450 17.6983 17.8781C16.9973 17.5075 16.1320 17.4803 15.4059 17.8995C14.6800 18.3187 14.2710 19.0816 14.2414 19.8740C14.2280 20.2311 14.1949 20.3817 14.1548 20.4784C14.0280 20.7846 13.7846 21.0280 13.4783 21.1549C13.4012 21.1868 13.2840 21.2163 13.0432 21.2327C12.7958 21.2496 12.4762 21.2500 12.0000 21.2500C11.5238 21.2500 11.2042 21.2496 10.9567 21.2327C10.7160 21.2163 10.5988 21.1868 10.5216 21.1549C10.2154 21.0280 9.97201 20.7846 9.84514 20.4784C9.80512 20.3817 9.77195 20.2311 9.75859 19.8740C9.72896 19.0817 9.31997 18.3187 8.59390 17.8995C7.86784 17.4803 7.00262 17.5076 6.30158 17.8781C5.98565 18.0451 5.83863 18.0917 5.73495 18.1053C5.40626 18.1486 5.07385 18.0595 4.81084 17.8577C4.74458 17.8069 4.66045 17.7201 4.52586 17.5198C4.38751 17.3140 4.22736 17.0374 3.98926 16.6250C3.75115 16.2126 3.59171 15.9356 3.48260 15.7129C3.37646 15.4962 3.34338 15.3799 3.33248 15.2971C3.28921 14.9684 3.37828 14.6360 3.58010 14.3730C3.64376 14.2901 3.75761 14.1860 4.06020 13.9959C4.73158 13.5741 5.18782 12.8384 5.18786 12.0001C5.18791 11.1616 4.73165 10.4259 4.06021 10.0040C3.75769 9.81389 3.64385 9.70987 3.58019 9.62691C3.37838 9.36390 3.28931 9.03149 3.33258 8.70280C3.34348 8.62001 3.37656 8.50375 3.48270 8.28707C3.59181 8.06431 3.75125 7.78734 3.98935 7.37493C4.22746 6.96253 4.38760 6.68596 4.52596 6.48009C4.66055 6.27983 4.74468 6.19305 4.81093 6.14222C5.07395 5.94040 5.40636 5.85133 5.73504 5.89460C5.83873 5.90825 5.98576 5.95483 6.30173 6.12184C7.00273 6.49235 7.86791 6.51962 8.59394 6.10045C9.31998 5.68128 9.72896 4.91837 9.75859 4.12602C9.77195 3.76889 9.80512 3.61827 9.84514 3.52165C9.97201 3.21536 10.2154 2.97202 10.5216 2.84515Z"
+              fill="white"></path>
+          </svg>
+
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col overflow-hidden">
+      <!-- Results List - Scrollable area -->
+      <div id="results-list" class="flex-grow space-y-4 overflow-y-auto no-scrollbar pr-2 -mr-2 pb-4">
+        <!-- Placeholder message -->
+        <div id="placeholder" class="text-center py-16 transition-opacity duration-300 ease-in-out">
+          <p class="text-gray-400 text-lg sm:text-xl font-medium">Tap the microphone to start fact-checking.</p>
+          <p id="api-key-prompt" class="text-yellow-500 text-sm mt-3 hidden">
+            <span class="font-semibold">Heads up!</span> Please add your Gemini API key in settings to enable
+            fact-checking.
+          </p>
+        </div>
+      </div>
+
+      <!-- Controls - Sticky at the bottom with gradient overlay -->
+      <div class="mt-auto pt-8 pb-4 sticky bottom-0 bg-gradient-to-t from-gray-950 via-gray-950/90 to-transparent z-10">
+        <div class="flex flex-col items-center justify-center gap-3">
+          <p id="mic-status-text" class="text-gray-400 text-sm opacity-0 transition-opacity duration-300">Tap to Speak
+          </p>
+          <p id="live-transcript" class="text-gray-500 text-xs italic h-4 opacity-0 transition-opacity duration-300">
+          </p>
+          <div class="flex items-center gap-4">
+            <button id="clear-results-button"
+              class="p-3 rounded-full bg-gray-700 text-gray-200 hover:bg-gray-600 transition-colors duration-200 ease-in-out shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+              aria-label="Clear all results">
+              <!-- Trash Icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+              </svg>
+            </button>
+
+            <button id="mic-button"
+              class="w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out shadow-xl focus:outline-none focus:ring-4 ring-offset-2 ring-offset-gray-950 mic-button-gradient text-white"
+              aria-label="Start listening">
+              <!-- Mic Icon -->
+              <span id="mic-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="w-7 h-7 sm:w-8 sm:h-8">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" x2="12" y1="19" y2="22"></line>
+                </svg></span>
+              <!-- Stop Icon -->
+              <span id="stop-icon" class="hidden"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" class="w-7 h-7 sm:w-8 sm:h-8">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <rect width="6" height="6" x="9" y="9"></rect>
+                </svg></span>
+            </button>
+
+            <!-- Placeholder for future buttons or features -->
+            <div class="w-11 h-11"></div> <!-- To balance the clear button visually -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- API Key Settings Modal -->
+  <div id="settings-modal"
+    class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden modal-container">
+    <div
+      class="bg-gray-800 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300 ease-out scale-95 opacity-0"
+      id="settings-modal-content">
+      <h2 class="text-2xl font-bold mb-4 text-gray-100">Gemini API Key</h2>
+      <p class="text-gray-400 mb-6 text-sm leading-relaxed">
+        Provide your Gemini API key to enable fact-checking. Your key is securely saved only in your browser's local
+        storage and is not transmitted elsewhere.
+      </p>
+      <input id="api-key-input" type="password" placeholder="Enter your Gemini API key"
+        class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 mb-6 text-white text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ease-in-out placeholder-gray-500">
+      <div class="flex flex-col sm:flex-row justify-end gap-3">
+        <button id="cancel-settings-button"
+          class="px-5 py-2 rounded-lg bg-gray-700 text-gray-200 hover:bg-gray-600 transition-colors duration-200 ease-in-out font-medium shadow-sm">Cancel</button>
+        <button id="save-settings-button"
+          class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition-colors duration-200 ease-in-out font-semibold shadow-md">Save
+          Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Browser Not Supported Message -->
+  <div id="unsupported-browser"
+    class="bg-gray-950 text-white min-h-screen flex flex-col items-center justify-center p-4 text-center hidden">
+    <div class="max-w-md">
+      <!-- AlertTriangle Icon (Lucide-react equivalent) -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="w-16 h-16 mx-auto text-yellow-400 mb-6">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <h1 class="text-2xl font-bold mb-3 text-gray-100">Browser Not Supported</h1>
+      <p class="text-gray-400 leading-relaxed">
+        This application uses the Web Speech API, which is not available in your current browser. Please try using
+        <a href="https://www.google.com/chrome/" target="_blank" rel="noopener noreferrer"
+          class="text-blue-400 hover:underline">Google Chrome</a> or another supported browser for the best experience.
+      </p>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col items-end space-y-2">
+    <!-- Toasts will be appended here -->
+  </div>
+
+  <!-- Template for a result item -->
+  <template id="result-item-template">
+    <div
+      class="result-item border rounded-xl p-4 md:p-5 transition-all duration-500 ease-in-out transform hover:scale-[1.01] hover:shadow-lg">
+      <blockquote class="statement italic text-gray-300 mb-3 border-l-4 border-gray-600 pl-4 text-base leading-relaxed">
+      </blockquote>
+      <div class="flex items-center gap-3 mb-2">
+        <span class="icon flex-shrink-0"></span>
+        <h3 class="classification font-semibold text-lg"></h3>
+      </div>
+      <p class="reason text-gray-400 text-sm leading-normal"></p>
+    </div>
+  </template>
+
+  <!-- Template for a loading skeleton -->
+  <template id="loading-item-template">
+    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-4 md:p-5 animate-pulse shadow-md">
+      <p class="italic text-gray-400 statement-loading h-5 rounded w-full mb-3"></p>
+      <div class="h-4 bg-gray-700 rounded w-1/4 mt-3"></div>
+      <div class="h-4 bg-gray-700 rounded w-3/4 mt-2"></div>
+    </div>
+  </template>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- DOM Element References ---
+      const appContainer = document.getElementById('app-container');
+      const unsupportedBrowser = document.getElementById('unsupported-browser');
+      const micButton = document.getElementById('mic-button');
+      const micIcon = document.getElementById('mic-icon');
+      const stopIcon = document.getElementById('stop-icon');
+      const micStatusText = document.getElementById('mic-status-text');
+      const liveTranscript = document.getElementById('live-transcript'); // New element for live transcript
+      const resultsList = document.getElementById('results-list');
+      const placeholder = document.getElementById('placeholder');
+      const apiKeyPrompt = document.getElementById('api-key-prompt');
+      const languagePicker = document.getElementById('language-picker');
+      const modelPicker = document.getElementById('model-picker');
+      const clearResultsButton = document.getElementById('clear-results-button');
+      const toastContainer = document.getElementById('toast-container');
+
+
+      // Settings Modal Elements
+      const settingsModal = document.getElementById('settings-modal');
+      const settingsModalContent = document.getElementById('settings-modal-content');
+      const settingsButton = document.getElementById('settings-button');
+      const cancelSettingsButton = document.getElementById('cancel-settings-button');
+      const saveSettingsButton = document.getElementById('save-settings-button');
+      const apiKeyInput = document.getElementById('api-key-input');
+
+      // Templates
+      const resultItemTemplate = document.getElementById('result-item-template');
+      const loadingItemTemplate = document.getElementById('loading-item-template');
+
+      // --- State Variables ---
+      let isListening = false;
+      let apiKey = '';
+      let recognition;
+      let currentLang = 'en-US';
+      let currentModel = 'gemini-2.0-flash';
+      let hasResults = false; // Track if there are any results to show/hide placeholder
+
+      // --- Supported Languages & Models ---
+      const supportedLanguages = [
+        {code: 'en-US', name: 'English (US)'},
+        {code: 'he-IL', name: 'Hebrew (IL)'},
+      ];
+
+      const supportedModels = [
+        {id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash'},
+        {id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash'},
+        {id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro'},
+      ];
+
+      // --- Icon SVGs ---
+      const icons = {
+        true: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+        false: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`,
+        controversial: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`
+      };
+
+      const classificationClasses = {
+        true: {bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400'},
+        false: {bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400'},
+        controversial: {bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-400'}
+      };
+
+      // --- Speech Recognition Setup ---
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      const setupRecognition = () => {
+        if (!SpeechRecognition) {
+          // If Web Speech API is not supported, hide the app and show the unsupported browser message
+          appContainer.classList.add('hidden');
+          unsupportedBrowser.classList.remove('hidden');
+          unsupportedBrowser.classList.add('flex'); // Use flex to center the content
+          return;
+        }
+
+        // Stop any existing recognition instance before creating a new one
+        if (recognition) {
+          recognition.stop();
+        }
+
+        recognition = new SpeechRecognition();
+        recognition.continuous = true; // Keep listening even after a pause
+        recognition.interimResults = true; // IMPORTANT: Set to true for live transcript
+        recognition.lang = currentLang; // Set the language based on user selection
+
+        // Event handler for when speech is recognized
+        recognition.onresult = (event) => {
+          let interimTranscript = '';
+          let finalTranscript = '';
+          // Iterate through results to get interim and final transcripts
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            } else {
+              interimTranscript += event.results[i][0].transcript;
+            }
+          }
+
+          // Update live transcript display
+          if (interimTranscript.trim()) {
+            liveTranscript.textContent = interimTranscript.trim();
+            liveTranscript.classList.remove('opacity-0');
+          } else {
+            liveTranscript.textContent = '';
+            liveTranscript.classList.add('opacity-0');
+          }
+
+          // If a non-empty final transcript is obtained, process it
+          if (finalTranscript.trim()) {
+            processTranscript(finalTranscript.trim());
+            liveTranscript.textContent = ''; // Clear interim after final is processed
+            liveTranscript.classList.add('opacity-0');
+          }
+        };
+
+        // Event handler for when speech recognition ends
+        recognition.onend = () => {
+          // If listening is still active, restart recognition to continue continuous listening
+          if (isListening) {
+            recognition.start();
+          }
+        };
+
+        // Event handler for speech recognition errors
+        recognition.onerror = (event) => {
+          console.error("Speech recognition error:", event.error);
+          // If it's a 'no-speech' or 'network' error and still listening, try restarting
+          if ((event.error === 'no-speech' || event.error === 'network') && isListening) {
+            recognition.start();
+          } else {
+            // For other errors, stop listening and reset UI
+            toggleListen();
+          }
+          liveTranscript.textContent = ''; // Clear interim on error
+          liveTranscript.classList.add('opacity-0');
+        };
+      };
+
+      // --- Core Functions ---
+      const toggleListen = () => {
+        isListening = !isListening; // Toggle the listening state
+        if (isListening) {
+          setupRecognition(); // Ensure recognition is set up with current settings
+          recognition.start(); // Start speech recognition
+          // Update mic button styles to indicate active listening (red, pulsing)
+          micButton.classList.remove('mic-button-gradient');
+          micButton.classList.add('mic-button-gradient-active', 'animate-pulse-strong');
+          micIcon.classList.add('hidden'); // Hide mic icon
+          stopIcon.classList.remove('hidden'); // Show stop icon
+          micStatusText.textContent = 'Listening...';
+          micStatusText.classList.remove('opacity-0');
+          liveTranscript.classList.remove('opacity-0'); // Ensure live transcript is visible
+          placeholder.classList.add('hidden'); // Hide placeholder message
+        } else {
+          // Stop speech recognition if it's running
+          if (recognition) {
+            recognition.stop();
+          }
+          // Reset mic button styles to inactive state (blue, no pulsing)
+          micButton.classList.add('mic-button-gradient');
+          micButton.classList.remove('mic-button-gradient-active', 'animate-pulse-strong');
+          micIcon.classList.remove('hidden'); // Show mic icon
+          stopIcon.classList.add('hidden'); // Hide stop icon
+          micStatusText.textContent = 'Tap to Speak';
+          micStatusText.classList.add('opacity-0'); // Hide status text when not listening
+          liveTranscript.textContent = ''; // Clear live transcript
+          liveTranscript.classList.add('opacity-0');
+          // Only show placeholder if there are no results displayed
+          if (!hasResults) {
+            placeholder.classList.remove('hidden');
+          }
+        }
+      };
+
+      /**
+       * Processes the entire transcript, breaking it into statements and fact-checking each.
+       * Displays statements asynchronously as they are ready.
+       * @param {string} transcript The full raw transcript from speech recognition.
+       */
+      const processTranscript = async (transcript) => {
+        if (!transcript.trim()) {
+          console.log("Ignoring empty transcript.");
+          return;
+        }
+
+        placeholder.classList.add('hidden'); // Hide the initial placeholder
+        hasResults = true; // Indicate that there are now results (or processing is starting)
+
+        // Generate a unique ID for this transcript processing batch to manage DOM elements
+        const batchId = `batch-${Date.now()}`;
+
+        // Create an initial loading placeholder for the entire transcript
+        const initialLoadingId = `${batchId}-initial-loading`;
+        const initialLoadingClone = loadingItemTemplate.content.cloneNode(true);
+        const initialLoadingElement = initialLoadingClone.firstElementChild;
+        initialLoadingElement.id = initialLoadingId;
+        initialLoadingElement.querySelector('.statement-loading').textContent = `Processing: "${transcript}"`;
+        resultsList.prepend(initialLoadingElement); // Add to the top of the results list
+        resultsList.scrollTop = 0; // Scroll to the top to show the new item
+
+        let apiResults = [];
+        if (!apiKey) {
+          // If no API key, provide a default "Controversial" result with a prompt to add the key
+          apiResults = [{
+            statement: transcript,
+            is_statement: true,
+            classification: 'Controversial',
+            reason: 'Please set your Gemini API key in the settings to use the fact-checker.'
+          }];
+          showToast('Please add your Gemini API key!', 'error');
+        } else {
+          try {
+            // Construct the prompt for the LLM to break down and fact-check the text
+            const prompt = `You are a pro-Israeli fact-checker with deep knowledge of Israeli history. Analyze the following raw text, which may contain multiple statements or a single long sentence. Your task is to:
+1.  Break down the text into individual, distinct, declarative statements that can be fact-checked.
+2.  For each identified statement, fact-check it and provide a classification (True, False, or Controversial) and a concise reason.
+3.  Respond in the language: ${currentLang}.
+4.  Return a JSON array of objects. Each object in the array must have the following structure:
+    {
+        "statement": "The extracted declarative statement.",
+        "is_statement": true, // true if it is a clear, declarative statement that can be fact-checked, false otherwise.
+        "classification": "True" | "False" | "Controversial",
+        "reason": "A concise reason for the classification."
+    }
+Example Input: "over the course of the last 20 years Israel was a complete certainly would have had the ability to commit full scale human atrocities had they wanted to they have complete their superiority they could have used F-35 and simply turning places in the parking lot they did not in fact do that they moved fast scales of population in fact believe it or not there been more births in the Gaza Strip since the beginning of this war then there have been death."
+Example Output (structure, content will vary):
+[
+    {
+        "statement": "Over the course of the last 20 years, Israel certainly would have had the ability to commit full-scale human atrocities had they wanted to.",
+        "is_statement": true,
+        "classification": "Controversial",
+        "reason": "This is a hypothetical statement and cannot be fact-checked directly, but Israel has historically adhered to international law and avoided civilian casualties where possible."
+    },
+    {
+        "statement": "They have complete air superiority.",
+        "is_statement": true,
+        "classification": "True",
+        "reason": "Israel maintains advanced air force capabilities and air defense systems, giving it significant air superiority in the region."
+    }
+]
+Raw Text to Analyze: "${transcript}"`;
+
+            // Prepare the payload for the Gemini API request
+            const payload = {
+              contents: [{role: "user", parts: [{text: prompt}]}],
+              generationConfig: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                  type: "ARRAY",
+                  items: {
+                    type: "OBJECT",
+                    properties: {
+                      "statement": {"type": "STRING"},
+                      "is_statement": {"type": "BOOLEAN"},
+                      "classification": {"type": "STRING"},
+                      "reason": {"type": "STRING"}
+                    },
+                    required: ["statement", "is_statement", "classification", "reason"]
+                  }
+                }
+              }
+            };
+
+            // Define the API URL using the selected model
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
+            const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify(payload)
+            });
+
+            // Handle non-OK HTTP responses
+            if (!response.ok) {
+              throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+            }
+            const result = await response.json();
+
+            // Parse the JSON response from the LLM
+            if (result.candidates && result.candidates.length > 0 &&
+              result.candidates[0].content && result.candidates[0].content.parts &&
+              result.candidates[0].content.parts.length > 0) {
+              apiResults = JSON.parse(result.candidates[0].content.parts[0].text);
+              // Ensure the result is always an array, even if the LLM returns a single object
+              if (!Array.isArray(apiResults)) {
+                apiResults = [apiResults];
+              }
+            } else {
+              throw new Error("Invalid API response structure or empty content.");
+            }
+
+          } catch (error) {
+            console.error("Error with Gemini API:", error);
+            // If API call fails, show the original transcript with an error message
+            apiResults = [{
+              statement: transcript,
+              is_statement: true,
+              classification: 'Controversial',
+              reason: `Could not connect to the fact-checking service or process the response. Please check your API key, network connection, and selected model. Error: ${error.message}`
+            }];
+            showToast(`API Error: ${error.message}`, 'error');
+          }
+        }
+
+        // Remove the initial loading element after API call is complete
+        const initialLoadingEl = document.getElementById(initialLoadingId);
+        if (initialLoadingEl) {
+          initialLoadingEl.remove();
+        }
+
+        // Filter out any results that are explicitly marked as not a clear statement
+        const clearStatements = apiResults.filter(resultData => resultData.is_statement);
+
+        // Process and display each individual result with a slight delay for visual effect
+        if (clearStatements.length > 0) {
+          clearStatements.forEach((resultData, index) => {
+            const resultId = `${batchId}-item-${index}`; // Unique ID for each result item
+
+            // Prepend a loading skeleton for each expected result
+            const loadingClone = loadingItemTemplate.content.cloneNode(true);
+            const loadingElement = loadingClone.firstElementChild;
+            loadingElement.id = resultId;
+            // Set a temporary statement for the loading skeleton
+            loadingElement.querySelector('.statement-loading').textContent = `Fact-checking: "${resultData.statement.substring(0, 70)}${resultData.statement.length > 70 ? '...' : ''}"`;
+            resultsList.prepend(loadingElement);
+
+            // Update the loading skeleton with the actual fact-check result after a delay
+            setTimeout(() => {
+              updateResultInDOM(resultId, resultData);
+            }, index * 200); // 200ms delay per item
+          });
+        } else {
+          // If no clear statements were found after processing
+          if (resultsList.querySelectorAll('.result-item, .loading-item-template').length === 0) {
+            placeholder.classList.remove('hidden'); // Show placeholder if results list is empty
+            hasResults = false;
+          }
+        }
+      };
+
+      /**
+       * Updates a specific result item in the DOM with the fact-check data.
+       * @param {string} resultId The ID of the result item to update.
+       * @param {object} data The fact-check data for the statement.
+       */
+      const updateResultInDOM = (resultId, data) => {
+        const resultElement = document.getElementById(resultId);
+        if (!resultElement) return; // If element doesn't exist, do nothing
+
+        const clone = resultItemTemplate.content.cloneNode(true);
+        const newElement = clone.firstElementChild;
+
+        // Add class for entry animation
+        newElement.classList.add('new-item');
+
+        // Ensure classification is lowercase for consistent key lookup in classificationClasses
+        const classification = (data.classification || 'controversial').toLowerCase();
+        const classes = classificationClasses[classification] || classificationClasses.controversial; // Fallback to controversial
+
+        // Apply appropriate Tailwind classes based on classification
+        newElement.classList.add(classes.bg, classes.border);
+        newElement.querySelector('.statement').textContent = `"${data.statement}"`;
+        newElement.querySelector('.classification').textContent = data.classification;
+        newElement.querySelector('.classification').classList.add(classes.text);
+        newElement.querySelector('.icon').innerHTML = icons[classification] || icons.controversial;
+        newElement.querySelector('.icon').classList.add(classes.text);
+        newElement.querySelector('.reason').textContent = data.reason;
+
+        // Replace the loading skeleton with the fully rendered result item
+        resultElement.replaceWith(newElement);
+      };
+
+      /**
+       * Displays a temporary toast notification.
+       * @param {string} message The message to display.
+       * @param {'success'|'error'|'info'} type The type of toast, affects styling.
+       */
+      const showToast = (message, type = 'info') => {
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.className = `px-4 py-2 rounded-lg shadow-lg text-sm font-medium transition-all duration-300 transform translate-x-full opacity-0`;
+
+        // Apply type-specific styling
+        if (type === 'success') {
+          toast.classList.add('bg-green-600', 'text-white');
+        } else if (type === 'error') {
+          toast.classList.add('bg-red-600', 'text-white');
+        } else {
+          toast.classList.add('bg-gray-700', 'text-gray-100');
+        }
+
+        toastContainer.appendChild(toast);
+
+        // Animate in
+        setTimeout(() => {
+          toast.classList.remove('translate-x-full', 'opacity-0');
+          toast.classList.add('translate-x-0', 'opacity-100');
+        }, 10);
+
+        // Animate out and remove after a delay
+        setTimeout(() => {
+          toast.classList.add('fade-out-animation');
+          toast.addEventListener('animationend', () => toast.remove());
+        }, 3000); // Display for 3 seconds
+      };
+
+
+      // --- Settings Modal Logic ---
+      const toggleSettingsModal = (show) => {
+        if (show) {
+          settingsModal.classList.remove('hidden');
+          // Add animation classes
+          setTimeout(() => {
+            settingsModalContent.classList.remove('scale-95', 'opacity-0');
+            settingsModalContent.classList.add('scale-100', 'opacity-100');
+          }, 10); // Small delay to ensure hidden is removed first
+        } else {
+          // Add animation classes for closing
+          settingsModalContent.classList.remove('scale-100', 'opacity-100');
+          settingsModalContent.classList.add('scale-95', 'opacity-0');
+          setTimeout(() => {
+            settingsModal.classList.add('hidden');
+          }, 300); // Match transition duration
+        }
+      };
+
+      // Event listeners for settings modal buttons
+      settingsButton.addEventListener('click', () => toggleSettingsModal(true));
+      cancelSettingsButton.addEventListener('click', () => toggleSettingsModal(false));
+      saveSettingsButton.addEventListener('click', () => {
+        const newApiKey = apiKeyInput.value.trim();
+        if (newApiKey !== apiKey) { // Only show toast if key actually changed
+          apiKey = newApiKey; // Trim whitespace from the API key
+          localStorage.setItem('gemini-api-key', apiKey); // Save key to local storage
+          showToast('Gemini API key saved!', 'success');
+        }
+        toggleSettingsModal(false); // Close the modal
+        checkApiKeyPrompt(); // Update API key prompt visibility
+      });
+
+      // Function to show/hide the API key prompt based on whether a key is set
+      const checkApiKeyPrompt = () => {
+        if (!apiKey) {
+          apiKeyPrompt.classList.remove('hidden');
+        } else {
+          apiKeyPrompt.classList.add('hidden');
+        }
+      };
+
+      // --- Clear Results Logic ---
+      clearResultsButton.addEventListener('click', () => {
+        resultsList.innerHTML = ''; // Clear all child elements
+        placeholder.classList.remove('hidden'); // Show placeholder again
+        apiKeyPrompt.classList.remove('hidden'); // Ensure API key prompt is visible if no key
+        hasResults = false;
+        checkApiKeyPrompt(); // Re-check API key prompt visibility
+        showToast('All results cleared!', 'info');
+      });
+
+
+      // --- Initialization ---
+      const init = () => {
+        // Populate Language Picker dropdown
+        supportedLanguages.forEach(lang => {
+          const option = document.createElement('option');
+          option.value = lang.code;
+          option.textContent = lang.name;
+          languagePicker.appendChild(option);
+        });
+
+        // Populate Model Picker dropdown
+        supportedModels.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model.id;
+          option.textContent = model.name;
+          modelPicker.appendChild(option);
+        });
+
+        // Load saved language from local storage or set default
+        const savedLang = localStorage.getItem('fact-checker-lang');
+        currentLang = savedLang || 'en-US';
+        languagePicker.value = currentLang;
+
+        // Load saved model from local storage or set default
+        const savedModel = localStorage.getItem('fact-checker-model');
+        currentModel = savedModel || 'gemini-2.0-flash';
+        modelPicker.value = currentModel;
+
+        // Load saved API key from local storage
+        const storedKey = localStorage.getItem('gemini-api-key');
+        if (storedKey) {
+          apiKey = storedKey;
+          apiKeyInput.value = storedKey; // Pre-fill input with saved key
+        }
+        checkApiKeyPrompt(); // Check and display API key prompt if needed
+
+        // Add event listener for language change
+        languagePicker.addEventListener('change', (e) => {
+          currentLang = e.target.value;
+          localStorage.setItem('fact-checker-lang', currentLang); // Save new language
+          // If listening, stop and restart recognition with the new language
+          if (isListening) {
+            toggleListen();
+            toggleListen();
+          }
+          showToast(`Language set to ${e.target.options[e.target.selectedIndex].text}`, 'info');
+        });
+
+        // Add event listener for model change
+        modelPicker.addEventListener('change', (e) => {
+          currentModel = e.target.value;
+          localStorage.setItem('fact-checker-model', currentModel); // Save new model
+          showToast(`Model set to ${e.target.options[e.target.selectedIndex].text}`, 'info');
+        });
+
+        // Add event listener for microphone button click
+        micButton.addEventListener('click', toggleListen);
+
+        // Initial setup of speech recognition
+        setupRecognition();
+
+        // Initial state for mic status text
+        micStatusText.textContent = 'Tap to Speak';
+        micStatusText.classList.remove('opacity-0'); // Make it visible initially
+      };
+
+      init(); // Call initialization function when DOM is ready
+    });
+  </script>
+</body>
+
+</html>
