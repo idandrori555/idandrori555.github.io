@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fact Check - Enhanced</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tone.js for sound effects -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+  <style>
+    /* Custom CSS for animations, theme, and scrollbar */
+    body {
+      font-family: 'Inter', sans-serif;
+      scroll-behavior: smooth;
+      /* Default dark mode background */
+      background-color: #0a0a0a;
+      transition: background-color 0.5s ease-in-out;
+      overflow-x: hidden; /* Prevent horizontal scroll from animations */
+    }
+
+    /* Import Inter font from Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    /* Keyframe animation for a strong pulsing effect, primarily for the mic button */
+    @keyframes pulse-strong {
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 0 20px rgba(239, 68, 68, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 0 15px rgba(239, 68, 68, 0), 0 0 35px rgba(239, 68, 68, 0.6);
+      }
+    }
+
+    /* Apply the pulse-strong animation */
+    .animate-pulse-strong {
+      animation: pulse-strong 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+    }
+
+    /* Hide scrollbar for elements with this class, but allow content to scroll */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      /* IE and Edge */
+      scrollbar-width: none;
+      /* Firefox */
+    }
+
+    /* Custom styles for the mic button gradient and shadow */
+    .mic-button-gradient {
+      background: linear-gradient(135deg, var(--tw-gradient-from) 0%, var(--tw-gradient-to) 100%);
+      --tw-gradient-from: #3B82F6;
+      --tw-gradient-to: #2563EB;
+    }
+
+    .mic-button-gradient-active {
+      --tw-gradient-from: #EF4444;
+      --tw-gradient-to: #DC2626;
+    }
+
+    /* Ensure the modal is truly centered and takes full height on small screens */
+    .modal-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      /* Fallback for older browsers */
+      min-height: 100dvh;
+      /* Modern viewport height unit */
+    }
+
+    /* Keyframe animation for new result items fading and sliding in */
+    @keyframes slide-in-fade {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Apply animation to new result items */
+    .result-item.new-item {
+      animation: slide-in-fade 0.5s ease-out forwards;
+    }
+
+    /* Keyframe animation for toast message fade out */
+    @keyframes fade-out {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+
+    .fade-out-animation {
+      animation: fade-out 0.5s ease-out forwards;
+    }
+
+    /* Background animation for a dynamic feel */
+    .animated-background::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at top left, rgba(29, 78, 216, 0.1) 0%, transparent 30%),
+                  radial-gradient(circle at bottom right, rgba(239, 68, 68, 0.1) 0%, transparent 30%);
+      background-size: 200% 200%;
+      animation: gradient-shift 15s ease infinite alternate;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    @keyframes gradient-shift {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 100% 100%; }
+    }
+
+    /* Dark mode adjustments */
+    body.dark-mode {
+      background-color: #0a0a0a;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .bg-gray-950 { background-color: #0a0a0a; }
+    body.dark-mode .bg-gray-900 { background-color: #1a1a1a; }
+    body.dark-mode .bg-gray-800 { background-color: #2a2a2a; }
+    body.dark-mode .bg-gray-700 { background-color: #3a3a3a; }
+    body.dark-mode .border-gray-700 { border-color: #4a4a4a; }
+    body.dark-mode .text-gray-400 { color: #b0b0b0; }
+    body.dark-mode .text-gray-500 { color: #909090; }
+    body.dark-mode .text-gray-100 { color: #f0f0f0; }
+    body.dark-mode .placeholder-gray-500::placeholder { color: #909090; }
+    body.dark-mode .mic-button-gradient {
+      --tw-gradient-from: #3B82F6;
+      --tw-gradient-to: #2563EB;
+    }
+    body.dark-mode .mic-button-gradient-active {
+      --tw-gradient-from: #EF4444;
+      --tw-gradient-to: #DC2626;
+    }
+
+    /* Light mode adjustments */
+    body.light-mode {
+      background-color: #f0f2f5;
+      color: #333;
+    }
+
+    body.light-mode .bg-gray-950 { background-color: #f0f2f5; }
+    body.light-mode .bg-gray-900 { background-color: #ffffff; }
+    body.light-mode .bg-gray-800 { background-color: #f8f9fa; }
+    body.light-mode .bg-gray-700 { background-color: #e9ecef; }
+    body.light-mode .border-gray-700 { border-color: #ced4da; }
+    body.light-mode .text-gray-400 { color: #6c757d; }
+    body.light-mode .text-gray-500 { color: #495057; }
+    body.light-mode .text-gray-100 { color: #212529; }
+    body.light-mode .placeholder-gray-500::placeholder { color: #adb5bd; }
+    body.light-mode .mic-button-gradient {
+      --tw-gradient-from: #60a5fa;
+      --tw-gradient-to: #3b82f6;
+    }
+    body.light-mode .mic-button-gradient-active {
+      --tw-gradient-from: #f87171;
+      --tw-gradient-to: #ef4444;
+    }
+    body.light-mode .result-item {
+      background-color: #ffffff;
+      border-color: #e0e0e0;
+    }
+    body.light-mode .statement {
+      color: #495057;
+      border-color: #ced4da;
+    }
+    body.light-mode .reason {
+      color: #6c757d;
+    }
+    body.light-mode .bg-blue-500\/20 { background-color: rgba(59, 130, 246, 0.1); }
+    body.light-mode .border-blue-500\/30 { border-color: rgba(59, 130, 246, 0.2); }
+    body.light-mode .text-blue-400 { color: #3b82f6; }
+    body.light-mode .bg-green-500\/10 { background-color: rgba(34, 197, 94, 0.05); }
+    body.light-mode .border-green-500\/30 { border-color: rgba(34, 197, 94, 0.15); }
+    body.light-mode .text-green-400 { color: #22c55e; }
+    body.light-mode .bg-red-500\/10 { background-color: rgba(239, 68, 68, 0.05); }
+    body.light-mode .border-red-500\/30 { border-color: rgba(239, 68, 68, 0.15); }
+    body.light-mode .text-red-400 { color: #ef4444; }
+    body.light-mode .bg-yellow-500\/10 { background-color: rgba(234, 179, 8, 0.05); }
+    body.light-mode .border-yellow-500\/30 { border-color: rgba(234, 179, 8, 0.15); }
+    body.light-mode .text-yellow-400 { color: #eab308; }
+    body.light-mode .bg-gray-800\/50 { background-color: rgba(248, 249, 250, 0.5); }
+    body.light-mode .bg-gray-700 { background-color: #e9ecef; }
+    body.light-mode .ring-offset-gray-950 { --tw-ring-offset-color: #f0f2f5; }
+    body.light-mode .from-gray-950 { --tw-gradient-from: #f0f2f5; }
+    body.light-mode .via-gray-950\/90 { --tw-gradient-via: rgba(240, 242, 245, 0.9); }
+    body.light-mode .bg-black\/70 { background-color: rgba(0, 0, 0, 0.3); } /* Lighter overlay for light mode modal */
+  </style>
+</head>
+
+<body class="bg-gray-950 text-white antialiased flex flex-col min-h-screen animated-background dark-mode">
+
+  <!-- Main Application Container -->
+  <div id="app-container" class="container mx-auto max-w-3xl p-4 md:p-6 lg:p-8 flex flex-col flex-grow relative z-10">
+
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-6 sm:gap-4">
+      <div class="flex items-center gap-3 self-start">
+        <div
+          class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-500/30 flex-shrink-0 shadow-md">
+          <!-- CheckCircle Icon (Lucide-react equivalent) -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="w-7 h-7 text-blue-400">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-100">Fact Check <span class="text-blue-400">Pro</span></h1>
+          <p class="text-sm text-gray-400">Real-time speech fact-checker with advanced insights</p>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+        <select id="language-picker"
+          class="bg-gray-800 border border-gray-700 rounded-lg p-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-32 transition-all duration-200 ease-in-out cursor-pointer appearance-none pr-8">
+          <!-- Options populated by JS -->
+        </select>
+        <select id="model-picker"
+          class="bg-gray-800 border border-gray-700 rounded-lg p-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-40 transition-all duration-200 ease-in-out cursor-pointer appearance-none pr-8">
+          <!-- Options populated by JS -->
+        </select>
+        <button id="theme-toggle"
+          class="p-2 rounded-full hover:bg-gray-700 transition-colors flex-shrink-0 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label="Toggle theme">
+          <!-- Moon Icon (Dark Mode) / Sun Icon (Light Mode) -->
+          <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="w-6 h-6 text-gray-400">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+          <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="w-6 h-6 text-yellow-500 hidden">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path>
+            <path d="m17.66 17.66 1.41 1.41"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="m4.93 19.07 1.41-1.41"></path>
+            <path d="m17.66 6.34 1.41-1.41"></path>
+          </svg>
+        </button>
+        <button id="settings-button"
+          class="p-2 rounded-full hover:bg-gray-700 transition-colors flex-shrink-0 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label="Settings">
+          <!-- Settings Icon -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 text-gray-400">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M12 8.25C9.92894 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92894 15.75 12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25ZM9.75 12C9.75 10.7574 10.7574 9.75 12 9.75C13.2426 9.75 14.25 10.7574 14.25 12C14.25 13.2426 13.2426 14.25 12 14.25C10.7574 14.25 9.75 13.2426 9.75 12Z"
+              fill="currentColor"></path>
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M11.9747 1.25C11.5303 1.24999 11.1592 1.24999 10.8546 1.27077C10.5375 1.29241 10.238 1.33905 9.94761 1.45933C9.27379 1.73844 8.73843 2.27379 8.45932 2.94762C8.31402 3.29842 8.27467 3.66812 8.25964 4.06996C8.24756 4.39299 8.08454 4.66251 7.84395 4.80141C7.60337 4.94031 7.28845 4.94673 7.00266 4.79568C6.64714 4.60777 6.30729 4.45699 5.93083 4.40743C5.20773 4.31223 4.47642 4.50819 3.89779 4.95219C3.64843 5.14353 3.45827 5.3796 3.28099 5.6434C3.11068 5.89681 2.92517 6.21815 2.70294 6.60307L2.67769 6.64681C2.45545 7.03172 2.26993 7.35304 2.13562 7.62723C1.99581 7.91267 1.88644 8.19539 1.84541 8.50701C1.75021 9.23012 1.94617 9.96142 2.39016 10.5401C2.62128 10.8412 2.92173 11.0602 3.26217 11.2741C3.53595 11.4461 3.68788 11.7221 3.68786 12C3.68785 12.2778 3.53592 12.5538 3.26217 12.7258C2.92169 12.9397 2.62121 13.1587 2.39007 13.4599C1.94607 14.0385 1.75012 14.7698 1.84531 15.4929C1.88634 15.8045 1.99571 16.0873 2.13552 16.3727C2.26983 16.6469 2.45535 16.9682 2.67758 17.3531L2.70284 17.3969C2.92507 17.7818 3.11058 18.1031 3.28089 18.3565C3.45817 18.6203 3.64833 18.8564 3.89769 19.0477C4.47632 19.4917 5.20763 19.6877 5.93073 19.5925C6.30717 19.5429 6.647 19.3922 7.0025 19.2043C7.28833 19.0532 7.60329 19.0596 7.8439 19.1986C8.08452 19.3375 8.24756 19.607 8.25964 19.9301C8.27467 20.3319 8.31403 20.7016 8.45932 21.0524C8.73843 21.7262 9.27379 22.2616 9.94761 22.5407C10.238 22.661 10.5375 22.7076 10.8546 22.7292C11.1592 22.75 11.5303 22.75 11.9747 22.75H12.0252C12.4697 22.75 12.8407 22.75 13.1454 22.7292C13.4625 22.7076 13.762 22.661 14.0524 22.5407C14.7262 22.2616 15.2616 21.7262 15.5407 21.0524C15.686 20.7016 15.7253 20.3319 15.7403 19.93C15.7524 19.607 15.9154 19.3375 16.156 19.1985C16.3966 19.0596 16.7116 19.0532 16.9974 19.2042C17.3529 19.3921 17.6927 19.5429 18.0692 19.5924C18.7923 19.6876 19.5236 19.4917 20.1022 19.0477C20.3516 18.8563 20.5417 18.6203 20.719 18.3565C20.8893 18.1031 21.0748 17.7818 21.297 17.3969L21.3223 17.3969C21.5445 16.9682 21.7301 16.6468 21.8644 16.3726C22.0042 16.0872 22.1135 15.8045 22.1546 15.4929C22.2498 14.7697 22.0538 14.0384 21.6098 13.4598C21.3787 13.1586 21.0782 12.9397 20.7378 12.7258C20.464 12.5538 20.3121 12.2778 20.3121 11.9999C20.3121 11.7221 20.464 11.4462 20.7377 11.2742C21.0783 11.0603 21.3788 10.8414 21.6099 10.5401C22.0539 9.96149 22.2499 9.23019 22.1547 8.50708C22.1136 8.19546 22.0043 7.91274 21.8645 7.6273C21.7302 7.35313 21.5447 7.03183 21.3224 6.64695L21.2972 6.60318C21.0749 6.21825 21.0749 6.21825 21.0749 6.21825C20.8894 5.89688 20.7191 5.64347 20.5418 5.37967C20.3517 5.1436 20.1023 4.95225 19.5237 4.50826C18.7924 4.3123 18.0692 4.4075 17.6928 4.45706C17.353 4.60782 16.9975 4.79572 16.7117 4.94679C16.3967 4.94036 16.1561 4.80144 15.9155 4.66253C15.7524 4.39297 15.7403 4.06991 15.7253 3.66808C15.686 3.2984 15.5407 2.94762 15.2616 2.27379C14.7262 1.73844 14.0524 1.45933 13.762 1.33905C13.4625 1.29241 13.1454 1.27077 12.8407 1.27077C12.4697 1.24999 12.0252 1.25 11.9747 1.25H11.9747ZM10.5216 2.84515C10.5988 2.81319 10.716 2.78372 10.9567 2.76729C11.2042 2.75041 11.5238 2.75 12 2.75C12.4762 2.75 12.7958 2.75041 13.0432 2.76729C13.2840 2.78372 13.4012 2.81319 13.4783 2.84515C13.7846 2.97202 14.028 3.21536 14.1548 3.52165C14.1949 3.61826 14.228 3.76887 14.2414 4.12597C14.2710 4.91835 14.6800 5.68129 15.4061 6.10048C16.1321 6.51968 16.9974 6.4924 17.6984 6.12188C18.0143 5.9549 18.1614 5.90832 18.2650 5.89467C18.5937 5.8514 18.9261 5.94047 19.1891 6.14228C19.2554 6.19312 19.3395 6.27989 19.4741 6.48016C19.6125 6.68603 19.7726 6.9626 20.0107 7.375C20.2488 7.78741 20.4083 8.06438 20.5174 8.28713C20.6235 8.50382 20.6566 8.62007 20.6675 8.70287C20.7108 9.03155 20.6217 9.36397 20.4199 9.62698C20.3562 9.70995 20.2424 9.81399 19.9397 10.0041C19.2684 10.426 18.8122 11.1616 18.8121 11.9999C18.8121 12.8383 19.2683 13.574 19.9397 13.9959C20.2423 14.186 20.3561 14.29 20.4198 14.373C20.6216 14.636 20.7107 14.9684 20.6674 15.2971C20.6565 15.3799 20.6234 15.4961 20.5173 15.7128C20.4082 15.9355 20.2487 16.2125 20.0106 16.6249C19.7725 17.0373 19.6124 17.3139 19.4740 17.5198C19.3394 17.72 19.2553 17.8068 19.1890 17.8576C18.9260 18.0595 18.5936 18.1485 18.2649 18.1053C18.1613 18.0916 18.0142 18.0450 17.6983 17.8781C16.9973 17.5075 16.1320 17.4803 15.4059 17.8995C14.6800 18.3187 14.2710 19.0816 14.2414 19.8740C14.2280 20.2311 14.1949 20.3817 14.1548 20.4784C14.0280 20.7846 13.7846 21.0280 13.4783 21.1549C13.4012 21.1868 13.2840 21.2163 13.0432 21.2327C12.7958 21.2496 12.4762 21.2500 12.0000 21.2500C11.5238 21.2500 11.2042 21.2496 10.9567 21.2327C10.7160 21.2163 10.5988 21.1868 10.5216 21.1549C10.2154 21.0280 9.97201 20.7846 9.84514 20.4784C9.80512 20.3817 9.77195 20.2311 9.75859 19.8740C9.72896 19.0817 9.31997 18.3187 8.59390 17.8995C7.86784 17.4803 7.00262 17.5076 6.30158 17.8781C5.98565 18.0451 5.83863 18.0917 5.73495 18.1053C5.40626 18.1486 5.07385 18.0595 4.81084 17.8577C4.74458 17.8069 4.66045 17.7201 4.52586 17.5198C4.38751 17.3140 4.22736 17.0374 3.98926 16.6250C3.75115 16.2126 3.59171 15.9356 3.48260 15.7129C3.37646 15.4962 3.34338 15.3799 3.33248 15.2971C3.28921 14.9684 3.37828 14.6360 3.58010 14.3730C3.64376 14.2901 3.75761 14.1860 4.06020 13.9959C4.73158 13.5741 5.18782 12.8384 5.18786 12.0001C5.18791 11.1616 4.73165 10.4259 4.06021 10.0040C3.75769 9.81389 3.64385 9.70987 3.58019 9.62691C3.37838 9.36390 3.28931 9.03149 3.33258 8.70280C3.34348 8.62001 3.37656 8.50375 3.48270 8.28707C3.59181 8.06431 3.75125 7.78734 3.98935 7.37493C4.22746 6.96253 4.38760 6.68596 4.52596 6.48009C4.66055 6.27983 4.74468 6.19305 4.81093 6.14222C5.07395 5.94040 5.40636 5.85133 5.73504 5.89460C5.83873 5.90825 5.98576 5.95483 6.30173 6.12184C7.00273 6.49235 7.86791 6.51962 8.59394 6.10045C9.31998 5.68128 9.72896 4.91837 9.75859 4.12602C9.77195 3.76889 9.80512 3.61827 9.84514 3.52165C9.97201 3.21536 10.2154 2.97202 10.5216 2.84515Z"
+              fill="currentColor"></path>
+          </svg>
+        </button>
+        <button id="about-button"
+          class="p-2 rounded-full hover:bg-gray-700 transition-colors flex-shrink-0 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label="About">
+          <!-- Info Icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="w-6 h-6 text-gray-400">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 16v-4"></path>
+            <path d="M12 8h.01"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col overflow-hidden">
+      <!-- Results List - Scrollable area -->
+      <div id="results-list" class="flex-grow space-y-4 overflow-y-auto no-scrollbar pr-2 -mr-2 pb-4">
+        <!-- Placeholder message -->
+        <div id="placeholder" class="text-center py-16 transition-opacity duration-300 ease-in-out">
+          <p class="text-2xl font-semibold text-gray-300 mb-2">Start Fact-Checking!</p>
+          <p class="text-gray-400 text-base leading-relaxed">Tap the microphone and speak to get real-time insights.</p>
+          <p id="api-key-prompt" class="text-yellow-500 text-sm mt-3 hidden">
+            <span class="font-semibold">Heads up!</span> Please add your Gemini API key in settings to enable
+            fact-checking.
+          </p>
+        </div>
+      </div>
+
+      <!-- Controls - Sticky at the bottom with gradient overlay -->
+      <div class="mt-auto pt-8 pb-4 sticky bottom-0 bg-gradient-to-t from-gray-950 via-gray-950/90 to-transparent z-10">
+        <div class="flex flex-col items-center justify-center gap-3">
+          <p id="mic-status-text" class="text-gray-400 text-sm opacity-0 transition-opacity duration-300">Tap to Speak
+          </p>
+          <p id="live-transcript" class="text-gray-500 text-xs italic h-4 opacity-0 transition-opacity duration-300">
+          </p>
+          <div class="flex items-center gap-4">
+            <button id="clear-results-button"
+              class="p-3 rounded-full bg-gray-700 text-gray-200 hover:bg-gray-600 transition-colors duration-200 ease-in-out shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+              aria-label="Clear all results">
+              <!-- Trash Icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+              </svg>
+            </button>
+
+            <button id="mic-button"
+              class="w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out shadow-xl focus:outline-none focus:ring-4 ring-offset-2 ring-offset-gray-950 mic-button-gradient text-white"
+              aria-label="Start listening">
+              <!-- Mic Icon -->
+              <span id="mic-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="w-7 h-7 sm:w-8 sm:h-8">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" x2="12" y1="19" y2="22"></line>
+                </svg></span>
+              <!-- Stop Icon -->
+              <span id="stop-icon" class="hidden"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" class="w-7 h-7 sm:w-8 sm:h-8">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <rect width="6" height="6" x="9" y="9"></rect>
+                </svg></span>
+            </button>
+
+            <button id="history-button"
+              class="p-3 rounded-full bg-gray-700 text-gray-200 hover:bg-gray-600 transition-colors duration-200 ease-in-out shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+              aria-label="View history">
+              <!-- History Icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                <path d="M12 2v6"></path>
+                <path d="M12 18v4"></path>
+                <path d="M4.93 4.93 7.76 7.76"></path>
+                <path d="m16.24 16.24 2.83 2.83"></path>
+                <path d="M2 12h6"></path>
+                <path d="M18 12h4"></path>
+                <path d="m4.93 19.07 2.83-2.83"></path>
+                <path d="m16.24 7.76 2.83-2.83"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- API Key Settings Modal -->
+  <div id="settings-modal"
+    class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden modal-container">
+    <div
+      class="bg-gray-800 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300 ease-out scale-95 opacity-0"
+      id="settings-modal-content">
+      <h2 class="text-2xl font-bold mb-4 text-gray-100">Gemini API Key</h2>
+      <p class="text-gray-400 mb-6 text-sm leading-relaxed">
+        Provide your Gemini API key to enable fact-checking. Your key is securely saved only in your browser's local
+        storage and is not transmitted elsewhere.
+      </p>
+      <input id="api-key-input" type="password" placeholder="Enter your Gemini API key"
+        class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 mb-6 text-white text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ease-in-out placeholder-gray-500">
+      <div class="flex flex-col sm:flex-row justify-end gap-3">
+        <button id="cancel-settings-button"
+          class="px-5 py-2 rounded-lg bg-gray-700 text-gray-200 hover:bg-gray-600 transition-colors duration-200 ease-in-out font-medium shadow-sm">Cancel</button>
+        <button id="save-settings-button"
+          class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition-colors duration-200 ease-in-out font-semibold shadow-md">Save
+          Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div id="about-modal"
+    class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden modal-container">
+    <div
+      class="bg-gray-800 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300 ease-out scale-95 opacity-0"
+      id="about-modal-content">
+      <h2 class="text-2xl font-bold mb-4 text-gray-100">About Fact Check Pro</h2>
+      <p class="text-gray-400 mb-4 text-sm leading-relaxed">
+        Fact Check Pro is an experimental application that leverages the Web Speech API for real-time speech-to-text
+        and the Gemini API for fact-checking spoken statements. It's designed to provide quick insights into the
+        veracity of information.
+      </p>
+      <p class="text-gray-400 mb-6 text-sm leading-relaxed">
+        Please note: This tool is for informational purposes and should not replace thorough research or professional
+        advice. The accuracy of fact-checks depends on the underlying AI model and the clarity of the spoken input.
+      </p>
+      <div class="flex justify-end">
+        <button id="close-about-button"
+          class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition-colors duration-200 ease-in-out font-semibold shadow-md">Got
+          It!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div id="history-modal"
+    class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden modal-container">
+    <div
+      class="bg-gray-800 border border-gray-700 rounded-xl p-6 w-full max-w-lg h-3/4 flex flex-col shadow-2xl transform transition-all duration-300 ease-out scale-95 opacity-0"
+      id="history-modal-content">
+      <h2 class="text-2xl font-bold mb-4 text-gray-100">Fact Check History</h2>
+      <div id="history-list" class="flex-grow space-y-4 overflow-y-auto no-scrollbar pr-2 -mr-2">
+        <!-- History items will be appended here -->
+        <p id="no-history-message" class="text-gray-500 text-center py-8">No history yet. Start fact-checking!</p>
+      </div>
+      <div class="flex justify-end mt-6 gap-3">
+        <button id="clear-history-button"
+          class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-500 transition-colors duration-200 ease-in-out font-medium shadow-sm">Clear
+          History</button>
+        <button id="close-history-button"
+          class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition-colors duration-200 ease-in-out font-semibold shadow-md">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Browser Not Supported Message -->
+  <div id="unsupported-browser"
+    class="bg-gray-950 text-white min-h-screen flex flex-col items-center justify-center p-4 text-center hidden">
+    <div class="max-w-md">
+      <!-- AlertTriangle Icon (Lucide-react equivalent) -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="w-16 h-16 mx-auto text-yellow-400 mb-6">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <h1 class="text-2xl font-bold mb-3 text-gray-100">Browser Not Supported</h1>
+      <p class="text-gray-400 leading-relaxed">
+        This application uses the Web Speech API, which is not available in your current browser. Please try using
+        <a href="https://www.google.com/chrome/" target="_blank" rel="noopener noreferrer"
+          class="text-blue-400 hover:underline">Google Chrome</a> or another supported browser for the best experience.
+      </p>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col items-end space-y-2">
+    <!-- Toasts will be appended here -->
+  </div>
+
+  <!-- Template for a result item -->
+  <template id="result-item-template">
+    <div
+      class="result-item border rounded-xl p-4 md:p-5 transition-all duration-500 ease-in-out transform hover:scale-[1.01] hover:shadow-lg relative overflow-hidden group">
+      <!-- Background overlay for visual flair -->
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-blue-500/5 transition-opacity duration-300 group-hover:opacity-100 opacity-0 rounded-xl">
+      </div>
+      <blockquote
+        class="statement italic text-gray-300 mb-3 border-l-4 border-gray-600 pl-4 text-base leading-relaxed relative z-10">
+      </blockquote>
+      <div class="flex items-center justify-between mb-2 relative z-10">
+        <div class="flex items-center gap-3">
+          <span class="icon flex-shrink-0"></span>
+          <h3 class="classification font-semibold text-lg"></h3>
+          <div class="confidence-score text-xs font-medium px-2 py-1 rounded-full ml-2"></div>
+        </div>
+        <div class="flex gap-2">
+          <button class="copy-button p-2 rounded-full hover:bg-gray-700 transition-colors" aria-label="Copy result">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="text-gray-400">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+            </svg>
+          </button>
+          <button class="share-button p-2 rounded-full hover:bg-gray-700 transition-colors" aria-label="Share result">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="text-gray-400">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+              <polyline points="16 6 12 2 8 6"></polyline>
+              <line x1="12" x2="12" y1="2" y2="15"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <p class="reason text-gray-400 text-sm leading-normal relative z-10"></p>
+
+      <!-- Simulated "Did You Mean?" / Suggestion -->
+      <div class="did-you-mean mt-4 pt-3 border-t border-gray-700 hidden relative z-10">
+        <p class="text-xs font-semibold text-blue-400 mb-2 flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="text-blue-400">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"></path>
+          </svg>
+          Suggestion:
+        </p>
+        <p class="suggested-text text-sm text-gray-400 italic"></p>
+      </div>
+
+      <!-- User Feedback Buttons -->
+      <div class="user-feedback mt-4 pt-3 border-t border-gray-700 flex items-center justify-end gap-3 relative z-10">
+        <span class="text-xs text-gray-500 mr-2">Was this helpful?</span>
+        <button class="feedback-button feedback-up p-2 rounded-full hover:bg-green-700/30 transition-colors"
+          aria-label="Thumbs up">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="text-gray-400">
+            <path
+              d="M7 10v12c0 1.1.9 2 2 2h1c1 0 2-1 2-2V10c0-1.1-.9-2-2-2h-1c-1.1 0-2 .9-2 2Z">
+            </path>
+            <path d="M17 10V2c0-1.1-.9-2-2-2h-1c-1 0-2 1-2 2v8c0 1.1.9 2 2 2h1c1.1 0 2-.9 2-2Z"></path>
+            <path d="M12 22h-2c-1.1 0-2-.9-2-2V10c0-1.1.9-2 2-2h2"></path>
+            <path d="M12 2h-2c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h2"></path>
+          </svg>
+        </button>
+        <button class="feedback-button feedback-down p-2 rounded-full hover:bg-red-700/30 transition-colors"
+          aria-label="Thumbs down">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="text-gray-400">
+            <path
+              d="M17 14V2c0-1.1-.9-2-2-2h-1c-1 0-2 1-2 2v12c0 1.1.9 2 2 2h1c1.1 0 2-.9 2-2Z">
+            </path>
+            <path d="M7 14V22c0 1.1.9 2 2 2h1c1 0 2-1 2-2v-8c0-1.1-.9-2-2-2h-1c-1.1 0-2 .9-2 2Z"></path>
+            <path d="M12 2h2c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-2"></path>
+            <path d="M12 22h2c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2h-2"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Template for a loading skeleton -->
+  <template id="loading-item-template">
+    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-4 md:p-5 animate-pulse shadow-md">
+      <p class="italic text-gray-400 statement-loading rounded w-full mb-3 text-wrap h-auto min-h-[20px]"></p>
+      <div class="h-4 bg-gray-700 rounded w-1/4 mt-3"></div>
+      <div class="h-4 bg-gray-700 rounded w-3/4 mt-2"></div>
+    </div>
+  </template>
+
+  <!-- Template for a history item -->
+  <template id="history-item-template">
+    <div class="history-item bg-gray-800 border border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-700 transition-colors">
+      <p class="text-sm font-medium text-gray-200 history-statement"></p>
+      <p class="text-xs text-gray-500 history-timestamp"></p>
+    </div>
+  </template>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- DOM Element References ---
+      const appContainer = document.getElementById('app-container');
+      const unsupportedBrowser = document.getElementById('unsupported-browser');
+      const micButton = document.getElementById('mic-button');
+      const micIcon = document.getElementById('mic-icon');
+      const stopIcon = document.getElementById('stop-icon');
+      const micStatusText = document.getElementById('mic-status-text');
+      const liveTranscript = document.getElementById('live-transcript');
+      const resultsList = document.getElementById('results-list');
+      const placeholder = document.getElementById('placeholder');
+      const apiKeyPrompt = document.getElementById('api-key-prompt');
+      const languagePicker = document.getElementById('language-picker');
+      const modelPicker = document.getElementById('model-picker');
+      const clearResultsButton = document.getElementById('clear-results-button');
+      const toastContainer = document.getElementById('toast-container');
+      const themeToggle = document.getElementById('theme-toggle');
+      const moonIcon = document.getElementById('moon-icon');
+      const sunIcon = document.getElementById('sun-icon');
+      const historyButton = document.getElementById('history-button');
+
+      // Settings Modal Elements
+      const settingsModal = document.getElementById('settings-modal');
+      const settingsModalContent = document.getElementById('settings-modal-content');
+      const settingsButton = document.getElementById('settings-button');
+      const cancelSettingsButton = document.getElementById('cancel-settings-button');
+      const saveSettingsButton = document.getElementById('save-settings-button');
+      const apiKeyInput = document.getElementById('api-key-input');
+
+      // About Modal Elements
+      const aboutModal = document.getElementById('about-modal');
+      const aboutModalContent = document.getElementById('about-modal-content');
+      const aboutButton = document.getElementById('about-button');
+      const closeAboutButton = document.getElementById('close-about-button');
+
+      // History Modal Elements
+      const historyModal = document.getElementById('history-modal');
+      const historyModalContent = document.getElementById('history-modal-content');
+      const historyList = document.getElementById('history-list');
+      const noHistoryMessage = document.getElementById('no-history-message');
+      const clearHistoryButton = document.getElementById('clear-history-button');
+      const closeHistoryButton = document.getElementById('close-history-button');
+
+      // Templates
+      const resultItemTemplate = document.getElementById('result-item-template');
+      const loadingItemTemplate = document.getElementById('loading-item-template');
+      const historyItemTemplate = document.getElementById('history-item-template');
+
+      // --- State Variables ---
+      let isListening = false;
+      let apiKey = '';
+      let recognition;
+      let currentLang = 'en-US';
+      let currentModel = 'gemini-2.0-flash';
+      let hasResults = false;
+      let isDarkMode = true; // Default to dark mode
+      let sessionHistory = []; // Stores fact-checked results for the current session
+
+      // --- Supported Languages & Models ---
+      const supportedLanguages = [
+        { code: 'en-US', name: 'English (US)' },
+        { code: 'he-IL', name: 'Hebrew (IL)' },
+      ];
+
+      const supportedModels = [
+        { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash' },
+        { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+        { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
+      ];
+
+      // --- Icon SVGs ---
+      const icons = {
+        true: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+        false: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`,
+        controversial: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`
+      };
+
+      const classificationClasses = {
+        true: { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400', confidence: 'bg-green-600 text-white' },
+        false: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', confidence: 'bg-red-600 text-white' },
+        controversial: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-400', confidence: 'bg-yellow-600 text-white' }
+      };
+
+      const confidenceScores = {
+        true: 'High Confidence',
+        false: 'Medium Confidence',
+        controversial: 'Low Confidence'
+      };
+
+      // --- Tone.js Sound Effects ---
+      // Initialize Tone.js context (important for web audio to work)
+      const synth = new Tone.Synth().toDestination();
+
+      const playMicStartSound = () => {
+        if (Tone.context.state !== 'running') {
+          Tone.start();
+        }
+        synth.triggerAttackRelease("C4", "8n"); // A short beep
+      };
+
+      const playMicStopSound = () => {
+        if (Tone.context.state !== 'running') {
+          Tone.start();
+        }
+        synth.triggerAttackRelease("G3", "8n"); // A lower short beep
+      };
+
+      const playResultSound = () => {
+        if (Tone.context.state !== 'running') {
+          Tone.start();
+        }
+        synth.triggerAttackRelease("C5", "16n", Tone.now());
+        synth.triggerAttackRelease("E5", "16n", Tone.now() + 0.1);
+        synth.triggerAttackRelease("G5", "16n", Tone.now() + 0.2);
+      };
+
+      const playErrorSound = () => {
+        if (Tone.context.state !== 'running') {
+          Tone.start();
+        }
+        synth.triggerAttackRelease("C3", "8n", Tone.now());
+        synth.triggerAttackRelease("B2", "8n", Tone.now() + 0.1);
+      };
+
+      // --- Speech Recognition Setup ---
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      const setupRecognition = () => {
+        if (!SpeechRecognition) {
+          appContainer.classList.add('hidden');
+          unsupportedBrowser.classList.remove('hidden');
+          unsupportedBrowser.classList.add('flex');
+          return;
+        }
+
+        if (recognition) {
+          recognition.stop();
+        }
+
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = currentLang;
+
+        recognition.onresult = (event) => {
+          let interimTranscript = '';
+          let finalTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            } else {
+              interimTranscript += event.results[i][0].transcript;
+            }
+          }
+
+          if (interimTranscript.trim()) {
+            liveTranscript.textContent = interimTranscript.trim();
+            liveTranscript.classList.remove('opacity-0');
+          } else {
+            liveTranscript.textContent = '';
+            liveTranscript.classList.add('opacity-0');
+          }
+
+          if (finalTranscript.trim()) {
+            processTranscript(finalTranscript.trim());
+            liveTranscript.textContent = '';
+            liveTranscript.classList.add('opacity-0');
+          }
+        };
+
+        recognition.onend = () => {
+          if (isListening) {
+            recognition.start();
+          }
+        };
+
+        recognition.onerror = (event) => {
+          console.error("Speech recognition error:", event.error);
+          if ((event.error === 'no-speech' || event.error === 'network') && isListening) {
+            recognition.start();
+          } else {
+            toggleListen();
+            playErrorSound();
+            showToast(`Speech recognition error: ${event.error}`, 'error');
+          }
+          liveTranscript.textContent = '';
+          liveTranscript.classList.add('opacity-0');
+        };
+      };
+
+      // --- Core Functions ---
+      const toggleListen = () => {
+        isListening = !isListening;
+        if (isListening) {
+          setupRecognition();
+          recognition.start();
+          playMicStartSound();
+          micButton.classList.remove('mic-button-gradient');
+          micButton.classList.add('mic-button-gradient-active', 'animate-pulse-strong');
+          micIcon.classList.add('hidden');
+          stopIcon.classList.remove('hidden');
+          micStatusText.textContent = 'Listening...';
+          micStatusText.classList.remove('opacity-0');
+          liveTranscript.classList.remove('opacity-0');
+          placeholder.classList.add('hidden');
+        } else {
+          if (recognition) {
+            recognition.stop();
+          }
+          playMicStopSound();
+          micButton.classList.add('mic-button-gradient');
+          micButton.classList.remove('mic-button-gradient-active', 'animate-pulse-strong');
+          micIcon.classList.remove('hidden');
+          stopIcon.classList.add('hidden');
+          micStatusText.textContent = 'Tap to Speak';
+          micStatusText.classList.add('opacity-0');
+          liveTranscript.textContent = '';
+          liveTranscript.classList.add('opacity-0');
+          if (!hasResults) {
+            placeholder.classList.remove('hidden');
+          }
+        }
+      };
+
+      /**
+       * Processes the entire transcript, breaking it into statements and fact-checking each.
+       * Displays statements asynchronously as they are ready.
+       * @param {string} transcript The full raw transcript from speech recognition.
+       */
+      const processTranscript = async (transcript) => {
+        if (!transcript.trim()) {
+          console.log("Ignoring empty transcript.");
+          return;
+        }
+
+        placeholder.classList.add('hidden');
+        hasResults = true;
+
+        const batchId = `batch-${Date.now()}`;
+
+        const initialLoadingId = `${batchId}-initial-loading`;
+        const initialLoadingClone = loadingItemTemplate.content.cloneNode(true);
+        const initialLoadingElement = initialLoadingClone.firstElementChild;
+        initialLoadingElement.id = initialLoadingId;
+        initialLoadingElement.querySelector('.statement-loading').textContent = `Processing: "${transcript}"`;
+        resultsList.prepend(initialLoadingElement);
+        resultsList.scrollTop = 0;
+
+        let apiResults = [];
+        if (!apiKey) {
+          apiResults = [{
+            statement: transcript,
+            is_statement: true,
+            classification: 'Controversial',
+            reason: 'Please set your Gemini API key in the settings to use the fact-checker.'
+          }];
+          showToast('Please add your Gemini API key!', 'error');
+          playErrorSound();
+        } else {
+          try {
+            const prompt = `You are a pro-Israeli fact-checker with deep knowledge of Israeli history. Analyze the following raw text, which may contain multiple statements or a single long sentence. Your task is to:
+1.  Break down the text into individual, distinct, declarative statements that can be fact-checked.
+2.  For each identified statement, fact-check it and provide a classification (True, False, or Controversial) and a concise reason.
+3.  Respond in the language: ${currentLang}.
+4.  Return a JSON array of objects. Each object in the array must have the following structure:
+    {
+        "statement": "The extracted declarative statement.",
+        "is_statement": true, // true if it is a clear, declarative statement that can be fact-checked, false otherwise.
+        "classification": "True" | "False" | "Controversial",
+        "reason": "A concise reason for the classification."
+    }
+Example Input: "over the course of the last 20 years Israel was a complete certainly would have had the ability to commit full scale human atrocities had they wanted to they have complete their superiority they could have used F-35 and simply turning places in the parking lot they did not in fact do that they moved fast scales of population in fact believe it or not there been more births in the Gaza Strip since the beginning of this war then there have been death."
+Example Output (structure, content will vary):
+[
+    {
+        "statement": "Over the course of the last 20 years, Israel certainly would have had the ability to commit full-scale human atrocities had they wanted to.",
+        "is_statement": true,
+        "classification": "Controversial",
+        "reason": "This is a hypothetical statement and cannot be fact-checked directly, but Israel has historically adhered to international law and avoided civilian casualties where possible."
+    },
+    {
+        "statement": "They have complete air superiority.",
+        "is_statement": true,
+        "classification": "True",
+        "reason": "Israel maintains advanced air force capabilities and air defense systems, giving it significant air superiority in the region."
+    }
+]
+Raw Text to Analyze: "${transcript}"`;
+
+            const payload = {
+              contents: [{ role: "user", parts: [{ text: prompt }] }],
+              generationConfig: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                  type: "ARRAY",
+                  items: {
+                    type: "OBJECT",
+                    properties: {
+                      "statement": { "type": "STRING" },
+                      "is_statement": { "type": "BOOLEAN" },
+                      "classification": { "type": "STRING" },
+                      "reason": { "type": "STRING" }
+                    },
+                    required: ["statement", "is_statement", "classification", "reason"]
+                  }
+                }
+              }
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
+            const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+            }
+            const result = await response.json();
+
+            if (result.candidates && result.candidates.length > 0 &&
+              result.candidates[0].content && result.candidates[0].content.parts &&
+              result.candidates[0].content.parts.length > 0) {
+              apiResults = JSON.parse(result.candidates[0].content.parts[0].text);
+              if (!Array.isArray(apiResults)) {
+                apiResults = [apiResults];
+              }
+            } else {
+              throw new Error("Invalid API response structure or empty content.");
+            }
+
+          } catch (error) {
+            console.error("Error with Gemini API:", error);
+            apiResults = [{
+              statement: transcript,
+              is_statement: true,
+              classification: 'Controversial',
+              reason: `Could not connect to the fact-checking service or process the response. Please check your API key, network connection, and selected model. Error: ${error.message}`
+            }];
+            showToast(`API Error: ${error.message}`, 'error');
+            playErrorSound();
+          }
+        }
+
+        const initialLoadingEl = document.getElementById(initialLoadingId);
+        if (initialLoadingEl) {
+          initialLoadingEl.remove();
+        }
+
+        const clearStatements = apiResults.filter(resultData => resultData.is_statement);
+
+        if (clearStatements.length > 0) {
+          clearStatements.forEach((resultData, index) => {
+            const resultId = `${batchId}-item-${index}`;
+
+            const loadingClone = loadingItemTemplate.content.cloneNode(true);
+            const loadingElement = loadingClone.firstElementChild;
+            loadingElement.id = resultId;
+            loadingElement.querySelector('.statement-loading').textContent = `Fact-checking: "${resultData.statement}"`;
+            resultsList.prepend(loadingElement);
+
+            setTimeout(() => {
+              updateResultInDOM(resultId, resultData);
+              playResultSound(); // Play sound when a result is displayed
+              addToHistory(resultData); // Add to session history
+            }, index * 200 + 100); // Add a small delay after initial removal for smoother transition
+          });
+        } else {
+          if (resultsList.querySelectorAll('.result-item, .loading-item-template').length === 0) {
+            placeholder.classList.remove('hidden');
+            hasResults = false;
+          }
+        }
+      };
+
+      /**
+       * Updates a specific result item in the DOM with the fact-check data.
+       * @param {string} resultId The ID of the result item to update.
+       * @param {object} data The fact-check data for the statement.
+       */
+      const updateResultInDOM = (resultId, data) => {
+        const resultElement = document.getElementById(resultId);
+        if (!resultElement) return;
+
+        const clone = resultItemTemplate.content.cloneNode(true);
+        const newElement = clone.firstElementChild;
+
+        newElement.classList.add('new-item');
+
+        const classification = (data.classification || 'controversial').toLowerCase();
+        const classes = classificationClasses[classification] || classificationClasses.controversial;
+
+        newElement.classList.add(classes.bg, classes.border);
+        newElement.querySelector('.statement').textContent = `"${data.statement}"`;
+        newElement.querySelector('.classification').textContent = data.classification;
+        newElement.querySelector('.classification').classList.add(classes.text);
+        newElement.querySelector('.icon').innerHTML = icons[classification] || icons.controversial;
+        newElement.querySelector('.icon').classList.add(classes.text);
+        newElement.querySelector('.reason').textContent = data.reason;
+
+        // Add Confidence Score
+        const confidenceEl = newElement.querySelector('.confidence-score');
+        confidenceEl.textContent = confidenceScores[classification] || confidenceScores.controversial;
+        confidenceEl.classList.add(classes.confidence);
+
+        // Add Copy to Clipboard functionality
+        const copyButton = newElement.querySelector('.copy-button');
+        copyButton.addEventListener('click', () => {
+          const textToCopy = `Statement: "${data.statement}"\nClassification: ${data.classification}\nReason: ${data.reason}`;
+          copyToClipboard(textToCopy);
+          showToast('Result copied to clipboard!', 'success');
+        });
+
+        // Add Share functionality
+        const shareButton = newElement.querySelector('.share-button');
+        shareButton.addEventListener('click', () => {
+          const shareText = `Fact Check Result:\nStatement: "${data.statement}"\nClassification: ${data.classification}\nReason: ${data.reason}\n\nChecked with Fact Check Pro!`;
+          shareContent(shareText);
+        });
+
+        // Simulated "Did You Mean?" / Suggestion
+        const didYouMeanContainer = newElement.querySelector('.did-you-mean');
+        const suggestedTextEl = newElement.querySelector('.suggested-text');
+        if (classification === 'false' || classification === 'controversial') {
+          didYouMeanContainer.classList.remove('hidden');
+          // This is a simulated suggestion. In a real app, this would be generated by another LLM call.
+          suggestedTextEl.textContent = `Consider rephrasing "${data.statement}" for clarity or accuracy.`;
+        } else {
+          didYouMeanContainer.classList.add('hidden');
+        }
+
+        // User Feedback Buttons
+        const feedbackUpButton = newElement.querySelector('.feedback-up');
+        const feedbackDownButton = newElement.querySelector('.feedback-down');
+        feedbackUpButton.addEventListener('click', () => {
+          showToast('Thanks for your feedback!', 'success');
+          feedbackUpButton.disabled = true;
+          feedbackDownButton.disabled = true;
+        });
+        feedbackDownButton.addEventListener('click', () => {
+          showToast('Thanks for your feedback!', 'info');
+          feedbackUpButton.disabled = true;
+          feedbackDownButton.disabled = true;
+        });
+
+
+        resultElement.replaceWith(newElement);
+      };
+
+      /**
+       * Displays a temporary toast notification.
+       * @param {string} message The message to display.
+       * @param {'success'|'error'|'info'} type The type of toast, affects styling.
+       */
+      const showToast = (message, type = 'info') => {
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.className = `px-4 py-2 rounded-lg shadow-lg text-sm font-medium transition-all duration-300 transform translate-x-full opacity-0`;
+
+        if (type === 'success') {
+          toast.classList.add('bg-green-600', 'text-white');
+        } else if (type === 'error') {
+          toast.classList.add('bg-red-600', 'text-white');
+        } else {
+          toast.classList.add('bg-gray-700', 'text-gray-100');
+        }
+
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+          toast.classList.remove('translate-x-full', 'opacity-0');
+          toast.classList.add('translate-x-0', 'opacity-100');
+        }, 10);
+
+        setTimeout(() => {
+          toast.classList.add('fade-out-animation');
+          toast.addEventListener('animationend', () => toast.remove());
+        }, 3000);
+      };
+
+      // --- Utility Functions ---
+      const copyToClipboard = (text) => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed'; // Prevent scrolling to bottom of page in some browsers
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        try {
+          document.execCommand('copy');
+        } catch (err) {
+          console.error('Failed to copy text: ', err);
+          showToast('Failed to copy text.', 'error');
+        }
+        document.body.removeChild(textarea);
+      };
+
+      const shareContent = (text) => {
+        if (navigator.share) {
+          navigator.share({
+              title: 'Fact Check Pro Result',
+              text: text,
+            })
+            .then(() => showToast('Content shared successfully!', 'success'))
+            .catch((error) => console.error('Error sharing:', error));
+        } else {
+          // Fallback for browsers that don't support Web Share API
+          showToast('Web Share API not supported. Please use the copy button.', 'info');
+          // Optionally, automatically copy to clipboard if share isn't supported
+          copyToClipboard(text);
+        }
+      };
+
+
+      // --- Modal Logic (General) ---
+      const toggleModal = (modalElement, modalContentElement, show) => {
+        if (show) {
+          modalElement.classList.remove('hidden');
+          setTimeout(() => {
+            modalContentElement.classList.remove('scale-95', 'opacity-0');
+            modalContentElement.classList.add('scale-100', 'opacity-100');
+          }, 10);
+        } else {
+          modalContentElement.classList.remove('scale-100', 'opacity-100');
+          modalContentElement.classList.add('scale-95', 'opacity-0');
+          setTimeout(() => {
+            modalElement.classList.add('hidden');
+          }, 300);
+        }
+      };
+
+      // --- Settings Modal Logic ---
+      settingsButton.addEventListener('click', () => toggleModal(settingsModal, settingsModalContent, true));
+      cancelSettingsButton.addEventListener('click', () => toggleModal(settingsModal, settingsModalContent, false));
+      saveSettingsButton.addEventListener('click', () => {
+        const newApiKey = apiKeyInput.value.trim();
+        if (newApiKey !== apiKey) {
+          apiKey = newApiKey;
+          localStorage.setItem('gemini-api-key', apiKey);
+          showToast('Gemini API key saved!', 'success');
+        }
+        toggleModal(settingsModal, settingsModalContent, false);
+        checkApiKeyPrompt();
+      });
+
+      // Function to show/hide the API key prompt based on whether a key is set
+      const checkApiKeyPrompt = () => {
+        if (!apiKey) {
+          apiKeyPrompt.classList.remove('hidden');
+        } else {
+          apiKeyPrompt.classList.add('hidden');
+        }
+      };
+
+      // --- About Modal Logic ---
+      aboutButton.addEventListener('click', () => toggleModal(aboutModal, aboutModalContent, true));
+      closeAboutButton.addEventListener('click', () => toggleModal(aboutModal, aboutModalContent, false));
+
+
+      // --- History Logic ---
+      const addToHistory = (resultData) => {
+        sessionHistory.unshift({ // Add to the beginning
+          statement: resultData.statement,
+          classification: resultData.classification,
+          reason: resultData.reason,
+          timestamp: new Date().toLocaleString()
+        });
+        // Limit history to a reasonable number, e.g., 20 items
+        if (sessionHistory.length > 20) {
+          sessionHistory = sessionHistory.slice(0, 20);
+        }
+      };
+
+      const renderHistory = () => {
+        historyList.innerHTML = ''; // Clear current history display
+        if (sessionHistory.length === 0) {
+          noHistoryMessage.classList.remove('hidden');
+        } else {
+          noHistoryMessage.classList.add('hidden');
+          sessionHistory.forEach((item, index) => {
+            const historyClone = historyItemTemplate.content.cloneNode(true);
+            const historyElement = historyClone.firstElementChild;
+            historyElement.querySelector('.history-statement').textContent = item.statement;
+            historyElement.querySelector('.history-timestamp').textContent = item.timestamp;
+
+            // Add click listener to re-display this result in the main view
+            historyElement.addEventListener('click', () => {
+              // Clear current results and display this one
+              resultsList.innerHTML = '';
+              hasResults = false; // Reset hasResults to allow placeholder to show if needed later
+              updateResultInDOM(`history-item-display-${index}`, item);
+              toggleModal(historyModal, historyModalContent, false); // Close history modal
+              resultsList.scrollTop = 0; // Scroll to the top to see the re-displayed item
+              placeholder.classList.add('hidden'); // Ensure placeholder is hidden when history item is shown
+            });
+
+            historyList.appendChild(historyElement);
+          });
+        }
+      };
+
+      historyButton.addEventListener('click', () => {
+        renderHistory(); // Render history before opening modal
+        toggleModal(historyModal, historyModalContent, true);
+      });
+
+      closeHistoryButton.addEventListener('click', () => toggleModal(historyModal, historyModalContent, false));
+
+      clearHistoryButton.addEventListener('click', () => {
+        sessionHistory = []; // Clear the array
+        renderHistory(); // Re-render to show "No history yet"
+        showToast('History cleared!', 'info');
+      });
+
+
+      // --- Theme Toggle Logic ---
+      const applyTheme = (isDark) => {
+        if (isDark) {
+          document.body.classList.add('dark-mode');
+          document.body.classList.remove('light-mode');
+          moonIcon.classList.remove('hidden');
+          sunIcon.classList.add('hidden');
+        } else {
+          document.body.classList.add('light-mode');
+          document.body.classList.remove('dark-mode');
+          moonIcon.classList.add('hidden');
+          sunIcon.classList.remove('hidden');
+        }
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      };
+
+      themeToggle.addEventListener('click', () => {
+        isDarkMode = !isDarkMode;
+        applyTheme(isDarkMode);
+        showToast(`Switched to ${isDarkMode ? 'Dark' : 'Light'} Mode`, 'info');
+      });
+
+
+      // --- Clear Results Logic ---
+      clearResultsButton.addEventListener('click', () => {
+        resultsList.innerHTML = '';
+        placeholder.classList.remove('hidden');
+        hasResults = false;
+        checkApiKeyPrompt();
+        showToast('All results cleared!', 'info');
+      });
+
+
+      // --- Initialization ---
+      const init = () => {
+        // Populate Language Picker dropdown
+        supportedLanguages.forEach(lang => {
+          const option = document.createElement('option');
+          option.value = lang.code;
+          option.textContent = lang.name;
+          languagePicker.appendChild(option);
+        });
+
+        // Populate Model Picker dropdown
+        supportedModels.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model.id;
+          option.textContent = model.name;
+          modelPicker.appendChild(option);
+        });
+
+        // Load saved language from local storage or set default
+        const savedLang = localStorage.getItem('fact-checker-lang');
+        currentLang = savedLang || 'en-US';
+        languagePicker.value = currentLang;
+
+        // Load saved model from local storage or set default
+        const savedModel = localStorage.getItem('fact-checker-model');
+        currentModel = savedModel || 'gemini-2.0-flash';
+        modelPicker.value = currentModel;
+
+        // Load saved API key from local storage
+        const storedKey = localStorage.getItem('gemini-api-key');
+        if (storedKey) {
+          apiKey = storedKey;
+          apiKeyInput.value = storedKey;
+        }
+        checkApiKeyPrompt();
+
+        // Load saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        isDarkMode = (savedTheme === 'light') ? false : true; // Default to dark if no preference or 'dark'
+        applyTheme(isDarkMode);
+
+
+        // Add event listener for language change
+        languagePicker.addEventListener('change', (e) => {
+          currentLang = e.target.value;
+          localStorage.setItem('fact-checker-lang', currentLang);
+          if (isListening) {
+            toggleListen();
+            toggleListen();
+          }
+          showToast(`Language set to ${e.target.options[e.target.selectedIndex].text}`, 'info');
+        });
+
+        // Add event listener for model change
+        modelPicker.addEventListener('change', (e) => {
+          currentModel = e.target.value;
+          localStorage.setItem('fact-checker-model', currentModel);
+          showToast(`Model set to ${e.target.options[e.target.selectedIndex].text}`, 'info');
+        });
+
+        // Add event listener for microphone button click
+        micButton.addEventListener('click', toggleListen);
+
+        // Initial setup of speech recognition
+        setupRecognition();
+
+        // Initial state for mic status text
+        micStatusText.textContent = 'Tap to Speak';
+        micStatusText.classList.remove('opacity-0');
+      };
+
+      init();
+    });
+  </script>
+</body>
+
+</html>
