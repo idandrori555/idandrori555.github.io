@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מתכנן שיעורים חכם</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Assistant', sans-serif;
+        }
+        /* Custom styles for the loader */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Custom styles for generated content */
+        #lesson-plan-output h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+            color: #1e40af;
+        }
+        #lesson-plan-output h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #1d4ed8;
+        }
+        #lesson-plan-output p, #lesson-plan-output li {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #374151;
+        }
+        #lesson-plan-output ul {
+            list-style-type: disc;
+            margin-right: 2rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
+        
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl sm:text-5xl font-bold text-blue-800">מתכנן שיעורים חכם</h1>
+            <p class="mt-2 text-lg text-gray-600">הזינו נושא וקבלו מערך שיעור מותאם אישית תוך שניות</p>
+        </header>
+
+        <!-- Input Form -->
+        <div class="bg-white p-6 rounded-2xl shadow-lg mb-8">
+            <form id="lesson-form">
+                <label for="lesson-topic" class="block text-xl font-semibold mb-2 text-gray-700">נושא השיעור:</label>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" id="lesson-topic" placeholder="לדוגמה: מחזור המים בטבע, מלחמת העולם השנייה, חלקי דיבור..." class="flex-grow w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                    <button type="submit" id="generate-btn" class="w-full sm:w-auto bg-blue-600 text-white font-bold text-lg px-8 py-3 rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                         צור שיעור
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loader" class="hidden flex-col items-center justify-center my-12">
+            <div class="loader"></div>
+            <p class="mt-4 text-lg text-gray-600">יוצר את מערך השיעור... נא להמתין</p>
+        </div>
+        
+        <!-- Error Message Display -->
+        <div id="error-message" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg my-6" role="alert">
+            <p class="font-bold">אופס, אירעה שגיאה</p>
+            <p id="error-text"></p>
+        </div>
+
+
+        <!-- Lesson Plan Output -->
+        <div id="lesson-plan-output-container" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg min-h-[200px] transition-opacity duration-500 opacity-0">
+             <div id="lesson-plan-output">
+                <!-- Generated content will be injected here -->
+             </div>
+             <button id="copy-btn" class="hidden mt-8 bg-gray-200 text-gray-800 font-bold px-6 py-2 rounded-lg hover:bg-gray-300">העתק תוכן</button>
+        </div>
+        
+    </div>
+
+    <script type="module">
+        // --- DOM Element References ---
+        const lessonForm = document.getElementById('lesson-form');
+        const lessonTopicInput = document.getElementById('lesson-topic');
+        const generateBtn = document.getElementById('generate-btn');
+        const loader = document.getElementById('loader');
+        const outputContainer = document.getElementById('lesson-plan-output-container');
+        const outputDiv = document.getElementById('lesson-plan-output');
+        const errorMessageDiv = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        const copyBtn = document.getElementById('copy-btn');
+
+        // --- Event Listeners ---
+        lessonForm.addEventListener('submit', handleFormSubmit);
+        copyBtn.addEventListener('click', copyContentToClipboard);
+
+        /**
+         * Handles the form submission event.
+         * @param {Event} e - The form submission event.
+         */
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const topic = lessonTopicInput.value.trim();
+
+            if (!topic) {
+                showError("נא להזין נושא לשיעור.");
+                return;
+            }
+
+            // --- UI State Update: Start Loading ---
+            setLoadingState(true);
+            
+            try {
+                // --- AI Call ---
+                const lessonPlan = await generateLessonPlan(topic);
+                // --- Display Results ---
+                displayLessonPlan(lessonPlan);
+            } catch (error) {
+                console.error("Error generating lesson plan:", error);
+                showError("לא הצלחנו ליצור את מערך השיעור. נסו שוב מאוחר יותר או עם נושא אחר.");
+            } finally {
+                // --- UI State Update: Stop Loading ---
+                setLoadingState(false);
+            }
+        }
+
+        /**
+         * Sets the UI to a loading or non-loading state.
+         * @param {boolean} isLoading - True to show loader, false to hide.
+         */
+        function setLoadingState(isLoading) {
+            if (isLoading) {
+                generateBtn.disabled = true;
+                generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                loader.classList.remove('hidden');
+                loader.classList.add('flex');
+                outputContainer.classList.add('opacity-0');
+                errorMessageDiv.classList.add('hidden');
+                copyBtn.classList.add('hidden');
+            } else {
+                generateBtn.disabled = false;
+                generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                loader.classList.add('hidden');
+                loader.classList.remove('flex');
+            }
+        }
+        
+        /**
+         * Displays an error message to the user.
+         * @param {string} message - The error message to display.
+         */
+        function showError(message) {
+            outputDiv.innerHTML = '';
+            errorText.textContent = message;
+            errorMessageDiv.classList.remove('hidden');
+            outputContainer.classList.add('opacity-0');
+        }
+
+        /**
+         * Calls the Gemini API to generate the lesson plan content.
+         * @param {string} topic - The lesson topic from the user.
+         * @returns {Promise<object>} - A promise that resolves to the lesson plan object.
+         */
+        async function generateLessonPlan(topic) {
+            // The prompt is in English for better model performance, but requests Hebrew output.
+            const prompt = `Act as an expert curriculum designer and a creative teacher. 
+            Generate a comprehensive and engaging lesson plan in HEBREW for the following topic: "${topic}".
+            The output must be a valid JSON object.
+            The lesson plan should be structured, detailed, and practical for a classroom setting.
+            Make the content inspiring and useful for teachers.`;
+
+            const schema = {
+                type: "OBJECT",
+                properties: {
+                    lessonTopic: { type: "STRING", description: "שם השיעור המלא" },
+                    objectives: { 
+                        type: "ARRAY", 
+                        items: { type: "STRING" },
+                        description: "רשימת מטרות השיעור. מה התלמידים ילמדו."
+                    },
+                    requiredEquipment: { 
+                        type: "ARRAY", 
+                        items: { type: "STRING" },
+                        description: "רשימת ציוד וחומרים נדרשים."
+                    },
+                    opening: { 
+                        type: "STRING",
+                        description: "פעילות פתיחה מעניינת ומגרה."
+                    },
+                    lessonBody: { 
+                        type: "STRING",
+                        description: "פירוט הפעילויות המרכזיות, הסברים, ותרגולים."
+                    },
+                    summaryAndReflection: { 
+                        type: "STRING",
+                        description: "דרכים לסכם את השיעור ולעודד רפלקציה."
+                    },
+                    assessment: { 
+                        type: "STRING",
+                        description: "הצעות לשיטות הערכה לבדיקת הבנה."
+                    },
+                    homework: { 
+                        type: "STRING",
+                        description: "רעיונות למשימות בית (אופציונלי). אם אין צורך, ציין 'אין שיעורי בית'."
+                    }
+                },
+                required: ["lessonTopic", "objectives", "requiredEquipment", "opening", "lessonBody", "summaryAndReflection", "assessment", "homework"]
+            };
+
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: schema
+                }
+            };
+            
+            const apiKey = ""; // API key is handled by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`API call failed with status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const jsonText = result.candidates[0].content.parts[0].text;
+                return JSON.parse(jsonText);
+            } else {
+                throw new Error("Invalid response structure from API.");
+            }
+        }
+
+        /**
+         * Renders the generated lesson plan object into the DOM.
+         * @param {object} data - The lesson plan object from the API.
+         */
+        function displayLessonPlan(data) {
+            outputDiv.innerHTML = ''; // Clear previous content
+
+            // Helper to create sections
+            const createSection = (title, content) => {
+                const sectionWrapper = document.createElement('div');
+                const titleEl = document.createElement('h2');
+                titleEl.textContent = title;
+                sectionWrapper.appendChild(titleEl);
+
+                if (Array.isArray(content) && content.length > 0) {
+                    const listEl = document.createElement('ul');
+                    content.forEach(itemText => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = itemText;
+                        listEl.appendChild(listItem);
+                    });
+                    sectionWrapper.appendChild(listEl);
+                } else if (typeof content === 'string') {
+                    const contentEl = document.createElement('p');
+                    // Replace newlines with <br> for better formatting from the model
+                    contentEl.innerHTML = content.replace(/\n/g, '<br>');
+                    sectionWrapper.appendChild(contentEl);
+                }
+                return sectionWrapper;
+            };
+
+            outputDiv.appendChild(createSection('נושא השיעור', data.lessonTopic));
+            outputDiv.appendChild(createSection('מטרות השיעור', data.objectives));
+            outputDiv.appendChild(createSection('ציוד נדרש', data.requiredEquipment));
+            outputDiv.appendChild(createSection('פתיחה', data.opening));
+            outputDiv.appendChild(createSection('גוף השיעור', data.lessonBody));
+            outputDiv.appendChild(createSection('סיכום ורפלקציה', data.summaryAndReflection));
+            outputDiv.appendChild(createSection('הערכה', data.assessment));
+            outputDiv.appendChild(createSection('שיעורי בית', data.homework));
+            
+            // Show the container and copy button with a fade-in effect
+            outputContainer.classList.remove('opacity-0');
+            copyBtn.classList.remove('hidden');
+        }
+
+        /**
+         * Copies the generated lesson plan text to the clipboard.
+         */
+        function copyContentToClipboard() {
+            // Create a temporary textarea to hold the text for copying
+            const textArea = document.createElement('textarea');
+            // Use innerText to get a clean text representation of the content
+            textArea.value = outputDiv.innerText;
+            
+            // Style it to be off-screen
+            textArea.style.position = 'fixed';
+            textArea.style.top = '0';
+            textArea.style.left = '0';
+            textArea.style.width = '2em';
+            textArea.style.height = '2em';
+            textArea.style.padding = '0';
+            textArea.style.border = 'none';
+            textArea.style.outline = 'none';
+            textArea.style.boxShadow = 'none';
+            textArea.style.background = 'transparent';
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                // Visual feedback for the user
+                copyBtn.textContent = 'הועתק!';
+                setTimeout(() => {
+                    copyBtn.textContent = 'העתק תוכן';
+                }, 2000);
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+                copyBtn.textContent = 'שגיאה בהעתקה';
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+    </script>
+</body>
+</html>
