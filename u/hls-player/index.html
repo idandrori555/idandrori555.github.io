@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>HLS Player</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body {
+      background-color: black;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      padding: 2em;
+    }
+
+    video {
+      width: 80%;
+      max-width: 800px;
+      height: auto;
+      background: black;
+    }
+  </style>
+</head>
+
+<body>
+  <video id="video" controls autoplay></video>
+
+  <script>
+    /**
+    * @param {string} videoId
+    **/
+    var makeLink = (videoId) => {
+      if (!videoId || videoId.length != 12) return "";
+
+      const CDN_BASE_URL = "https://service.webvideocore.net";
+      const BUCKET_ID =
+        "CL1olYogIrDWvwqiIKK7eBmnWbRkKKsu3nqabm9GlX02JOj3CDNXzodJMDEN2dk3";
+      const LINK = `${CDN_BASE_URL}/${BUCKET_ID}/${videoId}.m3u8`;
+
+      return LINK;
+    };
+  </script>
+
+  <script defer>
+    const video = document.getElementById('video');
+
+    let url = "";
+
+    while (url === "") {
+      url = makeLink(window.prompt("Enter the video id:"));
+
+      if (url === "") {
+        window.alert("Invalid ID!");
+      }
+    }
+
+    if (url) {
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+          video.play();
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Native HLS support (e.g., Safari)
+        video.src = url;
+        video.addEventListener('loadedmetadata', function () {
+          video.play();
+        });
+      } else {
+        alert("Your browser does not support HLS playback.");
+      }
+    } else {
+      alert("No URL provided.");
+    }
+  </script>
+</body>
+
+</html>
