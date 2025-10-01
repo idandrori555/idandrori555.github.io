@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alias</title>
+  <!-- טעינת Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- הגדרת פונט Inter גלובלי והתאמות בסיסיות ל-Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    /* הגדרת גלילה חלקה ותצוגת פונט */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #111827;
+      /* bg-gray-900 */
+      text-align: right;
+    }
+
+    .game-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    /* התאמה למכשירים ניידים */
+    @media (max-width: 640px) {
+      .main-word {
+        font-size: 3rem;
+        /* הגדלת המילה המרכזית במוביל */
+      }
+    }
+
+    /* Hide arrows from number inputs */
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900 text-gray-200">
+  <div id="app" class="game-container">
+    <!-- תוכן האפליקציה יטען כאן -->
+  </div>
+
+  <script>
+    // הגדרות המשחק
+    const ROUND_DURATION_SECONDS = 30;
+
+    // מילון מילים עבריות בסיסיות (ניתן להרחבה)
+    const HEBREW_WORDS = ["ארמון", "גלידה", "יהלום", "כפפה", "מטריה", "נסיכה", "ספינה", "עגבניה", "פיל", "צוללת", "קנגורו", "רכבת", "תנין", "אופניים", "בלון", "גשר", "דרקון", "היפופוטם", "וילון", "חליל", "טרקטור", "יונה", "לימון", "מגדל", "נר", "ספה", "ענן", "פטיש", "ציור", "קשת", "רופא", "תות", "אבטיח", "ביצה", "גיטרה", "דג", "הר", "זית", "חוף", "טיל", "ירח", "כוכב", "מלפפון", "נעל", "שולחן", "שמש", "שעון", "תיק", "מפתח", "פרח", "דלת", "חלון", "כיסא", "מחשב", "טלפון", "ספר", "מחברת", "עפרון", "מסרק", "מכונית", "כביש", "משאית", "אוטובוס", "מונית", "שטיח", "מנורה", "מזגן", "תנור", "מקרר", "כוס", "צלחת", "סכום", "קערה", "מגבת", "סבון", "שמפו", "מברשת", "משחה", "מראה", "מיטה", "שמיכה", "כרית", "פיג'מה", "בגד", "מכנסיים", "חולצה", "גרביים", "מעיל", "כובע", "צעיף", "כפכף", "מטבע", "שטר", "ארנק", "משקפיים", "עיתון", "מכתב", "בולים", "בנק", "חנות", "סופר", "מסעדה", "קפה", "לחם", "גבינה", "חלב", "מים", "מיץ", "בשר", "עוף", "ירקות", "פירות", "אורז", "פסטה", "שוקולד", "סוכריה", "עוגה", "שדה", "יער", "נהר", "אגם", "מדבר", "גשם", "שלג", "ברק", "רעם", "רוח", "אדמה", "חול", "אבן", "עץ", "שיח", "דשא", "ציפור", "חתול", "כלב", "פרה", "כבש", "עז", "חמור", "סוס", "נמלה", "דבורה", "פרפר", "זבוב", "יתוש", "עכבר", "חולדה", "נחש", "צב", "לטאה", "צפרדע", "קוף", "אריה", "נמר", "דוב", "זאב", "שועל", "סנאי", "ארנב", "תרנגול", "ברווז", "אווז", "שחף", "קניון", "בית", "דירה", "חדר", "מדרגות", "מעלית", "גג", "מרפסת", "גינה", "מזרקה", "מדרכה", "רמזור", "פארק", "גן", "מגרש", "כדור", "משחק", "צעצוע", "בובה", "חבל", "צבע", "דבק", "מספריים", "שקית", "קופסה", "סרט", "תמונה", "אלבום", "משפחה", "ילד", "תינוק", "סבא", "סבתא"];
+
+
+    // מצבי המשחק
+    const GAME_STATE = {
+      SETUP: 'SETUP',
+      BOARD: 'BOARD',
+      ROUND: 'ROUND',
+      SUMMARY: 'SUMMARY',
+      GAME_OVER: 'GAME_OVER'
+    };
+
+    // מצב המשחק הגלובלי
+    let gameState = {
+      currentScreen: GAME_STATE.SETUP,
+      teams: [],
+      currentTeamIndex: 0,
+      winningScore: 70, // ניקוד הניצחון נכנס למצב המשחק
+      currentRound: {
+        presenterIndex: 0,
+        score: 0,
+        timeLeft: ROUND_DURATION_SECONDS,
+        currentWord: '',
+        usedWords: [] // למנוע חזרות באותו משחק
+      },
+      timerInterval: null,
+      totalWords: [...HEBREW_WORDS],
+    };
+
+    // --- לוגיקת אתחול ואימות קלט ---
+
+    // אתחול האפליקציה והצגת מסך ההגדרות
+    function initApp() {
+      render();
+    }
+
+    // --- לוגיקת הגדרת משחק (SETUP) ---
+
+    // אימות והתחלת המשחק
+    function startSetup() {
+      const teamNames = document.getElementById('teamNames');
+      const winningScoreInput = document.getElementById('winningScore');
+      const setupErrorElement = document.getElementById('setupError');
+
+      const namesArray = teamNames.value.split('\n').map(name => name.trim()).filter(name => name);
+      const teamCount = namesArray.length;
+      const scoreToWin = parseInt(winningScoreInput.value, 10);
+
+      // אימות בסיסי
+      if (teamCount < 2) {
+        setupErrorElement.textContent = "אנא הזן לפחות 2 שמות של קבוצות (אחת לשורה).";
+        return;
+      }
+      if (scoreToWin < 1 || isNaN(scoreToWin)) {
+        setupErrorElement.textContent = "ניקוד הניצחון חייב להיות מספר חיובי.";
+        return;
+      }
+
+      // איפוס שגיאות
+      setupErrorElement.textContent = "";
+
+      // עדכון ניקוד הניצחון הגלובלי
+      gameState.winningScore = scoreToWin;
+
+      // יצירת מערך הקבוצות
+      gameState.teams = [];
+      for (let i = 0; i < teamCount; i++) {
+        gameState.teams.push({
+          name: namesArray[i],
+          score: 0,
+          players: [`שחקן 1`, `שחקן 2`], // MVP: שחקנים פיקטיביים
+          presenterIndex: 0
+        });
+      }
+
+      gameState.currentScreen = GAME_STATE.BOARD;
+      render();
+    }
+
+    // --- לוגיקת לוח המשחק (BOARD) ---
+
+    // הפעלת סיבוב חדש
+    function startNewRound() {
+      if (gameState.teams.length === 0) return;
+
+      // אתחול נתוני הסיבוב
+      gameState.currentRound.score = 0;
+      gameState.currentRound.timeLeft = ROUND_DURATION_SECONDS;
+      gameState.currentRound.currentWord = '';
+
+      // הגדרת השחקן המציג הנוכחי
+      const currentTeam = gameState.teams[gameState.currentTeamIndex];
+      const nextPresenterIndex = currentTeam.presenterIndex;
+      currentTeam.presenterIndex = (currentTeam.presenterIndex + 1) % currentTeam.players.length;
+
+      gameState.currentScreen = GAME_STATE.ROUND;
+      getNewWord();
+      startTimer();
+      render();
+    }
+
+    // --- לוגיקת סיבוב (ROUND) ---
+
+    // בחירת מילה חדשה
+    function getNewWord() {
+      if (gameState.totalWords.length === 0) {
+        // אם נגמרו המילים, אפס את המאגר (לצורך ה-MVP)
+        gameState.totalWords = [...HEBREW_WORDS].filter(word => !gameState.currentRound.usedWords.includes(word));
+        if (gameState.totalWords.length === 0) {
+          gameState.totalWords = [...HEBREW_WORDS];
+        }
+      }
+
+      const availableWords = gameState.totalWords.filter(word => !gameState.currentRound.usedWords.includes(word));
+      if (availableWords.length === 0) {
+        // מקרה קצה: נגמרו כל המילים, מאפסים את רשימת המילים שנוצלו
+        gameState.currentRound.usedWords = [];
+        availableWords.push(...HEBREW_WORDS);
+      }
+
+      const randomIndex = Math.floor(Math.random() * availableWords.length);
+      const newWord = availableWords[randomIndex];
+
+      gameState.currentRound.currentWord = newWord;
+      gameState.currentRound.usedWords.push(newWord); // מסמנים את המילה כנוצלה
+
+      // מוציאים את המילה החדשה מרשימת המילים הכוללת הזמינה
+      gameState.totalWords = gameState.totalWords.filter(word => word !== newWord);
+
+      // מעדכן רק את תצוגת המילה אם אנחנו במסך הסיבוב
+      if (gameState.currentScreen === GAME_STATE.ROUND) {
+        const wordElement = document.getElementById('currentWordDisplay');
+        if (wordElement) {
+          wordElement.textContent = newWord;
+        }
+      }
+    }
+
+    // הפעלת שעון העצר
+    function startTimer() {
+      if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+
+      gameState.timerInterval = setInterval(() => {
+        gameState.currentRound.timeLeft--;
+        const timerElement = document.getElementById('timerDisplay');
+        if (timerElement) {
+          timerElement.textContent = gameState.currentRound.timeLeft;
+          // שינוי צבע כשנשאר מעט זמן
+          if (gameState.currentRound.timeLeft <= 10) {
+            timerElement.classList.add('text-red-400', 'animate-pulse');
+          } else {
+            timerElement.classList.remove('text-red-400', 'animate-pulse');
+          }
+        }
+
+        if (gameState.currentRound.timeLeft <= 0) {
+          clearInterval(gameState.timerInterval);
+          endRound();
+        }
+      }, 1000);
+    }
+
+    // עדכון ניקוד במהלך הסיבוב
+    function handleGuess(type) {
+      const currentTeam = gameState.teams[gameState.currentTeamIndex];
+
+      if (type === 'success') {
+        gameState.currentRound.score++;
+        currentTeam.score++; // עדכון מיידי של הניקוד הגלובלי להתקדמות בלוח
+        getNewWord();
+      } else if (type === 'skip') {
+        // דילוג או פסילה מפחיתים נקודה
+        gameState.currentRound.score = Math.max(0, gameState.currentRound.score - 1);
+        currentTeam.score = Math.max(0, currentTeam.score - 1);
+        getNewWord();
+      }
+
+      // עדכון תצוגת ניקוד הסיבוב
+      const roundScoreElement = document.getElementById('roundScoreDisplay');
+      if (roundScoreElement) {
+        roundScoreElement.textContent = gameState.currentRound.score;
+      }
+
+      // בדיקת ניצחון מיידי (אם הניקוד עבר את רף הניצחון)
+      if (currentTeam.score >= gameState.winningScore) {
+        clearInterval(gameState.timerInterval);
+        gameState.currentScreen = GAME_STATE.GAME_OVER;
+        render();
+        return;
+      }
+
+      // עדכון תצוגת הלוח ברקע
+      renderBoard();
+    }
+
+    // סיום הסיבוב
+    function endRound() {
+      if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+
+      // בדיקת ניצחון
+      const currentTeam = gameState.teams[gameState.currentTeamIndex];
+      if (currentTeam.score >= gameState.winningScore) {
+        gameState.currentScreen = GAME_STATE.GAME_OVER;
+      } else {
+        gameState.currentScreen = GAME_STATE.SUMMARY;
+      }
+      render();
+    }
+
+    // --- לוגיקת סיכום סיבוב (SUMMARY) וחילוף תור ---
+
+    // העברת התור לקבוצה הבאה
+    function nextTurn() {
+      gameState.currentTeamIndex = (gameState.currentTeamIndex + 1) % gameState.teams.length;
+      gameState.currentScreen = GAME_STATE.BOARD;
+      render();
+    }
+
+    // --- פונקציות רינדור (Rendering) ---
+
+    function getCurrentTeam() {
+      return gameState.teams[gameState.currentTeamIndex];
+    }
+
+    // רינדור לוח המשחק (טבלת ניקוד)
+    function renderBoard() {
+      const boardContainer = document.getElementById('boardContainer');
+      if (!boardContainer) return;
+
+      const boardHTML = `
+                <div class="space-y-3">
+                    ${gameState.teams.map((team, index) => `
+                        <div class="flex items-center justify-between p-4 rounded-2xl shadow-lg ${index === gameState.currentTeamIndex ? 'bg-gray-700 border-4 border-indigo-500 transform scale-[1.01]' : 'bg-gray-800 border border-gray-700'} transition duration-300">
+                            <span class="text-xl font-bold ${index === gameState.currentTeamIndex ? 'text-indigo-400' : 'text-gray-300'}">${team.name}</span>
+                            <div class="flex items-center space-x-3 space-x-reverse">
+                                <span class="text-4xl font-extrabold text-blue-400">${team.score}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+      boardContainer.innerHTML = boardHTML;
+    }
+
+
+    // רינדור בהתאם למצב המשחק
+    function render() {
+      const appDiv = document.getElementById('app');
+      let content = '';
+
+      const currentTeam = getCurrentTeam();
+      const nextPresenterName = currentTeam ? currentTeam.players[currentTeam.presenterIndex] : '';
+
+      switch (gameState.currentScreen) {
+        case GAME_STATE.SETUP:
+          content = `
+                        <div class="w-full max-w-lg p-8 bg-gray-800 rounded-3xl shadow-2xl mt-10">
+                            <h1 class="text-3xl font-extrabold text-indigo-400 mb-8 text-center border-b border-gray-700 pb-2">🎮 הגדרת משחק אליאס</h1>
+                            
+                            <div class="space-y-5">
+                                <div class="mb-4">
+                                    <label for="winningScore" class="block text-sm font-medium text-gray-300 mb-2">ניקוד נדרש לניצחון:</label>
+                                    <input type="number" id="winningScore" value="${gameState.winningScore}" min="1" class="w-full p-3 bg-gray-700 border-2 border-gray-600 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 shadow-inner text-white" aria-label="ניקוד נדרש לניצחון">
+                                </div>
+
+                                <div class="mb-6">
+                                    <label for="teamNames" class="block text-sm font-medium text-gray-300 mb-2">שמות הקבוצות (הזן שם אחד בכל שורה):</label>
+                                    <textarea id="teamNames" rows="4" class="w-full p-3 bg-gray-700 border-2 border-gray-600 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 shadow-inner text-white placeholder-gray-400" placeholder="קבוצת הפנתרים\nקבוצת הנמרים" aria-label="שמות הקבוצות"></textarea>
+                                    <p class="text-xs text-gray-400 mt-1">מספר הקבוצות יקבע אוטומטית. (מינימום 2)</p>
+                                </div>
+                            </div>
+
+                            <!-- הודעת שגיאה במקום alert() -->
+                            <p id="setupError" class="text-red-400 text-sm font-semibold mb-4 text-center"></p>
+                            
+                            <button onclick="startSetup()" class="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl shadow-xl hover:bg-indigo-700 transition duration-300 transform hover:scale-[1.01] ring-2 ring-indigo-300">
+                                התחל משחק
+                            </button>
+                        </div>
+                    `;
+          break;
+
+        case GAME_STATE.BOARD:
+          content = `
+                        <div class="w-full max-w-lg p-8 bg-gray-800 rounded-3xl shadow-2xl mt-10">
+                            <h1 class="text-3xl font-extrabold text-indigo-400 mb-6 text-center">🏆 לוח המשחק הדיגיטלי</h1>
+                            
+                            <!-- מידע על התור הנוכחי -->
+                            <div class="bg-gray-900 p-5 rounded-2xl mb-6 border-l-8 border-indigo-500 shadow-md">
+                                <p class="text-sm text-gray-400 font-medium">תור נוכחי:</p>
+                                <p class="text-2xl font-bold text-indigo-400">${currentTeam.name}</p>
+                                <p class="text-md text-gray-300 mt-2">המציג הבא: <span class="font-semibold">${currentTeam.players[currentTeam.presenterIndex]}</span></p>
+                            </div>
+
+                            <!-- מיקום הקבוצות / הלוח -->
+                            <h2 class="text-xl font-bold text-gray-300 mb-4 border-b border-gray-700 pb-2">מיקום הקבוצות (יעד: ${gameState.winningScore} נקודות)</h2>
+                            <div id="boardContainer" class="mb-8">
+                                <!-- הלוח נטען באמצעות renderBoard() -->
+                            </div>
+                            
+                            <!-- לחצן התחלת סיבוב -->
+                            <button onclick="startNewRound()" class="w-full py-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-extrabold rounded-2xl shadow-2xl hover:from-green-600 hover:to-green-700 transition duration-300 transform hover:scale-[1.02] ring-4 ring-green-200">
+                                התחל סיבוב חדש
+                            </button>
+                        </div>
+                    `;
+          break;
+
+        case GAME_STATE.ROUND:
+          content = `
+                        <div class="w-full max-w-lg p-6 bg-gray-800 rounded-3xl shadow-2xl mt-10 text-center">
+                            <h1 class="text-3xl font-extrabold text-indigo-400 mb-4">תור של: ${currentTeam.name}</h1>
+                            
+                            <!-- שעון עצר וניקוד סיבוב -->
+                            <div class="flex justify-between items-center mb-6 p-4 bg-gray-900 rounded-2xl shadow-inner">
+                                <div class="p-2 w-1/2 border-r border-gray-700">
+                                    <p class="text-base font-medium text-gray-400">זמן שנותר:</p>
+                                    <p id="timerDisplay" class="text-6xl font-extrabold text-gray-200">${gameState.currentRound.timeLeft}</p>
+                                </div>
+                                <div class="p-2 w-1/2">
+                                    <p class="text-base font-medium text-gray-400">ניקוד בסיבוב:</p>
+                                    <p id="roundScoreDisplay" class="text-6xl font-extrabold text-green-400">${gameState.currentRound.score}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- המילה הנוכחית - ויזואליות משופרת -->
+                            <div class="my-8 p-10 bg-indigo-600 text-white rounded-3xl shadow-2xl transform hover:rotate-1 transition duration-500 cursor-pointer"
+                                style="box-shadow: 0 15px 30px -10px rgba(79, 70, 229, 0.7);">
+                                <p class="text-xl font-medium opacity-80 mb-2">המילה להסבר:</p>
+                                <p id="currentWordDisplay" class="main-word text-6xl md:text-7xl font-black tracking-wider">${gameState.currentRound.currentWord}</p>
+                            </div>
+                            
+                            <!-- לחצני פעולה גדולים ונוחים למגע -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="handleGuess('success')" class="py-6 bg-green-500 text-white font-extrabold text-xl rounded-2xl shadow-xl hover:bg-green-600 transition duration-300 transform hover:scale-105">
+                                    הצליח
+                                </button>
+                                <button onclick="handleGuess('skip')" class="py-6 bg-red-500 text-white font-extrabold text-xl rounded-2xl shadow-xl hover:bg-red-600 transition duration-300 transform hover:scale-105">
+                                    דילוג / פסילה
+                                </button>
+                            </div>
+
+                            <button onclick="endRound()" class="w-full mt-4 py-3 bg-gray-600 text-white font-bold rounded-2xl hover:bg-gray-700 transition duration-300 shadow-md">
+                                סיים סיבוב מוקדם
+                            </button>
+                        </div>
+                    `;
+          break;
+
+        case GAME_STATE.SUMMARY:
+          content = `
+                        <div class="w-full max-w-lg p-8 bg-gray-800 rounded-3xl shadow-2xl mt-10 text-center">
+                            <h1 class="text-4xl font-extrabold text-indigo-400 mb-6 border-b border-gray-700 pb-2">סיכום סיבוב!</h1>
+                            
+                            <div class="bg-gray-700 p-6 rounded-2xl mb-8 shadow-inner">
+                                <p class="text-xl text-gray-300 mb-2">הקבוצה: <span class="font-black text-indigo-400">${currentTeam.name}</span></p>
+                                <p class="text-2xl font-bold text-gray-300 mb-4">מילים שננחשו נכון:</p>
+                                <p class="text-7xl font-black text-green-400">${gameState.currentRound.score}</p>
+                            </div>
+
+                            <h2 class="text-xl font-bold text-gray-300 mb-4 border-b border-gray-700 pb-2">התקדמות הלוח</h2>
+                            <div id="boardContainer" class="mb-8">
+                                <!-- הלוח נטען באמצעות renderBoard() -->
+                            </div>
+
+                            <button onclick="nextTurn()" class="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-xl hover:bg-blue-700 transition duration-300 transform hover:scale-[1.01]">
+                                העבר תור לקבוצה הבאה
+                            </button>
+                        </div>
+                    `;
+          break;
+
+        case GAME_STATE.GAME_OVER:
+          content = `
+                        <div class="w-full max-w-lg p-8 bg-gray-800 rounded-3xl shadow-2xl mt-10 text-center border-4 border-yellow-500 animate-pulse">
+                            <h1 class="text-6xl font-black text-yellow-400 mb-4 transform scale-105">🎉 ניצחון!!! 🎉</h1>
+                            <p class="text-3xl font-extrabold text-indigo-400 mb-6">${getCurrentTeam().name} ניצחו במשחק!</p>
+                            
+                            <div class="bg-gray-700 p-6 rounded-2xl mb-6 shadow-inner border border-yellow-800">
+                                <p class="text-2xl text-gray-300">ניקוד סופי: <span class="font-black text-yellow-400">${getCurrentTeam().score}</span></p>
+                            </div>
+
+                            <button onclick="window.location.reload()" class="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl shadow-xl hover:bg-indigo-700 transition duration-300 transform hover:scale-[1.01]">
+                                התחל משחק חדש
+                            </button>
+                        </div>
+                    `;
+          break;
+      }
+
+      appDiv.innerHTML = content;
+      if (gameState.currentScreen === GAME_STATE.BOARD || gameState.currentScreen === GAME_STATE.SUMMARY) {
+        renderBoard();
+      }
+    }
+
+    // הפעלת האפליקציה לאחר טעינת הדף
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+
+</html>
