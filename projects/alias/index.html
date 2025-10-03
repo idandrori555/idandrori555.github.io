@@ -148,7 +148,8 @@
       BOARD: 'BOARD',
       ROUND: 'ROUND',
       SUMMARY: 'SUMMARY',
-      GAME_OVER: 'GAME_OVER'
+      GAME_OVER: 'GAME_OVER',
+      MANAGE_SETS: 'MANAGE_SETS'
     };
 
     // מצב המשחק הגלובלי
@@ -167,12 +168,40 @@
       timerInterval: null,
       // totalWords מכיל את רשימת המילים שעדיין לא נעשה בהן שימוש במשחק הנוכחי.
       totalWords: [...HEBREW_WORDS],
+      // שם ערכת המילים הפעילה
+      activeWordSet: 'ברירת מחדל',
     };
+
+    // --- ניהול ערכות מילים ב-LocalStorage ---
+
+    const CUSTOM_SETS_STORAGE_KEY = 'aliasCustomWordSets';
+
+    // קבלת כל הערכות המותאמות אישית מהאחסון
+    function getCustomWordSets() {
+      try {
+        const sets = localStorage.getItem(CUSTOM_SETS_STORAGE_KEY);
+        return sets ? JSON.parse(sets) : {};
+      } catch (e) {
+        console.error("Error reading custom word sets from localStorage", e);
+        return {};
+      }
+    }
+
+    // שמירת כל הערכות המותאמות אישית באחסון
+    function saveCustomWordSets(sets) {
+      try {
+        localStorage.setItem(CUSTOM_SETS_STORAGE_KEY, JSON.stringify(sets));
+      } catch (e) {
+        console.error("Error saving custom word sets to localStorage", e);
+      }
+    }
+
 
     // --- לוגיקת אתחול ואימות קלט ---
 
     // אתחול האפליקציה והצגת מסך ההגדרות
     function initApp() {
+      gameState.currentScreen = GAME_STATE.SETUP;
       render();
     }
 
@@ -210,14 +239,29 @@
     function startSetup() {
       const teamNames = document.getElementById('teamNames');
       const winningScoreInput = document.getElementById('winningScore');
-      // קליטת משך הסיבוב
       const roundDurationInput = document.getElementById('roundDuration');
       const setupErrorElement = document.getElementById('setupError');
+      const wordSetSelect = document.getElementById('wordSet');
+
+      const selectedWordSet = wordSetSelect.value;
+      let wordsForGame = [];
+
+      if (selectedWordSet === 'ברירת מחדל') {
+        wordsForGame = [...HEBREW_WORDS];
+      } else {
+        const customSets = getCustomWordSets();
+        wordsForGame = [...(customSets[selectedWordSet] || [])];
+      }
+
+      if (wordsForGame.length === 0) {
+        setupErrorElement.style.display = 'block';
+        setupErrorElement.textContent = "ערכת המילים שנבחרה ריקה. אנא בחר ערכה אחרת או הוסף מילים.";
+        return;
+      }
 
       const namesArray = teamNames.value.split('\n').map(name => name.trim()).filter(name => name);
       const teamCount = namesArray.length;
       const scoreToWin = parseInt(winningScoreInput.value, 10);
-      // ניתוח משך הסיבוב
       const duration = parseInt(roundDurationInput.value, 10);
 
       // אימות בסיסי
@@ -231,19 +275,18 @@
         setupErrorElement.textContent = "ניקוד הניצחון חייב להיות מספר חיובי.";
         return;
       }
-      // אימות משך הסיבוב
       if (duration < 10 || isNaN(duration)) {
         setupErrorElement.style.display = 'block';
         setupErrorElement.textContent = "משך הסיבוב חייב להיות לפחות 10 שניות.";
         return;
       }
 
-      // איפוס שגיאות
       setupErrorElement.textContent = "";
 
-      // עדכון ניקוד הניצחון והמשך הסיבוב הגלובלי
       gameState.winningScore = scoreToWin;
-      gameState.roundDuration = duration; // עדכון משך הסיבוב
+      gameState.roundDuration = duration;
+      gameState.activeWordSet = selectedWordSet;
+      gameState.totalWords = wordsForGame;
 
       // יצירת מערך הקבוצות
       gameState.teams = [];
@@ -251,7 +294,7 @@
         gameState.teams.push({
           name: namesArray[i],
           score: 0,
-          players: [`שחקן 1`, `שחקן 2`], // MVP: שחקנים פיקטיביים
+          players: [`שחקן 1`, `שחקן 2`],
           presenterIndex: 0
         });
       }
@@ -437,6 +480,58 @@
       return gameState.teams[gameState.currentTeamIndex];
     }
 
+    // מעבר למסך ניהול ערכות
+    function showManageSetsScreen() {
+      gameState.currentScreen = GAME_STATE.MANAGE_SETS;
+      render();
+    }
+
+    // שמירה או עדכון של ערכה
+    function saveOrUpdateSet() {
+      const setNameInput = document.getElementById('setName');
+      const wordsTextarea = document.getElementById('wordsTextarea');
+      const setName = setNameInput.value.trim();
+      const words = wordsTextarea.value.split('\n').map(w => w.trim()).filter(Boolean);
+
+      if (!setName || words.length === 0) {
+        alert('יש לספק שם לערכה ולפחות מילה אחת.');
+        return;
+      }
+
+      const customSets = getCustomWordSets();
+      customSets[setName] = words;
+      saveCustomWordSets(customSets);
+
+      // חזרה למסך ההגדרות
+      gameState.currentScreen = GAME_STATE.SETUP;
+      render();
+    }
+
+    // מחיקת ערכה
+    function deleteSet(setName) {
+      if (!confirm(`האם אתה בטוח שברצונך למחוק את הערכה "${setName}"?`)) {
+        return;
+      }
+
+      const customSets = getCustomWordSets();
+      delete customSets[setName];
+      saveCustomWordSets(customSets);
+
+      // הישארו באותו מסך ורנדרו מחדש
+      render();
+    }
+
+    // טעינת ערכה לעריכה
+    function loadSetForEditing(setName) {
+      const customSets = getCustomWordSets();
+      const words = customSets[setName];
+
+      if (words) {
+        document.getElementById('setName').value = setName;
+        document.getElementById('wordsTextarea').value = words.join('\n');
+      }
+    }
+
     // רינדור לוח המשחק (טבלת ניקוד)
     function renderBoard() {
       const boardContainer = document.getElementById('boardContainer');
@@ -478,6 +573,9 @@
 
       switch (gameState.currentScreen) {
         case GAME_STATE.SETUP:
+          const customSets = getCustomWordSets();
+          const setNames = Object.keys(customSets);
+
           content = `
                         <div class="w-full max-w-lg p-8 bg-gray-800 border border-gray-700 rounded-3xl shadow-2xl mt-10">
                             <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 mb-8 text-center border-b border-gray-700 pb-3">
@@ -485,13 +583,25 @@
                             </h1>
                             
                             <div class="space-y-6">
+                                <!-- בחירת ערכת מילים -->
+                                <div class="mb-4">
+                                    <label for="wordSet" class="block text-sm font-medium text-gray-300 mb-2">בחר ערכת מילים:</label>
+                                    <div class="flex gap-2">
+                                        <select id="wordSet" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 shadow-inner text-white">
+                                            <option value="ברירת מחדל">ברירת מחדל (עברית)</option>
+                                            ${setNames.map(name => `<option value="${name}" ${gameState.activeWordSet === name ? 'selected' : ''}>${name}</option>`).join('')}
+                                        </select>
+                                        <button onclick="showManageSetsScreen()" class="p-3 bg-gray-600 text-white rounded-xl hover:bg-gray-500 transition duration-200" title="נהל ערכות מילים">⚙️</button>
+                                    </div>
+                                </div>
+
                                 <!-- ניקוד נדרש לניצחון -->
                                 <div class="mb-4">
                                     <label for="winningScore" class="block text-sm font-medium text-gray-300 mb-2">ניקוד נדרש לניצחון:</label>
                                     <input type="number" id="winningScore" value="${gameState.winningScore}" min="1" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 shadow-inner text-white" aria-label="ניקוד נדרש לניצחון">
                                 </div>
                                 
-                                <!-- NEW: משך סיבוב -->
+                                <!-- משך סיבוב -->
                                 <div class="mb-4">
                                     <label for="roundDuration" class="block text-sm font-medium text-gray-300 mb-2">משך סיבוב (שניות):</label>
                                     <input type="number" id="roundDuration" value="${gameState.roundDuration}" min="10" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 shadow-inner text-white" aria-label="משך סיבוב בשניות">
@@ -504,7 +614,6 @@
                                 </div>
                             </div>
 
-                            <!-- הודעת שגיאה במקום alert() -->
                             <p id="setupError" class="text-red-400 text-sm font-semibold mb-6 text-center bg-red-900/30 p-2 rounded-lg hidden"></p>
                             
                             <button onclick="startSetup()" class="w-full py-4 my-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-2xl shadow-lg hover:from-indigo-700 hover:to-purple-700 transition duration-300 transform hover:scale-[1.01] active:scale-[0.98] ring-2 ring-indigo-400">
@@ -514,25 +623,69 @@
                     `;
           break;
 
+        case GAME_STATE.MANAGE_SETS:
+          const existingSets = getCustomWordSets();
+          content = `
+            <div class="w-full max-w-lg p-8 bg-gray-800 border border-gray-700 rounded-3xl shadow-2xl mt-10">
+              <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400 mb-6 text-center border-b border-gray-700 pb-3">
+                ניהול ערכות מילים
+              </h1>
+
+              <!-- רשימת ערכות קיימות -->
+              <div class="mb-6">
+                <h2 class="text-xl font-bold text-gray-300 mb-3">הערכות שלי</h2>
+                <div class="space-y-2">
+                  ${Object.keys(existingSets).length > 0 ? Object.keys(existingSets).map(setName => `
+                    <div class="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                      <span class="font-semibold text-white">${setName}</span>
+                      <div class="flex gap-2">
+                        <button onclick="loadSetForEditing('${setName}')" class="text-sm bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md transition">ערוך</button>
+                        <button onclick="deleteSet('${setName}')" class="text-sm bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded-md transition">מחק</button>
+                      </div>
+                    </div>
+                  `).join('') : '<p class="text-gray-400 text-center">עדיין לא יצרת ערכות מילים.</p>'}
+                </div>
+              </div>
+
+              <!-- טופס יצירה/עריכה -->
+              <div class="space-y-4 pt-4 border-t border-gray-700">
+                <h2 class="text-xl font-bold text-gray-300">יצירה / עריכת ערכה</h2>
+                <div>
+                  <label for="setName" class="block text-sm font-medium text-gray-300 mb-2">שם הערכה:</label>
+                  <input type="text" id="setName" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-xl focus:ring-teal-500 focus:border-teal-500 text-white" placeholder="לדוגמה: סרטים וסדרות">
+                </div>
+                <div>
+                  <label for="wordsTextarea" class="block text-sm font-medium text-gray-300 mb-2">רשימת מילים (אחת בכל שורה):</label>
+                  <textarea id="wordsTextarea" rows="6" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-xl focus:ring-teal-500 focus:border-teal-500 text-white" placeholder="הארי פוטר\nשר הטבעות\n..."></textarea>
+                </div>
+                <button onclick="saveOrUpdateSet()" class="w-full py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:from-teal-600 hover:to-cyan-600 transition">
+                  שמור ערכה
+                </button>
+              </div>
+              
+              <button onclick="initApp()" class="w-full mt-6 py-2 bg-gray-600 text-gray-200 font-semibold rounded-xl hover:bg-gray-500 transition">
+                חזור למסך הראשי
+              </button>
+            </div>
+          `;
+          break;
+
         case GAME_STATE.BOARD:
           content = `
                         <div class="w-full max-w-lg p-8 bg-gray-800 border border-gray-700 rounded-3xl shadow-2xl mt-10">
                             <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-cyan-400 mb-6 text-center">🏆 לוח המשחק הדיגיטלי</h1>
                             
-                            <!-- מידע על התור הנוכחי - כרטיס מובלט -->
                             <div class="bg-indigo-900 p-5 rounded-2xl mb-8 border-l-8 border-indigo-400 shadow-xl shadow-indigo-900/50">
                                 <p class="text-md text-indigo-300 font-medium">תור נוכחי:</p>
                                 <p class="text-3xl font-black text-indigo-200">${currentTeam.name}</p>
                                 <p class="text-md text-gray-300 mt-2">המציג הבא: <span class="font-semibold text-white">${currentTeam.players[currentTeam.presenterIndex]}</span></p>
                             </div>
 
-                            <!-- מיקום הקבוצות / הלוח -->
                             <h2 class="text-xl font-bold text-gray-300 mb-4 border-b border-gray-700 pb-2">ניקוד (יעד: ${gameState.winningScore})</h2>
                             <div id="boardContainer" class="mb-8">
                                 <!-- הלוח נטען באמצעות renderBoard() -->
                             </div>
                             
-                            <!-- לחצן התחלת סיבוב - גראדיאנט ירוק חזק -->
                             <button onclick="startNewRound()" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-extrabold rounded-2xl shadow-xl hover:from-emerald-600 hover:to-green-600 transition duration-300 transform hover:scale-[1.02] active:scale-[0.98] ring-4 ring-emerald-300/50">
                                 🚀 התחל סיבוב חדש (משך: ${gameState.roundDuration} שניות)
                             </button>
@@ -545,7 +698,6 @@
                         <div class="w-full max-w-lg p-6 bg-gray-900 border border-gray-700 rounded-3xl shadow-2xl mt-10 text-center">
                             <h1 class="text-2xl font-extrabold text-indigo-400 mb-4">תור של: ${currentTeam.name}</h1>
                             
-                            <!-- שעון עצר וניקוד סיבוב - חלוקה ברורה -->
                             <div class="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-800 rounded-2xl shadow-inner border border-gray-700">
                                 <div class="p-2 border-l border-gray-700">
                                     <p class="text-base font-medium text-gray-400">זמן שנותר:</p>
@@ -553,18 +705,15 @@
                                 </div>
                                 <div class="p-2">
                                     <p class="text-base font-medium text-gray-400">ניקוד בסיבוב:</p>
-                                    <!-- הניקוד יכול להיות שלילי כעת, והצבע מתעדכן דרך JS/אנימציה -->
                                     <p id="roundScoreDisplay" class="text-6xl font-black ${gameState.currentRound.score < 0 ? 'text-red-400' : 'text-green-400'}">${gameState.currentRound.score}</p>
                                 </div>
                             </div>
                             
-                            <!-- המילה הנוכחית - ויזואליות משופרת ומרכזית -->
                             <div class="my-8 p-10 bg-gradient-to-br from-indigo-700 to-purple-700 text-white rounded-3xl shadow-2xl transform hover:scale-105 transition duration-300 cursor-pointer shadow-indigo-500/50">
                                 <p class="text-xl font-medium opacity-80 mb-2">המילה להסבר:</p>
                                 <p id="currentWordDisplay" class="main-word text-6xl md:text-8xl font-black tracking-wider">${gameState.currentRound.currentWord}</p>
                             </div>
                             
-                            <!-- לחצני פעולה גדולים ונוחים למגע -->
                             <div class="grid grid-cols-2 gap-4">
                                 <button onclick="handleGuess('success')" class="py-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-extrabold text-2xl rounded-2xl shadow-2xl hover:from-green-600 hover:to-emerald-600 transition duration-300 transform hover:scale-[1.05] active:scale-[1] ring-2 ring-green-300/50">
                                     הצליח
