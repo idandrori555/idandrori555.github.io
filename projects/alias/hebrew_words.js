@@ -1,4 +1,4 @@
-const WORDS = [
+const HEBREW_WORDS = [
   "כלב",
   "חתול",
   "פיל",
@@ -1000,5 +1000,3 @@ const WORDS = [
   "דירה",
   "חדר",
 ];
-
-export default WORDS;
