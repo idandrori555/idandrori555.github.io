@@ -1,9 +1,13 @@
-You are generating a list of Hebrew words suitable for a social word-guessing game similar to "Alias".  
+You are generating a list of Hebrew words suitable for a social word-guessing game similar to "Alias".
 The words should be:
 
-1. Mix of easy and medium difficulty (not extremely long or complex words).  
-2. Cover multiple categories: animals, food, objects, places, professions, activities, and Israeli-specific terms.  
-3. Unique, with no duplicates.  
-4. Suitable for guessing by explanation.
+1. Mix of easy and medium difficulty (not extremely long or complex words).
+2. Unique, with no duplicates.
+3. Suitable for guessing by explanation.
+GENERATE ONLY IN THIS THEME: <THEME HERE>
 
-Output the list as a **JSON array** of strings. Do not include any extra text or explanations.
+Important instructions:
+- The output must be only in Hebrew.
+- Return ONLY the list of words.
+- Each word or phrase must be on a new line.
+- Do not include numbers, bullet points, titles, or any other text or formatting.
