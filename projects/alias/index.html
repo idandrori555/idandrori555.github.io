@@ -147,6 +147,7 @@
       SETUP: 'SETUP',
       BOARD: 'BOARD',
       ROUND: 'ROUND',
+      LAST_GUESS: 'LAST_GUESS',
       SUMMARY: 'SUMMARY',
       GAME_OVER: 'GAME_OVER',
       MANAGE_SETS: 'MANAGE_SETS'
@@ -379,7 +380,8 @@
 
         if (gameState.currentRound.timeLeft <= 0) {
           clearInterval(gameState.timerInterval);
-          endRound();
+          gameState.currentScreen = GAME_STATE.LAST_GUESS;
+          render();
         }
       }, 1000);
     }
@@ -466,6 +468,33 @@
     }
 
     // --- לוגיקת סיכום סיבוב (SUMMARY) וחילוף תור ---
+
+    // טיפול בניחוש האחרון וסיום הסיבוב
+    function handleFinalGuess(teamIndex) {
+      // אם נבחרה קבוצה, הוסף לה נקודה
+      if (teamIndex >= 0 && teamIndex < gameState.teams.length) {
+        const guessingTeam = gameState.teams[teamIndex];
+        guessingTeam.score++;
+
+        // בדיקת ניצחון מיידית עבור הקבוצה שניחשה
+        if (guessingTeam.score >= gameState.winningScore) {
+          gameState.currentTeamIndex = teamIndex; // קובע את הקבוצה שניצחה כנוכחית כדי להציג אותה במסך הניצחון
+          gameState.currentScreen = GAME_STATE.GAME_OVER;
+          render();
+          return; // סיים את הפונקציה כאן
+        }
+      }
+
+      // אם אף אחד לא ניצח מהניחוש האחרון, בדוק אם הקבוצה המקורית ניצחה במהלך הסיבוב
+      const originalTeam = gameState.teams[gameState.currentTeamIndex];
+      if (originalTeam.score >= gameState.winningScore) {
+        gameState.currentScreen = GAME_STATE.GAME_OVER;
+      } else {
+        // אחרת, עבור למסך הסיכום
+        gameState.currentScreen = GAME_STATE.SUMMARY;
+      }
+      render();
+    }
 
     // העברת התור לקבוצה הבאה
     function nextTurn() {
@@ -729,6 +758,33 @@
                             </button>
                         </div>
                     `;
+          break;
+
+        case GAME_STATE.LAST_GUESS:
+          content = `
+            <div class="w-full max-w-lg p-8 bg-gray-800 border-2 border-yellow-500 rounded-3xl shadow-2xl mt-10 text-center">
+                <h1 class="text-4xl font-extrabold text-yellow-400 mb-4">⏰ הזמן נגמר! ⏰</h1>
+                <p class="text-lg text-gray-300 mb-4">הסיבוב הסתיים. עדיין נותרה מילה אחרונה לנחש!</p>
+                
+                <div class="my-6 p-8 bg-gradient-to-br from-indigo-700 to-purple-700 text-white rounded-3xl shadow-xl">
+                    <p id="currentWordDisplay" class="main-word text-6xl font-black tracking-wider">${gameState.currentRound.currentWord}</p>
+                </div>
+
+                <p class="text-xl font-semibold text-gray-300 mb-4">מי ניחש נכון את המילה?</p>
+                
+                <div class="space-y-3 mb-6">
+                    ${gameState.teams.map((team, index) => `
+                        <button onclick="handleFinalGuess(${index})" class="w-full py-3 text-lg font-bold text-white bg-blue-600 rounded-xl shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-105">
+                            ${team.name}
+                        </button>
+                    `).join('')}
+                </div>
+
+                <button onclick="handleFinalGuess(-1)" class="w-full py-3 bg-gray-600 text-gray-200 font-semibold rounded-xl hover:bg-gray-500 transition">
+                    אף אחד לא ניחש / המשך
+                </button>
+            </div>
+          `;
           break;
 
         case GAME_STATE.SUMMARY:
