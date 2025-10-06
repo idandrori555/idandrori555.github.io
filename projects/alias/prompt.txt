@@ -4,7 +4,8 @@ The words should be:
 1. Mix of easy and medium difficulty (not extremely long or complex words).
 2. Unique, with no duplicates.
 3. Suitable for guessing by explanation.
-GENERATE ONLY IN THIS THEME: <THEME HERE>
+GENERATE ONLY IN THIS THEME: THEME HERE
+Generate exactly 100 words.
 
 Important instructions:
 - The output must be only in Hebrew.
