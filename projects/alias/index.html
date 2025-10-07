@@ -237,6 +237,8 @@
     <!-- תוכן האפליקציה יטען כאן -->
   </div>
 
+  <audio id="timeUpSound" src="time-up.mp3" preload="auto"></audio>
+
   <script src="hebrew_words.js"></script>
   <script>
     const DEFAULT_ROUND_DURATION = 60;
@@ -433,6 +435,7 @@
 
         if (gameState.currentRound.timeLeft <= 0) {
           clearInterval(gameState.timerInterval);
+          document.getElementById('timeUpSound').play();
           gameState.currentScreen = GAME_STATE.LAST_GUESS;
           render();
         }
