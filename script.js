@@ -52,35 +52,26 @@ const projects = [
     unlisted: false,
   },
   {
-    id: "moovit-bus-pass",
-    category: "כלי",
-    title: "Moovit Bus Pass",
-    description: "כרטיס אוטובוס מזויף של מוביט",
-    technologies: ["HTML"],
-    icon: "M3 10h18M3 6h18M3 14h18M3 18h18",
-    link: "/projects/moovit_bus_pass/",
-    unlisted: false,
-  },
-  {
     id: "invalidate",
     category: "ניסוי",
-    title: "Invalidate Mocks",
-    description: "מספר ניסויים ומבחנים",
+    title: "Invalidate AI",
+    description:
+      "אפליקציה כמו שאזאם אבל בשביל עובדות, והיא מופעלת על ידי בינה מלאכותית.",
     technologies: ["HTML", "CSS", "JS"],
     icon: "M12 6v6m0 0v6m0-6h6m-6 0H6",
-    link: "/u/invalidate/mock-v1/",
+    link: "/u/invalidate/mock-v6/",
     unlisted: true,
   },
-  {
-    id: "lesson-ai",
-    category: "AI",
-    title: "Lesson AI",
-    description: "פרויקט AI שמסכם שיעורים (לא עובד)",
-    technologies: ["HTML"],
-    icon: "M9.75 17.375c-2.25 0-4.125-1.875-4.125-4.125S7.5 9.125 9.75 9.125s4.125 1.875 4.125 4.125-1.875 4.125-4.125 4.125zM18 9.375c0-2.25-1.875-4.125-4.125-4.125S9.75 7.125 9.75 9.375",
-    link: "/u/lesson-ai/",
-    unlisted: true,
-  },
+  // {
+  //   id: "lesson-ai",
+  //   category: "AI",
+  //   title: "Lesson AI",
+  //   description: "פרויקט AI שמסכם שיעורים (לא עובד)",
+  //   technologies: ["HTML"],
+  //   icon: "M9.75 17.375c-2.25 0-4.125-1.875-4.125-4.125S7.5 9.125 9.75 9.125s4.125 1.875 4.125 4.125-1.875 4.125-4.125 4.125zM18 9.375c0-2.25-1.875-4.125-4.125-4.125S9.75 7.125 9.75 9.375",
+  //   link: "/u/lesson-ai/",
+  //   unlisted: true,
+  // },
   {
     id: "moovit-bus-pass-2",
     category: "כלי",
@@ -185,4 +176,3 @@ document.addEventListener("DOMContentLoaded", () => {
     .map((project) => projectTemplate(project))
     .join("");
 });
-
