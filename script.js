@@ -111,7 +111,7 @@ const unlistedProjects = [
     description: "מחשבון חובות למשחקי פוקר",
     technologies: ["HTML", "CSS", "JS"],
     icon: "M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm4-8a2 2 0 11-4 0 2 2 0 014 0z",
-    link: "/u/poker-debt/",
+    link: "/u/poker-debt/index.html",
   },
 ];
 
