@@ -46,6 +46,24 @@ const projects = [
     icon: "M14.828 14.828a4 4 0 01-5.656 0M9.172 9.172a4 4 0 015.656 0M12 18a6 6 0 100-12 6 6 0 000 12z",
     link: "/projects/alias/",
   },
+  {
+    id: "boil",
+    category: "כלי",
+    title: "Boil",
+    description: "כלי עזר לכתיבת תבניות",
+    technologies: ["BASH"],
+    icon: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4",
+    link: "https://github.com/idandrori555/boil",
+  },
+  {
+    id: "fill-free",
+    category: "משחק",
+    title: "Fill Free",
+    description: "משחק דופמין",
+    technologies: ["HTML", "CSS", "JS"],
+    icon: "M12 12m-10 0a10 10 0 1120 0 10 10 0 01-20 0",
+    link: "/projects/fill-free/",
+  },
 ];
 
 const unlistedProjects = [

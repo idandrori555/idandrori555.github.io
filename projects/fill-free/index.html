@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Fill Free</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      /* Added Inter font */
+      color: #fff;
+    }
+
+    #gameCanvas {
+      display: block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Common styles for top info boxes */
+    .top-info-box {
+      font-size: 22px;
+      /* Consistent font size for all */
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.5);
+      /* Consistent background */
+      padding: 10px 20px;
+      /* Consistent padding */
+      border-radius: 20px;
+      /* Consistent border-radius */
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      /* Consistent base shadow */
+      display: flex;
+      /* For internal alignment of text/icons */
+      align-items: center;
+      /* Vertically align content */
+      z-index: 10;
+    }
+
+    #score {
+      position: absolute;
+      top: 35px;
+      /* Consistent top value for alignment */
+      left: 50%;
+      transform: translateX(-50%);
+      /* Centered horizontally */
+      color: white;
+      /* Specific color */
+      text-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
+      /* Specific text shadow */
+    }
+
+    #highScore {
+      position: absolute;
+      top: 35px;
+      /* Consistent top value for alignment */
+      left: 20px;
+      /* Positioned to the left */
+      color: #f0e68c;
+      /* Gold-like color for high score */
+      text-shadow: 0 0 8px rgba(240, 230, 140, 0.8);
+      /* Gold glow */
+      gap: 8px;
+      /* Space between crown and text */
+    }
+
+    #powerups {
+      position: absolute;
+      top: 35px;
+      /* Consistent top value for alignment */
+      right: 20px;
+      /* Positioned to the right */
+      /* No flex properties here, as the child .powerup-display will be a top-info-box */
+      z-index: 10;
+    }
+
+    .powerup-display {
+      color: #00ff88;
+      /* Specific color */
+      text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+      /* Specific text shadow */
+    }
+
+    #gameOver {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      /* Slightly darker overlay */
+      backdrop-filter: blur(20px);
+      /* More blur */
+      padding: 50px;
+      /* Increased padding */
+      border-radius: 30px;
+      /* More rounded */
+      text-align: center;
+      display: none;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      /* Stronger border */
+      box-shadow: 0 12px 50px rgba(0, 0, 0, 0.8);
+      /* More pronounced shadow */
+      color: #fff;
+      width: 70%;
+      /* Slightly wider */
+      max-width: 450px;
+      /* Increased max-width */
+    }
+
+    #gameOver canvas {
+      margin-top: 30px;
+      /* Adjusted margin */
+      width: 160px;
+      /* Slightly larger menu circle */
+      height: 160px;
+      display: block;
+      /* Ensure canvas is a block element for margin: auto */
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #startScreen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      /* Slightly darker overlay */
+      backdrop-filter: blur(20px);
+      /* More blur */
+      padding: 50px;
+      /* Increased padding */
+      border-radius: 30px;
+      /* More rounded */
+      text-align: center;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      /* Stronger border */
+      box-shadow: 0 12px 50px rgba(0, 0, 0, 0.8);
+      /* More pronounced shadow */
+      color: #fff;
+      width: 70%;
+      /* Slightly wider */
+      max-width: 450px;
+      /* Increased max-width */
+    }
+
+    #startScreen canvas {
+      margin-top: 30px;
+      /* Adjusted margin */
+      width: 160px;
+      /* Slightly larger menu circle */
+      height: 160px;
+      display: block;
+      /* Ensure canvas is a block element for margin: auto */
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #startScreen h2 {
+      font-size: 42px;
+      /* Larger font */
+      margin-top: 0;
+      margin-bottom: 20px;
+      /* Increased margin */
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    #startScreen p {
+      font-size: 18px;
+      /* Slightly larger font */
+      opacity: 0.95;
+      /* Less transparent */
+      line-height: 1.6;
+      /* Better line spacing */
+      margin-bottom: 30px;
+      /* Increased margin */
+    }
+
+    /* High Score Breaking Animation */
+    @keyframes highScoreBreak {
+      0% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+        text-shadow: 0 0 10px rgba(255, 255, 0, 0.8);
+      }
+
+      50% {
+        transform: scale(1.2) translateY(-20px);
+        opacity: 1;
+        text-shadow: 0 0 20px rgba(255, 255, 0, 1);
+      }
+
+      100% {
+        transform: scale(1.5) translateY(-50px);
+        opacity: 0;
+        text-shadow: 0 0 30px rgba(255, 255, 0, 0);
+      }
+    }
+
+    .high-score-feedback {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #ffd700;
+      /* Gold color */
+      font-size: 30px;
+      font-weight: bold;
+      text-align: center;
+      pointer-events: none;
+      animation: highScoreBreak 2s ease-out forwards;
+      z-index: 1000;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="score" class="top-info-box">0</div>
+  <div id="powerups">
+    <div id="shieldDisplay" class="powerup-display shield-display top-info-box">
+      🛡️ <span id="shieldCount">0</span>
+    </div>
+  </div>
+  <div id="highScore" class="top-info-box">
+    👑 <span id="highScoreValue">0</span>
+  </div>
+
+  <div id="startScreen">
+    <h2>Fill Free</h2>
+    <p>Tap the circle to start!</p>
+    <canvas id="startCircleCanvas"></canvas>
+  </div>
+
+  <div id="gameOver">
+    <h2>Game Over</h2>
+    <p id="finalScore">Your score: 0</p>
+    <canvas id="restartCircleCanvas"></canvas>
+  </div>
+
+  <audio id="popSound" src="pop.wav" preload="auto"></audio>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Constants:
+      const INCREASE_LEVEL_POINTS_NEEDED = 100;
+
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const scoreDisplay = document.getElementById("score");
+      const highScoreDisplay = document.getElementById("highScoreValue"); // High score display element
+      const gameOverScreen = document.getElementById("gameOver");
+      const startScreen = document.getElementById("startScreen");
+      const finalScoreDisplay = document.getElementById("finalScore");
+      const popSound = document.getElementById("popSound"); // Get the audio element
+      popSound.volume = 0.5; // Set volume via JavaScript
+
+      const startCircleCanvas = document.getElementById("startCircleCanvas");
+      const startCircleCtx = startCircleCanvas.getContext("2d");
+
+      const restartCircleCanvas = document.getElementById(
+        "restartCircleCanvas"
+      );
+      const restartCircleCtx = restartCircleCanvas.getContext("2d");
+
+      // Color palette for circles
+      const colorPalette = [
+        {r: 255, g: 107, b: 107}, // Coral red
+        {r: 78, g: 205, b: 196}, // Turquoise
+        {r: 255, g: 195, b: 113}, // Peach
+        // { r: 162, g: 155, b: 254 }, // Light purple
+        {r: 255, g: 154, b: 162}, // Pink
+        // { r: 108, g: 92, b: 231 }, // Purple
+        {r: 255, g: 206, b: 84}, // Yellow
+        {r: 54, g: 215, b: 183}, // Cyan
+        {r: 255, g: 121, b: 198}, // Hot pink
+        {r: 129, g: 236, b: 236}, // Light cyan
+      ];
+
+      // Set canvas dimensions
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      // Game variables
+      let score = 0;
+      let gameActive = false;
+      let gameStarted = false;
+      let animationId = null;
+      let lastTimestamp = null;
+      let completedCircles = [];
+      let circleLifetime = 1000;
+
+      // Power-up variables
+      let shields = 0;
+
+      // Circle spawning variables
+      let activeCircles = [];
+      let lastSpawnTime = 0;
+      let spawnInterval = 3000;
+      let minSpawnInterval = 800;
+      let maxActiveCircles = 3;
+      let circleTimeout = 4000;
+      let difficultyLevel = 1;
+
+      // High score variables
+      let highScore = 0;
+      let newHighScoreAchievedThisGame = false; // Flag to show animation only once per game
+
+      // Particle system variables
+      let particles = [];
+      let ripples = []; // Array to hold ripple effects
+
+      // Initialize game
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+
+      // Particle class for visual effects
+      class Particle {
+        constructor(
+          x,
+          y,
+          radius,
+          color,
+          vx,
+          vy,
+          lifetime,
+          gravity = 0,
+          friction = 0.98
+        ) {
+          this.x = x;
+          this.y = y;
+          this.radius = radius;
+          this.color = color; // Expects an rgba string
+          this.vx = vx;
+          this.vy = vy;
+          this.lifetime = lifetime; // Total time particle exists
+          this.age = 0; // Current age of the particle
+          this.opacity = 1;
+          this.gravity = gravity;
+          this.friction = friction;
+        }
+
+        update(deltaTime) {
+          this.vx *= this.friction;
+          this.vy *= this.friction;
+          this.vy += this.gravity * deltaTime; // Apply gravity
+          this.x += this.vx * deltaTime;
+          this.y += this.vy * deltaTime;
+          this.age += deltaTime * 1000; // Convert to ms for consistency with lifetime
+
+          // Fade out particle
+          this.opacity = 1 - this.age / this.lifetime;
+          if (this.opacity < 0) this.opacity = 0;
+
+          // Shrink particle
+          this.radius *= 0.98; // Slightly shrink over time
+          if (this.radius < 0.1) this.radius = 0.1;
+
+          return this.age < this.lifetime; // Return true if particle is still alive
+        }
+
+        draw(ctx) {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fillStyle = this.color.replace("1)", `${this.opacity})`); // Adjust opacity
+          ctx.fill();
+        }
+      }
+
+      // Ripple Effect Class
+      class Ripple {
+        constructor(x, y, startRadius, maxRadius, color) {
+          this.x = x;
+          this.y = y;
+          this.currentRadius = startRadius;
+          this.maxRadius = maxRadius;
+          this.color = color; // e.g., "rgba(255, 255, 255, 1)"
+          this.speed = (maxRadius - startRadius) / 500; // Speed to reach max radius in 500ms
+          this.opacity = 1;
+          this.lifetime = 500; // ms
+          this.age = 0;
+        }
+
+        update(deltaTime) {
+          this.age += deltaTime * 1000;
+          this.currentRadius += this.speed * deltaTime * 1000;
+          this.opacity = 1 - this.age / this.lifetime;
+          if (this.opacity < 0) this.opacity = 0;
+          return this.age < this.lifetime;
+        }
+
+        draw(ctx) {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.currentRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = this.color.replace("1)", `${this.opacity})`);
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+      }
+
+      // Function to create particles
+      function createParticles(
+        x,
+        y,
+        count,
+        baseColor,
+        type = "score",
+        particleScale = 1
+      ) {
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = (Math.random() * 100 + 50) * particleScale; // Random speed, scaled
+          const vx = Math.cos(angle) * speed;
+          const vy = Math.sin(angle) * speed;
+          const radius = (Math.random() * 5 + 2) * particleScale; // Random small radius, scaled
+          const lifetime = 500 + Math.random() * 500; // Random lifetime
+
+          let particleColor = `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, 1)`;
+          let gravity = 0; // No gravity by default
+          let friction = 0.98;
+
+          if (type === "miss") {
+            particleColor = `rgba(255, 50, 50, 1)`; // Red for misses
+            gravity = 200; // Particles fall
+            friction = 0.95; // More friction for miss particles
+          } else if (type === "shield_gain") {
+            particleColor = `rgba(0, 255, 136, 1)`; // Green for shield gain
+          } else if (type === "shield_use") {
+            particleColor = `rgba(0, 200, 255, 1)`; // Blue for shield use
+          } else if (type === "shatter") {
+            particleColor = `rgba(255, 255, 255, 1)`; // White for shatter fragments
+            gravity = 150;
+            friction = 0.96;
+            const fragmentRadius = (Math.random() * 8 + 4) * particleScale; // Larger fragments
+            particles.push(
+              new Particle(
+                x,
+                y,
+                fragmentRadius,
+                particleColor,
+                vx,
+                vy,
+                lifetime * 1.5,
+                gravity,
+                friction
+              )
+            );
+            continue; // Skip the default particle push
+          }
+
+          particles.push(
+            new Particle(
+              x,
+              y,
+              radius,
+              particleColor,
+              vx,
+              vy,
+              lifetime,
+              gravity,
+              friction
+            )
+          );
+        }
+      }
+
+      // Circle class for game circles
+      class GameCircle {
+        constructor(isPowerUp = false) {
+          const margin = 100;
+          this.x = margin + Math.random() * (canvas.width - margin * 2);
+          this.y = margin + Math.random() * (canvas.height - margin * 2);
+
+          const minRadius = 60;
+          const maxRadius = Math.min(
+            120,
+            canvas.width / 6,
+            canvas.height / 6
+          );
+          this.targetRadius =
+            minRadius + Math.random() * (maxRadius - minRadius);
+
+          this.currentRadius = 0;
+          this.isActive = false;
+          this.isCompleted = false;
+          this.createdTime = Date.now();
+          this.growthSpeed = 45 + (score / 10) * 5;
+          this.isOverflowing = false;
+
+          // Power-up properties
+          this.isPowerUp = isPowerUp;
+          this.powerUpType = isPowerUp ? "shield" : null;
+
+          // Assign random color from palette
+          this.color =
+            colorPalette[Math.floor(Math.random() * colorPalette.length)];
+
+          this.pulsePhase = Math.random() * Math.PI * 2; // Unique pulse phase for each circle
+        }
+
+        update(deltaTime) {
+          if (this.isActive && !this.isCompleted) {
+            this.currentRadius += this.growthSpeed * deltaTime;
+            this.isOverflowing = this.currentRadius > this.targetRadius;
+
+            if (this.isOverflowing) {
+              return "overflow";
+            }
+          }
+
+          if (
+            !this.isCompleted &&
+            !this.isActive &&
+            Date.now() - this.createdTime > circleTimeout
+          ) {
+            if (this.isPowerUp) {
+              return "powerup_timeout";
+            } else {
+              return "timeout";
+            }
+          }
+
+          return "active";
+        }
+
+        draw() {
+          if (this.isCompleted) return;
+
+          // Subtle pulse effect for the target circle
+          const pulseFactor =
+            0.02 * Math.sin(Date.now() * 0.005 + this.pulsePhase) + 1;
+          const displayRadius = this.targetRadius * pulseFactor;
+
+          // Power-up specific colors and effects
+          let strokeColor, glowColor, fillColor;
+          if (this.isPowerUp) {
+            strokeColor = this.isActive
+              ? "rgba(0, 255, 136, 0.9)"
+              : "rgba(0, 255, 136, 0.7)";
+            glowColor = this.isActive
+              ? "rgba(0, 255, 136, 0.6)"
+              : "rgba(0, 255, 136, 0.4)";
+            fillColor = "rgba(0, 255, 136, 0.7)";
+          } else {
+            // Use the circle's assigned color
+            const {r, g, b} = this.color;
+            const alpha = this.isActive ? 0.9 : 0.7;
+            strokeColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            glowColor = `rgba(${r}, ${g}, ${b}, ${alpha * 0.6})`;
+            fillColor = `rgba(${r}, ${g}, ${b}, 0.7)`;
+          }
+
+          // Draw glow effect first (behind the main circle)
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, displayRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = glowColor;
+          ctx.lineWidth = this.isActive ? 12 : 8;
+          ctx.stroke();
+
+          // Draw target circle (outline)
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, displayRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = strokeColor;
+          ctx.lineWidth = this.isActive ? 4 : 3;
+          ctx.stroke();
+
+          // Power-up specific visual effects
+          if (this.isPowerUp && !this.isActive) {
+            const sparkleTime = Date.now() * 0.005;
+            for (let i = 0; i < 6; i++) {
+              const angle = (i / 6) * Math.PI * 2 + sparkleTime;
+              const sparkleX =
+                this.x + Math.cos(angle) * (displayRadius + 15);
+              const sparkleY =
+                this.y + Math.sin(angle) * (displayRadius + 15);
+
+              ctx.beginPath();
+              ctx.arc(sparkleX, sparkleY, 3, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(0, 255, 136, ${0.5 + Math.sin(sparkleTime + i) * 0.3
+                })`;
+              ctx.fill();
+            }
+
+            ctx.font = `${Math.min(displayRadius * 0.6, 30)}px Arial`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "rgba(0, 255, 136, 0.8)";
+            ctx.fillText("🛡️", this.x, this.y);
+          }
+
+          // Draw filled circle if active
+          if (this.isActive && this.currentRadius > 0) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.currentRadius, 0, Math.PI * 2);
+
+            if (this.isOverflowing) {
+              ctx.fillStyle = "rgba(255, 50, 50, 0.8)";
+            } else {
+              ctx.fillStyle = fillColor;
+            }
+            ctx.fill();
+
+            // Add glow for near-perfect fills
+            const closeness =
+              1 -
+              Math.abs(this.targetRadius - this.currentRadius) /
+              this.targetRadius;
+            if (closeness > 0.9 && !this.isOverflowing) {
+              ctx.beginPath();
+              ctx.arc(this.x, this.y, this.currentRadius, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(255, 255, 255, ${(closeness - 0.9) * 5 * 0.4
+                })`;
+              ctx.fill();
+            }
+          }
+
+          // Draw timeout indicator with slow red blinking
+          const timeLeft =
+            (circleTimeout - (Date.now() - this.createdTime)) / circleTimeout;
+          if (timeLeft < 0.3 && !this.isActive) {
+            const warningDuration = 0.3 * circleTimeout;
+            const timeInWarning =
+              Date.now() - (this.createdTime + circleTimeout * 0.7);
+            const blinkCycle = (timeInWarning / warningDuration) * 6;
+            const blinkIntensity = Math.abs(Math.sin(blinkCycle * Math.PI));
+
+            const urgencyAlpha = (0.3 - timeLeft) / 0.3;
+            const finalAlpha = urgencyAlpha * blinkIntensity * 0.9;
+
+            // Outer warning ring
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, displayRadius + 15, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(255, 50, 50, ${finalAlpha})`;
+            ctx.lineWidth = 6;
+            ctx.stroke();
+
+            // Inner warning glow
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, displayRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(255, 100, 100, ${finalAlpha * 0.6})`;
+            ctx.lineWidth = 8;
+            ctx.stroke();
+          }
+        }
+
+        isPointInside(x, y) {
+          const distance = Math.sqrt((x - this.x) ** 2 + (y - this.y) ** 2);
+          return distance <= this.targetRadius;
+        }
+
+        complete(points) {
+          this.isCompleted = true;
+          this.isActive = false;
+
+          const completedColor = this.isPowerUp
+            ? {r: 0, g: 255, b: 150}
+            : this.color;
+          completedCircles.push({
+            x: this.x,
+            y: this.y,
+            radius: this.currentRadius,
+            timestamp: Date.now(),
+            color: completedColor,
+            isPowerUp: this.isPowerUp,
+          });
+
+          // Play pop sound
+          if (popSound) {
+            popSound.currentTime = 0; // Rewind to the start
+            popSound.play();
+          }
+
+          // Create particles on completion
+          if (points >= 20) {
+            // Perfect hit
+            createParticles(this.x, this.y, 50, completedColor, "score", 1.5); // Larger particles
+            ripples.push(
+              new Ripple(
+                this.x,
+                this.y,
+                this.currentRadius,
+                this.targetRadius * 1.5,
+                `rgba(255, 255, 255, 1)`
+              )
+            );
+          } else {
+            createParticles(this.x, this.y, 30, completedColor, "score");
+          }
+        }
+
+        shatter() {
+          createParticles(this.x, this.y, 40, this.color, "shatter", 1); // Shatter fragments
+          this.isCompleted = true; // Mark as completed so it's removed
+        }
+
+        calculateScore() {
+          const accuracy =
+            Math.abs(this.targetRadius - this.currentRadius) /
+            this.targetRadius;
+
+          if (accuracy <= 0.03) return 20;
+          else if (accuracy <= 0.07) return 10;
+          else if (accuracy <= 0.12) return 5;
+          else if (accuracy <= 0.17) return 2;
+          else return 0;
+        }
+      }
+
+      // New MenuCircle class for start/restart buttons
+      class MenuCircle {
+        constructor(canvasElement, onCompleteCallback, label) {
+          this.canvas = canvasElement;
+          this.ctx = this.canvas.getContext("2d");
+          this.onCompleteCallback = onCompleteCallback;
+          this.label = label; // Text to display inside the circle
+
+          // Set canvas dimensions to match CSS
+          this.canvas.width = this.canvas.offsetWidth;
+          this.canvas.height = this.canvas.offsetHeight;
+
+          this.x = this.canvas.width / 2;
+          this.y = this.canvas.height / 2;
+          // Ensure targetRadius is always non-negative
+          this.targetRadius = Math.max(
+            0,
+            Math.min(this.canvas.width, this.canvas.height) / 2 - 10
+          );
+
+          this.currentRadius = 0;
+          this.isActive = false;
+          this.isFilled = false;
+          this.growthSpeed = 150; // Fixed growth speed for menu circles
+
+          this.color = {r: 102, g: 126, b: 234}; // A nice blue/purple from the button gradient
+
+          this.setupEventListeners();
+          this.lastMenuTimestamp = null;
+          this.animate(); // Start its own animation loop
+        }
+
+        setupEventListeners() {
+          this.canvas.addEventListener(
+            "mousedown",
+            this.handleInteractionStart.bind(this)
+          );
+          this.canvas.addEventListener(
+            "mouseup",
+            this.handleInteractionEnd.bind(this)
+          );
+          this.canvas.addEventListener(
+            "touchstart",
+            this.handleInteractionStart.bind(this),
+            {passive: false}
+          );
+          this.canvas.addEventListener(
+            "touchend",
+            this.handleInteractionEnd.bind(this),
+            {passive: false}
+          );
+        }
+
+        handleInteractionStart(e) {
+          e.preventDefault();
+          let clientX, clientY;
+          if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+          } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+          }
+
+          // Get coordinates relative to the menu canvas
+          const rect = this.canvas.getBoundingClientRect();
+          const localX = clientX - rect.left;
+          const localY = clientY - rect.top;
+
+          if (this.isPointInside(localX, localY)) {
+            this.startFilling();
+          }
+        }
+
+        handleInteractionEnd(e) {
+          e.preventDefault();
+          if (this.isActive) {
+            this.checkCompletion();
+          }
+        }
+
+        isPointInside(x, y) {
+          const distance = Math.sqrt((x - this.x) ** 2 + (y - this.y) ** 2);
+          return distance <= this.targetRadius;
+        }
+
+        startFilling() {
+          this.isActive = true;
+          this.currentRadius = 0;
+          this.isFilled = false;
+        }
+
+        stopFilling() {
+          this.isActive = false;
+          this.currentRadius = 0;
+          this.isFilled = false;
+        }
+
+        checkCompletion() {
+          // If the circle was active (meaning the user started filling it)
+          // then complete it regardless of perfect fill or overflow.
+          if (this.isActive) {
+            this.isFilled = true; // Mark as filled
+            this.onCompleteCallback(); // Trigger the callback (start/restart game)
+          }
+          this.stopFilling(); // Always reset the circle for the next interaction
+        }
+
+        update(deltaTime) {
+          if (this.isActive) {
+            // Only grow if actively being pressed
+            this.currentRadius += this.growthSpeed * deltaTime;
+            // Removed the automatic stopFilling on overflow here
+          }
+        }
+
+        draw() {
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+          // Draw outer ring
+          this.ctx.beginPath();
+          this.ctx.arc(this.x, this.y, this.targetRadius, 0, Math.PI * 2);
+          this.ctx.strokeStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.8)`;
+          this.ctx.lineWidth = 5;
+          this.ctx.stroke();
+
+          // Draw inner fill
+          // Ensure currentRadius is non-negative and doesn't exceed targetRadius
+          if (this.currentRadius >= 0) {
+            this.ctx.beginPath();
+            this.ctx.arc(
+              this.x,
+              this.y,
+              Math.min(this.currentRadius, this.targetRadius),
+              0,
+              Math.PI * 2
+            ); /* Changed here */
+            let fillAlpha = 0.7;
+
+            this.ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${fillAlpha})`;
+            this.ctx.fill();
+          }
+
+          // Draw label
+          this.ctx.font = `${Math.min(
+            this.targetRadius * 0.4,
+            24
+          )}px 'Segoe UI', Arial, sans-serif`;
+          this.ctx.textAlign = "center";
+          this.ctx.textBaseline = "middle";
+          this.ctx.fillStyle = "white";
+          this.ctx.fillText(this.label, this.x, this.y);
+        }
+
+        animate(timestamp) {
+          if (!this.lastMenuTimestamp) this.lastMenuTimestamp = timestamp;
+          const deltaTime = (timestamp - this.lastMenuTimestamp) / 1000;
+          this.lastMenuTimestamp = timestamp;
+
+          this.update(deltaTime);
+          this.draw();
+
+          requestAnimationFrame(this.animate.bind(this));
+        }
+      }
+
+      let startMenuCircleInstance;
+      let restartMenuCircleInstance;
+
+      // Power-up functions
+      function updatePowerUpDisplay() {
+        const shieldDisplay = document.getElementById("shieldDisplay");
+        const shieldCount = document.getElementById("shieldCount");
+
+        shieldDisplay.style.display = "flex"; /* Use flex to center content */
+        shieldCount.textContent = shields;
+      }
+
+      function useShield() {
+        if (shields > 0) {
+          shields--;
+          updatePowerUpDisplay();
+          displayPowerUpFeedback(
+            "🛡️ SHIELD USED!",
+            canvas.width / 2,
+            canvas.height / 2,
+            "#00ff88"
+          );
+          createParticles(
+            canvas.width / 2,
+            canvas.height / 2,
+            50,
+            {r: 0, g: 200, b: 255},
+            "shield_use"
+          ); // Blue particles for shield use
+          return true;
+        }
+        return false;
+      }
+
+      function addShield() {
+        shields++;
+        updatePowerUpDisplay();
+        displayPowerUpFeedback(
+          "🛡️ SHIELD GAINED!",
+          canvas.width / 2,
+          150,
+          "#00ff88"
+        );
+        createParticles(
+          canvas.width / 2,
+          150,
+          40,
+          {r: 0, g: 255, b: 136},
+          "shield_gain"
+        ); // Green particles for shield gain
+      }
+
+      function shouldSpawnPowerUp() {
+        const baseChance = 0.15;
+        const difficultyBonus = (difficultyLevel - 1) * 0.02;
+        const chance = Math.min(0.25, baseChance + difficultyBonus);
+        return Math.random() < chance;
+      }
+
+      // Game loop
+      function gameLoop(timestamp) {
+        if (!lastTimestamp) lastTimestamp = timestamp;
+        const deltaTime = (timestamp - lastTimestamp) / 1000;
+        lastTimestamp = timestamp;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear only what's needed for the game elements
+
+        if (gameActive) {
+          updateDifficulty();
+
+          if (
+            timestamp - lastSpawnTime > spawnInterval &&
+            activeCircles.length < maxActiveCircles
+          ) {
+            const isPowerUp = shouldSpawnPowerUp();
+            activeCircles.push(new GameCircle(isPowerUp));
+            lastSpawnTime = timestamp;
+          }
+
+          for (let i = activeCircles.length - 1; i >= 0; i--) {
+            const circle = activeCircles[i];
+            const result = circle.update(deltaTime);
+
+            if (result === "overflow" || result === "timeout") {
+              circle.shatter(); // Shatter the circle on miss/timeout
+              activeCircles.splice(i, 1);
+              if (!useShield()) {
+                endGame();
+                break;
+              }
+              continue;
+            } else if (result === "powerup_timeout") {
+              activeCircles.splice(i, 1);
+              continue;
+            }
+
+            if (!circle.isCompleted) {
+              circle.draw();
+            } else {
+              activeCircles.splice(i, 1);
+            }
+          }
+        }
+
+        drawCompletedCircles();
+
+        // Update and draw particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const particle = particles[i];
+          if (particle.update(deltaTime)) {
+            particle.draw(ctx);
+          } else {
+            particles.splice(i, 1);
+          }
+        }
+
+        // Update and draw ripples
+        for (let i = ripples.length - 1; i >= 0; i--) {
+          const ripple = ripples[i];
+          if (ripple.update(deltaTime)) {
+            ripple.draw(ctx);
+          } else {
+            ripples.splice(i, 1);
+          }
+        }
+
+        animationId = requestAnimationFrame(gameLoop);
+      }
+
+      function drawCompletedCircles() {
+        for (let i = completedCircles.length - 1; i >= 0; i--) {
+          const circle = completedCircles[i];
+          const timeElapsed = Date.now() - circle.timestamp;
+
+          if (timeElapsed > circleLifetime) {
+            completedCircles.splice(i, 1);
+            continue;
+          }
+
+          const opacity = 1 - timeElapsed / circleLifetime;
+
+          ctx.beginPath();
+          ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.5})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          const {r, g, b} = circle.color;
+          ctx.beginPath();
+          ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity * 0.5})`;
+          ctx.fill();
+
+          if (circle.isPowerUp && opacity > 0.3) {
+            const sparkleTime = Date.now() * 0.01;
+            for (let j = 0; j < 4; j++) {
+              const angle = (j / 4) * Math.PI * 2 + sparkleTime;
+              const sparkleX =
+                circle.x + Math.cos(angle) * (circle.radius + 10);
+              const sparkleY =
+                circle.y + Math.sin(angle) * (circle.radius + 10);
+
+              ctx.beginPath();
+              ctx.arc(sparkleX, sparkleY, 2, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(0, 255, 136, ${opacity * 0.8})`;
+              ctx.fill();
+            }
+          }
+        }
+      }
+
+      function updateDifficulty() {
+        const newLevel = Math.floor(score / INCREASE_LEVEL_POINTS_NEEDED) + 1;
+
+        if (newLevel > difficultyLevel) {
+          difficultyLevel = newLevel;
+
+          maxActiveCircles = Math.min(
+            8,
+            3 + Math.floor((difficultyLevel - 1) / 2)
+          );
+          spawnInterval = Math.max(
+            minSpawnInterval,
+            3000 - (difficultyLevel - 1) * 200
+          );
+          circleTimeout = Math.max(2500, 4000 - (difficultyLevel - 1) * 100);
+
+          displayDifficultyFeedback();
+        }
+      }
+
+      function displayDifficultyFeedback() {
+        const feedbackEl = document.createElement("div");
+        feedbackEl.style.position = "absolute";
+        feedbackEl.style.top = "50%";
+        feedbackEl.style.left = "50%";
+        feedbackEl.style.transform = "translate(-50%, -50%)";
+        feedbackEl.style.color = "#ffff00";
+        feedbackEl.style.fontSize = "32px";
+        feedbackEl.style.fontWeight = "bold";
+        feedbackEl.style.textShadow = "0 0 10px rgba(255, 255, 0, 0.8)";
+        feedbackEl.style.pointerEvents = "none";
+        feedbackEl.style.transition = "all 1.5s ease-out";
+        feedbackEl.style.opacity = "1";
+        feedbackEl.style.zIndex = "100";
+        feedbackEl.style.textAlign = "center";
+
+        feedbackEl.innerHTML = `LEVEL ${difficultyLevel}`;
+
+        document.body.appendChild(feedbackEl);
+
+        setTimeout(() => {
+          feedbackEl.style.transform = "translate(-50%, -50%) scale(1.5)";
+          feedbackEl.style.opacity = "0";
+        }, 100);
+
+        setTimeout(() => {
+          if (document.body.contains(feedbackEl)) {
+            document.body.removeChild(feedbackEl);
+          }
+        }, 1600);
+      }
+
+      // Function to display high score breaking feedback
+      function displayHighScoreBreakFeedback() {
+        const feedbackEl = document.createElement("div");
+        feedbackEl.className = "high-score-feedback";
+        feedbackEl.textContent = "NEW HIGH SCORE!";
+        document.body.appendChild(feedbackEl);
+
+        // Remove the element after the animation
+        feedbackEl.addEventListener("animationend", () => {
+          if (document.body.contains(feedbackEl)) {
+            document.body.removeChild(feedbackEl);
+          }
+        });
+      }
+
+      function startGame() {
+        gameActive = true;
+        gameStarted = true;
+        score = 0;
+        shields = 0;
+        activeCircles = [];
+        completedCircles = [];
+        particles = []; // Clear particles on new game
+        ripples = []; // Clear ripples on new game
+        lastSpawnTime = 0;
+        spawnInterval = 3000;
+        difficultyLevel = 1;
+        maxActiveCircles = 3;
+        circleTimeout = 4000;
+        scoreDisplay.textContent = `${score}`;
+        updatePowerUpDisplay();
+        newHighScoreAchievedThisGame = false; // Reset flag for new game
+        startScreen.style.display = "none";
+        gameOverScreen.style.display = "none";
+
+        if (!animationId) {
+          lastTimestamp = null;
+          animationId = requestAnimationFrame(gameLoop);
+        }
+      }
+
+      function endGame() {
+        gameActive = false;
+        finalScoreDisplay.textContent = `Your score: ${score}`;
+        gameOverScreen.style.display = "block";
+        // Initialize restart circle when game ends
+        if (!restartMenuCircleInstance) {
+          restartMenuCircleInstance = new MenuCircle(
+            restartCircleCanvas,
+            startGame,
+            "Play Again"
+          );
+        } else {
+          restartMenuCircleInstance.stopFilling(); // Reset if already active
+        }
+      }
+
+      function displayScoreFeedback(points, x, y) {
+        const feedbackEl = document.createElement("div");
+        feedbackEl.style.position = "absolute";
+        feedbackEl.style.left = `${x}px`;
+        feedbackEl.style.top = `${y - 30}px`;
+        feedbackEl.style.transform = "translateX(-50%)";
+        feedbackEl.style.color = "#fff";
+        feedbackEl.style.fontSize = "24px";
+        feedbackEl.style.fontWeight = "bold";
+        feedbackEl.style.textShadow = "0 0 5px rgba(0, 0, 0, 0.7)";
+        feedbackEl.style.pointerEvents = "none";
+        feedbackEl.style.transition = "all 0.8s ease-out";
+        feedbackEl.style.opacity = "1";
+        feedbackEl.style.zIndex = "100";
+
+        if (points >= 20) {
+          feedbackEl.style.color = "#ffff00";
+          feedbackEl.textContent = `+${points} PERFECT!`;
+          feedbackEl.style.fontSize = "36px"; // Even larger for perfect
+          feedbackEl.style.textShadow =
+            "0 0 15px rgba(255, 255, 0, 0.9), 0 0 25px rgba(255, 255, 0, 0.7)"; // More glow
+        } else if (points >= 10) {
+          feedbackEl.style.color = "#00ff88";
+          feedbackEl.textContent = `+${points} Great!`;
+          feedbackEl.style.fontSize = "28px";
+        } else {
+          feedbackEl.style.color = "#00ccff";
+          feedbackEl.textContent = `+${points}`;
+        }
+
+        document.body.appendChild(feedbackEl);
+
+        setTimeout(() => {
+          feedbackEl.style.transform =
+            "translateX(-50%) translateY(-100px) scale(1.5)"; // More dramatic movement
+          feedbackEl.style.opacity = "0";
+        }, 50);
+
+        setTimeout(() => {
+          if (document.body.contains(feedbackEl)) {
+            document.body.removeChild(feedbackEl);
+          }
+        }, 850);
+      }
+
+      function displayPowerUpFeedback(text, x, y, color) {
+        const feedbackEl = document.createElement("div");
+        feedbackEl.style.position = "absolute";
+        feedbackEl.style.left = `${x}px`;
+        feedbackEl.style.top = `${y}px`;
+        feedbackEl.style.transform = "translate(-50%, -50%)";
+        feedbackEl.style.color = color;
+        feedbackEl.style.fontSize = "28px";
+        feedbackEl.style.fontWeight = "bold";
+        feedbackEl.style.textShadow = `0 0 10px ${color}`;
+        feedbackEl.style.pointerEvents = "none";
+        feedbackEl.style.transition = "all 1.2s ease-out";
+        feedbackEl.style.opacity = "1";
+        feedbackEl.style.zIndex = "100";
+        feedbackEl.style.textAlign = "center";
+
+        feedbackEl.textContent = text;
+
+        document.body.appendChild(feedbackEl);
+
+        setTimeout(() => {
+          feedbackEl.style.transform = "translate(-50%, -50%) scale(1.3)";
+          feedbackEl.style.opacity = "0";
+        }, 100);
+
+        setTimeout(() => {
+          if (document.body.contains(feedbackEl)) {
+            document.body.removeChild(feedbackEl);
+          }
+        }, 1200);
+      }
+
+      function handleStart(x, y) {
+        if (!gameActive) return;
+
+        for (let circle of activeCircles) {
+          if (
+            !circle.isActive &&
+            !circle.isCompleted &&
+            circle.isPointInside(x, y)
+          ) {
+            circle.isActive = true;
+            circle.currentRadius = 0;
+            break;
+          }
+        }
+      }
+
+      function handleEnd(x, y) {
+        if (!gameActive) return;
+
+        for (let circle of activeCircles) {
+          if (circle.isActive) {
+            const points = circle.calculateScore();
+
+            if (points > 0) {
+              score += points;
+              scoreDisplay.textContent = `${score}`;
+
+              // Check for new high score
+              if (score > highScore) {
+                highScore = score;
+                localStorage.setItem("highScore", highScore); // Save to local storage
+                highScoreDisplay.textContent = highScore;
+                if (!newHighScoreAchievedThisGame) {
+                  // Only show animation once per game
+
+                  if (highScore !== 0) {
+                    displayHighScoreBreakFeedback();
+                  }
+
+                  newHighScoreAchievedThisGame = true;
+                }
+              }
+
+              displayScoreFeedback(points, circle.x, circle.y);
+
+              if (circle.isPowerUp) {
+                addShield();
+              }
+
+              circle.complete(points); // Pass points to complete for conditional particle effects
+            } else {
+              // If points are 0, it means it's a miss (too far off)
+              circle.shatter(); // Shatter the circle on miss
+              activeCircles.splice(activeCircles.indexOf(circle), 1);
+              if (!useShield()) {
+                endGame();
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      canvas.addEventListener("touchstart", function (e) {
+        e.preventDefault();
+        for (let i = 0; i < e.touches.length; i++) {
+          const touch = e.touches[i];
+          handleStart(touch.clientX, touch.clientY);
+        }
+      });
+
+      canvas.addEventListener("touchend", function (e) {
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const touch = e.changedTouches[i];
+          handleEnd(touch.clientX, touch.clientY);
+        }
+      });
+
+      canvas.addEventListener("mousedown", function (e) {
+        handleStart(e.clientX, e.clientY);
+      });
+
+      canvas.addEventListener("mouseup", function (e) {
+        handleEnd(e.clientX, e.clientY);
+      });
+
+      // Load high score on initial page load
+      highScore = parseInt(localStorage.getItem("highScore") || "0");
+      highScoreDisplay.textContent = highScore;
+
+      // Initialize the start menu circle when the DOM is ready
+      startMenuCircleInstance = new MenuCircle(
+        startCircleCanvas,
+        startGame,
+        "Start"
+      );
+
+      if (!animationId) {
+        requestAnimationFrame(gameLoop);
+      }
+    });
+  </script>
+</body>
+
+</html>
