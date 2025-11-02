@@ -13,3 +13,11 @@ body {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
+
+#unlisted-projects-grid {
+  background-color: #f3f4f6;
+}
+
+.dark #unlisted-projects-grid {
+  background-color: #1f2937;
+}
