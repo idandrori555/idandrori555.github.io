@@ -1,15 +1,33 @@
-/* Custom Styles */
-body {
-  background-color: #f9fafb;
+:root {
+  --background: #111827;
+  --surface: #1f2937;
+  --primary: #38bdf8;
+  --secondary: #818cf8;
+  --text: #e5e7eb;
+  --text-secondary: #9ca3af;
 }
 
-/* Card hover animation */
+body {
+  background-color: var(--background);
+  color: var(--text);
+}
+
+.masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
 .card-hover {
+  background-color: var(--surface);
+  border: 1px solid #374151;
+  border-radius: 1rem;
+  padding: 1.5rem;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .card-hover:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10px 15px -3px rgba(56, 189, 248, 0.1), 0 4px 6px -2px rgba(56, 189, 248, 0.05);
 }
