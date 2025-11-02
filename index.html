@@ -1,57 +1,47 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>פרויקטים</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="./tailwind.js" defer></script>
-    <script src="./script.js" defer></script>
-  </head>
 
-  <body
-    class="font-heebo min-h-screen py-12 px-4 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
-  >
-    <header class="max-w-5xl mx-auto text-center mb-16 px-4">
-      <h1
-        class="text-5xl font-bold mb-6 bg-gradient-to-r from-primary-600 to-blue-500 text-transparent bg-clip-text inline-block"
-      >
-        פרויקטים
-      </h1>
-      <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-        אוסף של פרויקטים שפיתחתי במהלך השנים, הכוללים אפליקציות, כלים ועוד.
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>פרויקטים</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="./tailwind.js" defer></script>
+  <script src="./script.js" defer></script>
+</head>
+
+<body class="font-heebo min-h-screen py-12 px-4 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+  <header class="max-w-5xl mx-auto text-center mb-16 px-4">
+    <h1
+      class="text-5xl font-bold mb-6 bg-gradient-to-r from-primary-600 to-blue-500 text-transparent bg-clip-text inline-block">
+      פרויקטים
+    </h1>
+    <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+      אוסף של פרויקטים שפיתחתי במהלך השנים, הכוללים אפליקציות, כלים ועוד.
+    </p>
+  </header>
+
+  <main class="max-w-5xl mx-auto">
+    <div id="projects-grid"
+      class="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md"></div>
+
+    <div class="mt-16">
+      <h2 class="text-3xl font-bold text-center mb-8">פרויקטים לא רשמיים</h2>
+      <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-center mb-8">
+        אלו פרויקטים בפיתוח, ניסויים, או סתם דברים שבניתי בשביל הכיף. הם עשויים להיות לא גמורים או לא יציבים.
       </p>
-    </header>
+      <div id="unlisted-projects-grid"
+        class="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md"></div>
+    </div>
+  </main>
 
-    <main class="max-w-5xl mx-auto">
-      <div
-        id="projects-grid"
-        class="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md"
-      ></div>
+  <footer class="max-w-5xl mx-auto mt-20 px-4 pb-8">
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-8 text-center">
+      <p class="text-gray-500 dark:text-gray-400">פרויקטים נוספים בקרוב!</p>
+    </div>
+  </footer>
+</body>
 
-      <div class="mt-16">
-        <h2 class="text-3xl font-bold text-center mb-8">פרויקטים לא רשמיים</h2>
-        <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-center mb-8">
-          אלו פרויקטים בפיתוח, ניסויים, או סתם דברים שבניתי בשביל הכיף. הם עשויים להיות לא גמורים או לא יציבים.
-        </p>
-        <div
-          id="unlisted-projects-grid"
-          class="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-inner"
-        ></div>
-      </div>
-    </main>
-
-    <footer class="max-w-5xl mx-auto mt-20 px-4 pb-8">
-      <div
-        class="border-t border-gray-200 dark:border-gray-700 pt-8 text-center"
-      >
-        <p class="text-gray-500 dark:text-gray-400">פרויקטים נוספים בקרוב!</p>
-      </div>
-    </footer>
-  </body>
 </html>
