@@ -3,12 +3,23 @@
 
 <body>
   <script>
-    const BASE_URL = "https://github.com"
-    const COMMIT_ID = "08a4f39ba0bc7a175e93077e14a1aef29ecd132f"
-    const GITHUB_USER = "idandrori555"
-    const EXERCISE_NAME = "Ekronot-Ex02"
-    const URL = `${BASE_URL}/Cyber-Education-Center/${EXERCISE_NAME}-${GITHUB_USER}/commit/${COMMIT_ID}`
-    window.location.replace(URL);
+    async function getLink(id) {
+      const SHEET_ID = "12TfppUIDdIBmY9ZHySM0DPxkE2HGt8I2DpQuXyqolfA";
+      const response = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`);
+
+      try {
+        const data = (await response.text()).replaceAll('"', "").split("\n");
+        return data[id - 1];
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    const ID = parseInt(window.location.search.split("=")[1]);
+
+    (async () => {
+      window.location.href = await getLink(ID);
+    })();
   </script>
 </body>
 
