@@ -5,197 +5,296 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>מציאת שיעורים - מגשימים</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&display=swap');
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Using Rubik for a more modern, friendly Hebrew typography -->
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
 
+  <style>
     :root {
-      --bg-color: #f0f4f8;
-      --card-bg-color: #ffffff;
-      --primary-text-color: #1c1e21;
-      --secondary-text-color: #555;
-      --accent-color: #0056b3;
-      --accent-color-hover: #004494;
-      --border-color: #dddfe2;
-      --shadow-color: rgba(0, 0, 0, 0.1);
-      --error-color: #d93025;
-      --success-color: #1e8e3e;
-      --font-family-main: 'Assistant', sans-serif;
+      /* Modern Color Palette */
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --button-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --bg-gradient: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
+
+      --surface-color: #ffffff;
+      --text-main: #2d3748;
+      --text-secondary: #718096;
+      --border-light: #e2e8f0;
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     body {
-      font-family: var(--font-family-main);
-      background-color: var(--bg-color);
+      font-family: 'Rubik', sans-serif;
+      background-image: var(--bg-gradient);
+      background-attachment: fixed;
       margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      padding: 1rem;
+      padding: 1.5rem;
       box-sizing: border-box;
+      color: var(--text-main);
     }
 
+    /* Main Card Container */
     .container {
-      background-color: var(--card-bg-color);
-      padding: 2.5rem;
-      border-radius: 12px;
-      box-shadow: 0 8px 25px var(--shadow-color);
+      background-color: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 3rem 2.5rem;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
       width: 100%;
-      max-width: 500px;
+      max-width: 480px;
       text-align: center;
-      transition: all 0.3s ease;
-      border-top: 5px solid var(--accent-color);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.5);
     }
 
-    #app-loader {
-      font-size: 1.2rem;
-      color: var(--secondary-text-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 150px;
+    /* Decorative top bar */
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: var(--primary-gradient);
     }
 
     h1 {
-      color: var(--primary-text-color);
-      margin-bottom: 0.5rem;
       font-weight: 700;
+      font-size: 2rem;
+      margin: 0 0 0.5rem 0;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
     }
 
     .subtitle {
-      color: var(--secondary-text-color);
-      margin-bottom: 2rem;
-      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 2.5rem;
+      font-size: 1.05rem;
+      font-weight: 400;
     }
 
+    /* Input & Button Layout */
     .date-picker-container {
       display: flex;
+      flex-direction: column;
       gap: 1rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
 
-    #date-input {
-      flex-grow: 1;
-      padding: 0.8rem;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      font-family: inherit;
-      font-size: 1rem;
-      color: var(--primary-text-color);
-      transition: border-color 0.2s, box-shadow 0.2s;
+    /* Input Styling */
+    input[type="date"] {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-md);
+      font-family: 'Rubik', sans-serif;
+      font-size: 1.1rem;
+      color: var(--text-main);
+      background: #f8fafc;
+      transition: var(--transition);
+      box-sizing: border-box;
+      text-align: center;
+      cursor: pointer;
     }
 
-    #date-input:focus {
+    input[type="date"]:focus {
       outline: none;
-      border-color: var(--accent-color);
-      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+      border-color: #667eea;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
     }
 
+    /* Button Styling */
     #search-button {
-      padding: 0.8rem 1.75rem;
+      padding: 1rem;
       border: none;
-      background: linear-gradient(145deg, #007bff, #0056b3);
+      background: var(--button-gradient);
       color: white;
-      border-radius: 6px;
-      font-family: inherit;
+      border-radius: var(--radius-md);
+      font-family: 'Rubik', sans-serif;
       font-size: 1.1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+      transition: var(--transition);
+      box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     #search-button:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 7px 14px rgba(102, 126, 234, 0.3);
+      filter: brightness(1.05);
+    }
+
+    #search-button:active:not(:disabled) {
+      transform: translateY(0);
     }
 
     #search-button:disabled {
-      background: #a0c3ff;
+      background: #cbd5e0;
       cursor: not-allowed;
       box-shadow: none;
+      opacity: 0.7;
     }
 
+    /* Results Area */
     #result-container {
-      min-height: 100px;
-      padding-top: 1.5rem;
-      margin-top: 1.5rem;
-      border-top: 1px solid #e9ecef;
+      margin-top: 1rem;
+      perspective: 1000px;
     }
 
     .lesson-card {
-      background-color: #f8f9fa;
-      border: 1px solid var(--border-color);
-      border-right: 5px solid var(--accent-color);
-      /* Changed from border-left for RTL */
-      border-left: none;
-      border-radius: 6px;
+      background: white;
+      border-radius: var(--radius-md);
       padding: 1.5rem;
       text-align: right;
-      animation: fadeIn 0.5s ease;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      border-right: 6px solid #667eea;
+      animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .lesson-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to left, rgba(102, 126, 234, 0.03), transparent);
+      pointer-events: none;
     }
 
     .lesson-card h3 {
       margin-top: 0;
-      margin-bottom: 1rem;
-      color: var(--primary-text-color);
-      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 1.25rem;
     }
 
     .lesson-card p {
       margin: 0.5rem 0;
-      color: var(--secondary-text-color);
+      color: var(--text-secondary);
       font-size: 1rem;
+      line-height: 1.6;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .lesson-card p strong {
-      color: #343a40;
+      color: #4a5568;
       font-weight: 600;
+      min-width: 50px;
     }
 
+    /* Messages */
     .message-text {
-      color: var(--secondary-text-color);
-      font-size: 1.1rem;
-      padding-top: 1.5rem;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      padding: 1.5rem;
+      background: #f7fafc;
+      border-radius: var(--radius-md);
+      border: 1px dashed var(--border-light);
       animation: fadeIn 0.5s ease;
     }
 
     .error {
-      color: var(--error-color);
+      color: #e53e3e;
+      background: #fff5f5;
+      border-color: #feb2b2;
     }
 
+    /* Loader Spinner */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(102, 126, 234, 0.1);
+      border-left-color: #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    #app-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      gap: 1rem;
+      color: var(--text-secondary);
+    }
+
+    /* Animations */
     @keyframes fadeIn {
       from {
         opacity: 0;
-        transform: translateY(-10px);
       }
 
       to {
         opacity: 1;
-        transform: translateY(0);
       }
     }
 
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Mobile Optimization */
     @media (max-width: 600px) {
       body {
+        padding: 1rem;
         align-items: flex-start;
-        padding: 0.5rem;
       }
 
       .container {
-        padding: 1.5rem;
-        margin-top: 1rem;
-      }
-
-      .date-picker-container {
-        flex-direction: column;
+        padding: 2rem 1.5rem;
+        margin-top: 2rem;
       }
 
       h1 {
-        font-size: 1.8rem;
+        font-size: 1.75rem;
       }
 
-      .subtitle {
-        font-size: 1rem;
+      .date-picker-container {
+        gap: 0.75rem;
       }
     }
   </style>
@@ -205,17 +304,29 @@
 
   <div class="container">
     <div id="app-loader">
+      <div class="spinner"></div>
       <p>טוען נתונים...</p>
     </div>
+
     <div id="app-content" style="display: none;">
       <h1>מציאת שיעורים</h1>
-      <p class="subtitle">הכניסו תאריך כדי למצוא את השיעור.</p>
+      <p class="subtitle">הכניסו תאריך כדי למצוא את פרטי השיעור</p>
+
       <div class="date-picker-container">
-        <input type="date" id="date-input">
-        <button id="search-button">חיפוש</button>
+        <input type="date" id="date-input" aria-label="בחירת תאריך" placeholder="dd/mm/yyyy">
+        <button id="search-button">
+          <span>חפש שיעור</span>
+          <!-- Simple search icon SVG -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
       </div>
+
       <div id="result-container">
-        <p class="initial-message message-text">בחרו תאריך כדי לראות את פרטי השיעור.</p>
+        <p class="initial-message message-text">אנא בחרו תאריך כדי להציג מידע</p>
       </div>
     </div>
   </div>
@@ -380,9 +491,18 @@
       }
     }
 
+    // --- Interaction Listeners ---
+
     searchButton.addEventListener('click', () => {
       displayLesson(dateInput.value, false);
     });
+
+    // Trigger search immediately when a date is picked/changed
+    dateInput.addEventListener('change', (e) => {
+      displayLesson(e.target.value, false);
+    });
+
+    // Removed the aggressive 'click' listener that was breaking manual date entry
 
     // Initialize the app
     initializeApp();
