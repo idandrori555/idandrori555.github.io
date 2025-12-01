@@ -2,12 +2,22 @@ const projects = [
   {
     id: "magshi-date",
     category: "לוח זמנים",
-    title: "Magshi Date",
+    title: "Magshi Date 1",
     description:
-      "אפליקציה נקייה לבדיקת שיעורי מגשימים קרובים לפי תאריך. (באר שבע בלבד)",
+      "אפליקציה נקייה לבדיקת שיעורי מגשימים קרובים לפי תאריך. (באר שבע בלבד)שנה א",
     technologies: ["HTML", "Tailwind", "JS"],
     icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
     link: "/projects/magshi-date/",
+  },
+  {
+    id: "magshi-date-2",
+    category: "לוח זמנים",
+    title: "Magshi Date 2",
+    description:
+      "אפליקציה נקייה לבדיקת שיעורי מגשימים קרובים לפי תאריך. (באר שבע בלבד)שנה ב",
+    technologies: ["HTML", "Tailwind", "JS"],
+    icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+    link: "/projects/magshi-date-2/",
   },
   {
     id: "compiler-project",
