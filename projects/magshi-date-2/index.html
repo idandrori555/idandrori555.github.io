@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מציאת שיעורים - מגשימים</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&display=swap');
+
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg-color: #ffffff;
+            --primary-text-color: #1c1e21;
+            --secondary-text-color: #555;
+            --accent-color: #0056b3;
+            --accent-color-hover: #004494;
+            --border-color: #dddfe2;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --error-color: #d93025;
+            --success-color: #1e8e3e;
+            --font-family-main: 'Assistant', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family-main);
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--card-bg-color);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px var(--shadow-color);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border-top: 5px solid var(--accent-color);
+        }
+        
+        #app-loader {
+            font-size: 1.2rem;
+            color: var(--secondary-text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 150px;
+        }
+
+        h1 {
+            color: var(--primary-text-color);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--secondary-text-color);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .date-picker-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        #date-input {
+            flex-grow: 1;
+            padding: 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--primary-text-color);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #date-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+        #search-button {
+            padding: 0.8rem 1.75rem;
+            border: none;
+            background: linear-gradient(145deg, #007bff, #0056b3);
+            color: white;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        }
+
+        #search-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        #search-button:disabled {
+            background: #a0c3ff;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #result-container {
+            min-height: 100px;
+            padding-top: 1.5rem;
+            margin-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .lesson-card {
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-right: 5px solid var(--accent-color); /* Changed from border-left for RTL */
+            border-left: none;
+            border-radius: 6px;
+            padding: 1.5rem;
+            text-align: right;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .lesson-card h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: var(--primary-text-color);
+            font-weight: 600;
+        }
+        
+        .lesson-card p {
+            margin: 0.5rem 0;
+            color: var(--secondary-text-color);
+            font-size: 1rem;
+        }
+        
+        .lesson-card p strong {
+             color: #343a40;
+             font-weight: 600;
+        }
+
+        .message-text {
+            color: var(--secondary-text-color);
+            font-size: 1.1rem;
+            padding-top: 1.5rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .error {
+            color: var(--error-color);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                align-items: flex-start;
+                padding: 0.5rem;
+            }
+            .container {
+                padding: 1.5rem;
+                margin-top: 1rem;
+            }
+            .date-picker-container {
+                flex-direction: column;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="app-loader">
+            <p>טוען נתונים...</p>
+        </div>
+        <div id="app-content" style="display: none;">
+            <h1>מציאת שיעורים</h1>
+            <p class="subtitle">הכניסו תאריך כדי למצוא את השיעור.</p>
+            <div class="date-picker-container">
+                <input type="date" id="date-input">
+                <button id="search-button">חיפוש</button>
+            </div>
+            <div id="result-container">
+                <p class="initial-message message-text">בחרו תאריך כדי לראות את פרטי השיעור.</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { buildDateMap } from './app.js';
+
+        // --- Logic copied from app.js as it's not exported ---
+        const SHEET_ID = "1UjhMvzF2To_7NFB3FRVh5zU4mGPa7Uu4W84Oz5x0P2g";
+        const FETCH_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+
+        const hebrewMonthsMap = {
+            "ינואר": "1", "פברואר": "2", "מרץ": "3",
+            "אפריל": "4", "מאי": "5", "יוני": "6",
+            "יולי": "7", "אוגוסט": "8", "ספטמבר": "9",
+            "אוקטובר": "10", "נובמבר": "11", "דצמבר": "12"
+        };
+
+        function normalizeDateString(dateStr) {
+            if (!dateStr) return "";
+            dateStr = dateStr.trim();
+
+            const textDashIndex = dateStr.indexOf(' - ');
+            if (textDashIndex !== -1) {
+                dateStr = dateStr.substring(0, textDashIndex).trim();
+            }
+
+            for (const monthName in hebrewMonthsMap) {
+                if (dateStr.includes(monthName)) {
+                    const parts = dateStr.split(monthName);
+                    if (parts.length > 0 && parts[0].trim()) {
+                        const day = parseInt(parts[0].trim());
+                        const month = hebrewMonthsMap[monthName];
+                        if (!isNaN(day)) {
+                            return `${day}/${month}`;
+                        }
+                    }
+                }
+            }
+
+            if (dateStr.includes('.')) {
+                const parts = dateStr.split('.');
+                if (parts.length >= 2) {
+                    const day = parseInt(parts[0]);
+                    const month = parseInt(parts[1]);
+                    if (!isNaN(day) && !isNaN(month)) {
+                        return `${day}/${month}`;
+                    }
+                }
+            }
+            
+            return dateStr;
+        }
+        
+        function parseSchedule(raw) {
+            const rows = raw
+                .trim()
+                .split("\n")
+                .map((line) =>
+                    line
+                        .split(/,(?=(?:[^\"]*"[^\"]*")*[^\"]*$)/)
+                        .map((col) => col.replace(/^"|"$/g, "").trim())
+                );
+
+            const blocks = [];
+            for (let i = 0; i < rows.length; i += 3) {
+                const titles = rows[i] || [];
+                const dates = rows[i + 1] || [];
+                const formats = rows[i + 2] || [];
+                const block = [];
+                for (let col = 0; col < titles.length; col++) {
+                    block.push({
+                        title: titles[col] || "",
+                        date: normalizeDateString(dates[col] || ""),
+                        format: formats[col] || "",
+                    });
+                }
+                blocks.push(block);
+            }
+            return blocks;
+        }
+
+        // --- UI Logic ---
+        const dateInput = document.getElementById('date-input');
+        const searchButton = document.getElementById('search-button');
+        const resultContainer = document.getElementById('result-container');
+        const loader = document.getElementById('app-loader');
+        const content = document.getElementById('app-content');
+
+        let dateMap = {};
+        
+        function getSubjectForDate(isoDate) {
+            if (!isoDate) return "";
+            // Using UTC methods to avoid timezone issues with date parsing.
+            const [year, month, day] = isoDate.split('-').map(Number);
+            const date = new Date(Date.UTC(year, month - 1, day));
+            const dayOfWeek = date.getUTCDay(); // Sunday - 0, Monday - 1, etc.
+
+            if (dayOfWeek === 1) { // Monday
+                return "עקרונות";
+            } else if (dayOfWeek === 3) { // Wednesday
+                return "ארכיטקטורה";
+            }
+            return "";
+        }
+
+        function displayLesson(isoDate, isInitialLoad = false) {
+            if (!isoDate) {
+                resultContainer.innerHTML = `<p class="error message-text">נא לבחור תאריך.</p>`;
+                return;
+            }
+
+            const [year, month, day] = isoDate.split('-');
+            const formattedDate = `${parseInt(day, 10)}/${parseInt(month, 10)}`;
+            
+            const lesson = dateMap[formattedDate];
+            const subject = getSubjectForDate(isoDate);
+            const dayName = new Date(year, month - 1, day).toLocaleDateString('he-IL', { weekday: 'long' });
+
+            if (lesson && lesson.title) {
+                resultContainer.innerHTML = `
+                    <div class="lesson-card">
+                        <h3>${lesson.title}</h3>
+                        ${subject ? `<p><strong>נושא:</strong> ${subject}</p>` : ''}
+                        <p><strong>תאריך:</strong> ${dayName}, ${lesson.date}</p>
+                        <p><strong>פורמט:</strong> ${lesson.format}</p>
+                    </div>
+                `;
+            } else {
+                const message = isInitialLoad ? "אין שיעור להיום. נסו תאריך אחר." : "לא נמצא שיעור לתאריך זה.";
+                resultContainer.innerHTML = `<p class="no-lesson message-text">${message}</p>`;
+            }
+        }
+
+        async function initializeApp() {
+            try {
+                searchButton.disabled = true;
+                const rawData = await (await fetch(FETCH_URL)).text();
+                const blocks = parseSchedule(rawData);
+                dateMap = buildDateMap(blocks);
+                
+                loader.style.display = 'none';
+                content.style.display = 'block';
+                searchButton.disabled = false;
+
+                // --- Auto-search for today's date on load ---
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = today.getMonth() + 1; // getMonth() is zero-based
+                const day = today.getDate();
+                
+                const monthPadded = month.toString().padStart(2, '0');
+                const dayPadded = day.toString().padStart(2, '0');
+                const todayISO = `${year}-${monthPadded}-${dayPadded}`;
+                
+                dateInput.value = todayISO;
+                displayLesson(todayISO, true);
+
+            } catch (error) {
+                console.error("Failed to initialize app:", error);
+                loader.innerHTML = `<p class="error message-text">טעינת הנתונים נכשלה. אנא רעננו את העמוד.</p>`;
+            }
+        }
+
+        searchButton.addEventListener('click', () => {
+            displayLesson(dateInput.value, false);
+        });
+
+        // Initialize the app
+        initializeApp();
+    </script>
+</body>
+</html>

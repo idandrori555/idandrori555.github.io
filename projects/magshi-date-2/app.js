@@ -41,6 +41,7 @@ function parseSchedule(raw) {
   }
   return blocks;
 }
+
 var data = await (await fetch(FETCH_URL)).text();
 var blocks = parseSchedule(data);
 var dateMap = buildDateMap(blocks);
