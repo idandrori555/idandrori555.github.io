@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Class Summarizer Pro</title>
+  <title>Transclive</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -164,7 +164,19 @@
     .markdown-content strong {
       color: #f1f5f9;
     }
+    .safe-pt-header {
+      padding-top: calc(var(--sat) + 3rem);
+    }
+    .safe-pb-footer {
+      padding-bottom: calc(var(--sab) + 1.5rem);
+    }
   </style>
+  <meta name="theme-color" content="#0e8ce9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Transclive">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="manifest" href="manifest.json">
 </head>
 
 <body class="bg-slate-950 text-slate-50 selection:bg-brand-500/30">
@@ -175,12 +187,12 @@
 
     <!-- VIEW: HOME -->
     <div id="homeView" class="view-container flex flex-col h-full w-full">
-      <header class="px-6 pt-12 pb-4">
+      <header class="px-6 pb-4 safe-pt-header">
         <div class="flex justify-between items-start mb-6">
           <div>
             <h1
               class="text-3xl font-extrabold tracking-tight bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent">
-              StudyVault</h1>
+              Transclive</h1>
             <p class="text-slate-500 font-medium">Categorized learning.</p>
           </div>
           <button id="settingsBtn"
@@ -240,7 +252,7 @@
 
     <!-- VIEW: SETTINGS -->
     <div id="settingsView" class="view-container view-hidden flex flex-col h-full w-full hidden">
-      <header class="px-6 pt-12 pb-6">
+      <header class="px-6 pb-6 safe-pt-header">
         <div class="flex items-center gap-4">
           <button id="closeSettingsBtn"
             class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-900 border border-slate-800 text-slate-400">
@@ -295,7 +307,7 @@
 
     <!-- VIEW: SESSION -->
     <div id="sessionView" class="view-container view-hidden flex flex-col h-full w-full hidden">
-      <header class="glass px-4 pt-12 pb-6 rounded-b-[2rem] z-20">
+      <header class="glass px-4 pb-6 rounded-b-[2rem] z-20 safe-pt-header">
         <div class="flex items-center justify-between mb-4">
           <button id="backBtn"
             class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-800/50 text-slate-300">
@@ -305,7 +317,7 @@
           </button>
 
           <select id="folderSelect"
-            class="bg-slate-900/80 text-[10px] font-bold py-2 px-3 rounded-full border border-slate-800 text-brand-400 outline-none uppercase tracking-widest">
+            class="text-center bg-slate-900/80 text-[10px] font-bold py-2 px-3 rounded-full border border-slate-800 text-brand-400 outline-none uppercase tracking-widest">
             <option value="">No Folder</option>
           </select>
 
@@ -360,7 +372,7 @@
         </div>
       </main>
 
-      <footer class="fixed bottom-0 left-0 right-0 p-6 glass rounded-t-[2.5rem] safe-bottom flex flex-col gap-3">
+      <footer class="fixed bottom-0 left-0 right-0 px-6 pt-6 glass rounded-t-[2.5rem] flex flex-col gap-3 safe-pb-footer">
         <div class="flex gap-3">
           <button id="recordToggleBtn"
             class="flex-[1.5] h-14 bg-brand-600 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-brand-900/20 active:scale-95 transition-all">
@@ -798,6 +810,17 @@ OUTPUT LANGUAGE: ${langName}`;
     // Boot
     renderFolders();
     renderLessons();
+
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+          console.log('Service worker registered.', reg);
+        }).catch(err => {
+          console.error('Service worker registration failed:', err);
+        });
+      });
+    }
   </script>
 </body>
 
