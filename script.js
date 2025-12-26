@@ -74,12 +74,21 @@ const projects = [
     icon: "M12 12m-10 0a10 10 0 1120 0 10 10 0 01-20 0",
     link: "/projects/fill-free/",
   },
+  {
+    id: "transclive",
+    category: "אפליקציית AI",
+    title: "Transclive",
+    description: "כלי לסיכום שיעורים בבית הספר עם בינה מלאכותית",
+    technologies: ["HTML", "CSS", "JS"],
+    icon: "M12 12m-10 0a10 10 0 1120 0 10 10 0 01-20 0",
+    link: "/projects/transclive/",
+  },
 ];
 
 const unlistedProjects = [
   {
     id: "invalidate",
-    category: "כלי",
+    category: "אפליקציית AI",
     title: "Invalidate AI",
     description:
       "אפליקציה כמו שאזאם אבל בשביל עובדות, והיא מופעלת על ידי בינה מלאכותית.",

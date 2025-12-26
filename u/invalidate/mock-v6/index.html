@@ -453,7 +453,7 @@
 
         recognition = new SpeechRecognition();
         recognition.continuous = true; // Keep listening even after a pause
-        recognition.interimResults = true; // Set to true for live transcript, but we won't display it now
+        // recognition.interimResults = true; // Set to true for live transcript, but we won't display it now
         recognition.lang = currentLang; // Set the language based on user selection
 
         // Event handler for when speech is recognized
@@ -810,7 +810,7 @@ Raw Text to Analyze: "${transcript}"`;
           category: 'Controversial',
           count: sessionFactCounts.controversial,
           color: classificationClasses.controversial.color
-        }, ].filter(d => d.count > 0); // Filter out categories with zero count
+        },].filter(d => d.count > 0); // Filter out categories with zero count
 
         // Set up dimensions for the SVG
         // Use a fixed size for the SVG within the modal for consistent appearance
@@ -850,9 +850,9 @@ Raw Text to Analyze: "${transcript}"`;
           .transition() // Add transition for drawing effect
           .ease(d3.easeLinear)
           .duration(750)
-          .attrTween("d", function(d) {
+          .attrTween("d", function (d) {
             const i = d3.interpolate(d.startAngle, d.endAngle);
-            return function(t) {
+            return function (t) {
               d.endAngle = i(t);
               return arc(d);
             };

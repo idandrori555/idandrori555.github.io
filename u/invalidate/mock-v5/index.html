@@ -372,7 +372,6 @@
 
         recognition = new SpeechRecognition();
         recognition.continuous = true; // Keep listening even after a pause
-        // --- FIX: Change interimResults to false to get only final, complete utterances ---
         recognition.interimResults = false; // Changed from true to false
         recognition.lang = currentLang; // Set the language based on user selection
 
