@@ -16,16 +16,16 @@
         },
         extend: {
           colors: {
-            background: '#09090b', // Zinc 950
-            surface: '#18181b', // Zinc 900
-            surfaceHighlight: '#27272a', // Zinc 800
+            background: '#09090b',
+            surface: '#18181b',
+            surfaceHighlight: '#27272a',
             brand: {
               50: '#f0f9ff',
               100: '#e0f2fe',
               200: '#bae6fd',
               300: '#7dd3fc',
               400: '#38bdf8',
-              500: '#0ea5e9', // Sky 500
+              500: '#0ea5e9',
               600: '#0284c7',
               700: '#0369a1',
               800: '#075985',
@@ -69,7 +69,6 @@
       overscroll-behavior-y: none;
     }
 
-    /* Modern Scrollbar */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -93,7 +92,6 @@
       scrollbar-width: none;
     }
 
-    /* Glass Effects */
     .glass-header {
       background: rgba(9, 9, 11, 0.85);
       backdrop-filter: blur(16px);
@@ -108,7 +106,6 @@
       border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    /* Inputs */
     .input-base {
       background: #18181b;
       border: 1px solid #27272a;
@@ -120,7 +117,6 @@
       box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
     }
 
-    /* Cards */
     .lesson-card {
       background: #18181b;
       border: 1px solid #27272a;
@@ -132,7 +128,6 @@
       background: #27272a;
     }
 
-    /* View Transitions */
     .view-container {
       transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
       position: absolute;
@@ -149,7 +144,6 @@
       pointer-events: none;
     }
 
-    /* Markdown Styles */
     .markdown-content h1 {
       font-size: 1.5rem;
       font-weight: 800;
@@ -197,7 +191,6 @@
       margin: 1.5rem 0;
     }
 
-    /* Utilities */
     .safe-pt {
       padding-top: calc(var(--sat) + 1rem);
     }
@@ -241,7 +234,6 @@
 
 <body class="bg-background text-zinc-50 overflow-hidden h-[100dvh] w-screen selection:bg-brand-500/30">
 
-  <!-- Background Ambience -->
   <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
     <div
       class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-900/20 rounded-full blur-[120px] mix-blend-screen opacity-30 animate-blob">
@@ -341,10 +333,6 @@
 
       <main class="flex-1 px-6 py-8 overflow-y-auto no-scrollbar space-y-8">
         <section class="space-y-4">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-1 h-4 bg-brand-500 rounded-full"></div>
-            <h2 class="text-sm font-bold uppercase tracking-wider text-zinc-500">Integration</h2>
-          </div>
           <div class="p-4 bg-zinc-900/50 rounded-2xl border border-zinc-800">
             <label class="block">
               <span class="text-xs font-semibold text-zinc-300">Gemini API Key</span>
@@ -358,17 +346,13 @@
         </section>
 
         <section class="space-y-4">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-1 h-4 bg-purple-500 rounded-full"></div>
-            <h2 class="text-sm font-bold uppercase tracking-wider text-zinc-500">Config</h2>
-          </div>
           <div class="grid gap-4">
             <div class="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 flex items-center justify-between">
               <span class="text-sm font-medium text-zinc-200">AI Model</span>
               <select id="settingsModel"
                 class="bg-zinc-800 text-xs font-semibold text-white py-2 px-3 rounded-lg border border-zinc-700 outline-none focus:border-brand-500">
-                <option value="gemini-2.5-flash">Flash (Fast)</option>
-                <option value="gemini-3-flash-preview">Flash Preview (Smart)</option>
+                <option value="gemini-2.5-flash">Fast</option>
+                <option value="gemini-3-flash-preview">Smart</option>
               </select>
             </div>
             <div class="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 flex items-center justify-between">
@@ -432,7 +416,6 @@
 
       <main class="flex-1 overflow-y-auto no-scrollbar pb-32">
         <div class="p-4 space-y-6">
-          <!-- Transcript -->
           <div class="group">
             <div class="flex items-center justify-between mb-3 px-1">
               <label class="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
@@ -462,7 +445,6 @@
             <div class="h-px bg-zinc-800 flex-1"></div>
           </div>
 
-          <!-- Summary -->
           <div class="group">
             <div class="flex items-center justify-between mb-3 px-1">
               <label class="text-xs font-bold text-brand-400 uppercase tracking-wider flex items-center gap-2">
@@ -489,7 +471,6 @@
         </div>
       </main>
 
-      <!-- Action Footer -->
       <footer class="fixed bottom-0 left-0 right-0 p-5 glass-footer rounded-t-[2.5rem] safe-pb flex gap-3 z-50">
         <button id="recordToggleBtn"
           class="flex-[1.2] h-14 bg-zinc-100 text-zinc-900 rounded-2xl font-extrabold flex items-center justify-center gap-3 shadow-lg shadow-white/5 active:scale-95 transition-all overflow-hidden relative">
@@ -579,16 +560,47 @@
       localStorage.setItem('studyvault_config', JSON.stringify(config));
     }
 
+    function deleteFolder(id) {
+      if (confirm("Delete this folder and ALL its lessons? This cannot be undone.")) {
+        // Remove the folder
+        folders = folders.filter(f => f.id !== id);
+        // Remove all lessons in that folder
+        lessons = lessons.filter(l => l.folderId !== id);
+
+        // Reset active folder if the deleted one was active
+        if (activeFolderId === id) activeFolderId = 'all';
+
+        save();
+        renderFolders();
+        renderLessons();
+      }
+    }
+
     function renderFolders() {
       foldersNav.innerHTML = '';
       folderSelect.innerHTML = '<option value="">Uncategorized</option>';
       folders.forEach(folder => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex items-center gap-1';
+
         const tab = document.createElement('button');
         tab.id = `folder-${folder.id}`;
         tab.className = `folder-tab shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${activeFolderId === folder.id ? 'bg-brand-500/10 border-brand-500/20 text-brand-400' : 'bg-transparent border-transparent text-zinc-500 hover:text-zinc-300'}`;
         tab.innerText = folder.name;
         tab.onclick = () => setActiveFolder(folder.id);
-        foldersNav.appendChild(tab);
+
+        wrapper.appendChild(tab);
+
+        // Add delete button only if this folder is active
+        if (activeFolderId === folder.id) {
+          const delBtn = document.createElement('button');
+          delBtn.className = "w-6 h-6 flex items-center justify-center rounded-full bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all ml-1";
+          delBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>`;
+          delBtn.onclick = (e) => {e.stopPropagation(); deleteFolder(folder.id);};
+          wrapper.appendChild(delBtn);
+        }
+
+        foldersNav.appendChild(wrapper);
         const opt = document.createElement('option');
         opt.value = folder.id;
         opt.innerText = folder.name;
@@ -623,7 +635,7 @@
             <div class="flex-1 min-w-0 mr-4">
               <h3 class="text-zinc-100 font-semibold truncate text-[15px] mb-1 leading-tight">${lesson.title || 'Untitled Lesson'}</h3>
               <div class="flex items-center gap-2">
-                <span class="px-1.5 py-0.5 rounded-md bg-zinc-800 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">${lesson.langCode.split('-')[0]}</span>
+                <span class="px-1.5 py-0.5 rounded-md bg-zinc-800 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">${lesson.langCode ? lesson.langCode.split('-')[0] : 'en'}</span>
                 <span class="text-[11px] text-zinc-600 font-medium">${new Date(lesson.id).toLocaleDateString()}</span>
               </div>
             </div>
@@ -652,6 +664,7 @@
           setTimeout(() => v.classList.add('hidden'), 300);
         }
       });
+      if (viewId === 'homeView') renderLessons();
     }
 
     function setupSpeech() {
@@ -774,7 +787,7 @@
       folderSelect.value = lesson.folderId || "";
       if (lesson.summaryMd) {
         summaryContainer.innerHTML = marked.parse(lesson.summaryMd);
-        summaryContainer.setAttribute('dir', (lesson.langCode.startsWith('he') || lesson.langCode.startsWith('ar')) ? 'rtl' : 'ltr');
+        summaryContainer.setAttribute('dir', (lesson.langCode && (lesson.langCode.startsWith('he') || lesson.langCode.startsWith('ar'))) ? 'rtl' : 'ltr');
         copyBtn.classList.remove('hidden');
         summarizeText.innerText = "Summarize Again";
       } else {
@@ -793,7 +806,6 @@
         lessons[idx].transcript = transcriptArea.value;
         lessons[idx].summaryMd = rawSummaryText;
         lessons[idx].langCode = langSelect.value;
-        lessons[idx].langLabel = langSelect.options[langSelect.selectedIndex].text;
         lessons[idx].folderId = folderSelect.value;
         save();
       }
@@ -821,9 +833,8 @@
     }
     document.getElementById('addNewBtn').onclick = () => {
       const newId = Date.now();
-      const defLang = config.defaultLang || "en-US";
-      const langLabel = [...settingsDefaultLang.options].find(o => o.value === defLang)?.text || "English";
-      lessons.push({id: newId, title: "", transcript: "", summaryMd: "", langCode: defLang, langLabel: langLabel, folderId: activeFolderId !== 'all' ? activeFolderId : ""});
+      const targetFolderId = activeFolderId !== 'all' ? activeFolderId : "";
+      lessons.push({id: newId, title: "", transcript: "", summaryMd: "", langCode: config.defaultLang, folderId: targetFolderId});
       openLesson(newId);
     };
     document.getElementById('backBtn').onclick = () => {if (isUserRecording) toggleRecording(); updateLessonState(); switchView('homeView');};
