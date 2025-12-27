@@ -6,6 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Transclive</title>
+  <link rel="manifest" href="manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -851,6 +852,13 @@
 
     renderFolders();
     renderLessons();
+
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(registration => console.log('Service Worker registered'))
+        .catch(error => console.log('Service Worker registration failed'));
+    }
   </script>
 </body>
 
