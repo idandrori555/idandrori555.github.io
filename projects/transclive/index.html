@@ -477,11 +477,6 @@
           class="flex-[1.2] h-14 bg-zinc-100 text-zinc-900 rounded-2xl font-extrabold flex items-center justify-center gap-3 shadow-lg shadow-white/5 active:scale-95 transition-all overflow-hidden relative">
           <div id="recDot" class="w-2.5 h-2.5 rounded-full bg-red-600"></div>
           <span id="recordBtnText">Record</span>
-          <div id="recWave" class="hidden absolute inset-0 bg-red-500/10 flex items-center justify-center gap-1">
-            <div class="w-1 h-3 bg-red-500 rounded-full animate-[pulse_0.5s_infinite]"></div>
-            <div class="w-1 h-5 bg-red-500 rounded-full animate-[pulse_0.6s_infinite]"></div>
-            <div class="w-1 h-3 bg-red-500 rounded-full animate-[pulse_0.7s_infinite]"></div>
-          </div>
         </button>
 
         <button id="summarizeBtn" disabled
@@ -534,7 +529,6 @@
     const recordToggleBtn = document.getElementById("recordToggleBtn");
     const recordBtnText = document.getElementById("recordBtnText");
     const recDot = document.getElementById("recDot");
-    const recWave = document.getElementById("recWave");
     const summarizeBtn = document.getElementById("summarizeBtn");
     const summarizeText = document.getElementById("summarizeText");
     const transcriptArea = document.getElementById("transcript");
@@ -697,7 +691,6 @@
         recordToggleBtn.classList.replace('text-zinc-900', 'text-white');
         recordBtnText.innerText = "Stop";
         recDot.classList.add('hidden');
-        recWave.classList.remove('hidden');
         recIndicator.classList.replace('bg-zinc-600', 'bg-red-500');
         recIndicator.classList.add('pulse-ring');
         sessionStatus.innerText = "Listening...";
@@ -710,7 +703,6 @@
         recordToggleBtn.classList.replace('text-white', 'text-zinc-900');
         recordBtnText.innerText = "Record";
         recDot.classList.remove('hidden');
-        recWave.classList.add('hidden');
         recIndicator.classList.replace('bg-red-500', 'bg-zinc-600');
         recIndicator.classList.remove('pulse-ring');
         sessionStatus.innerText = "Ready";
