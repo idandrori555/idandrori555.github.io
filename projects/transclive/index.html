@@ -523,9 +523,9 @@
   </div>
 
   <script>
-    let config = JSON.parse(localStorage.getItem('studyvault_config') || '{"apiKey": "", "groqKey": "", "defaultLang": "en", "model": "gemini-2.5-flash", "engine": "native"}');
-    let lessons = JSON.parse(localStorage.getItem('lessons_pro') || '[]');
-    let folders = JSON.parse(localStorage.getItem('folders_pro') || '[]');
+    let config = JSON.parse(localStorage.getItem('transclive_config') || '{"apiKey": "", "groqKey": "", "defaultLang": "en", "model": "gemini-2.5-flash", "engine": "native"}');
+    let lessons = JSON.parse(localStorage.getItem('transclive_lessons') || '[]');
+    let folders = JSON.parse(localStorage.getItem('transclive_folders') || '[]');
 
     let currentLessonId = null;
     let activeFolderId = 'all';
@@ -565,8 +565,8 @@
     const engineWhisper = document.getElementById('engineWhisper');
 
     function save() {
-      localStorage.setItem('lessons_pro', JSON.stringify(lessons));
-      localStorage.setItem('folders_pro', JSON.stringify(folders));
+      localStorage.setItem('transclive_lessons', JSON.stringify(lessons));
+      localStorage.setItem('transclive_folders', JSON.stringify(folders));
     }
 
     function saveConfig() {
@@ -575,7 +575,7 @@
       config.defaultLang = settingsDefaultLang.value;
       config.model = settingsModel.value;
       config.engine = currentEngine;
-      localStorage.setItem('studyvault_config', JSON.stringify(config));
+      localStorage.setItem('transclive_config', JSON.stringify(config));
     }
 
     function renderFolders() {
