@@ -675,7 +675,7 @@
 
       recognition = new Speech();
       recognition.continuous = true;
-      recognition.interimResults = true;
+      recognition.interimResults = false; // PREVENT DUPLICATION GLITCH
       recognition.lang = langSelect.value;
 
       recognition.onresult = (event) => {
