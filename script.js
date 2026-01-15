@@ -2,12 +2,30 @@ const projects = [
   {
     id: "invalidate",
     category: "אפליקציית AI",
-    title: "Invalidate AI",
+    title: "Invalidate",
     description:
       "אפליקציה כמו שאזאם אבל בשביל עובדות, והיא מופעלת על ידי בינה מלאכותית.",
     technologies: ["HTML", "CSS", "JS"],
-    icon: "M12 6v6m0 0v6m0-6h6m-6 0H6",
+    icon: "M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0 M21 21l-6 -6 M15 7l.5 1.5l1.5 .5l-1.5 .5l-.5 1.5l-.5 -1.5l-1.5 -.5l1.5 -.5z",
     link: "/u/invalidate/mock-v6/",
+  },
+  {
+    id: "transclive",
+    category: "אפליקציית AI",
+    title: "Transclive",
+    description: "כלי לסיכום שיעורים בבית הספר עם בינה מלאכותית",
+    technologies: ["HTML", "CSS", "JS"],
+    icon: "M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z M19 10v1a7 7 0 0 1-14 0v-1 M12 18v4 M8 22h8",
+    link: "/projects/transclive/",
+  },
+  {
+    id: "acne-ai",
+    category: "אפליקציית AI",
+    title: "Acne AI",
+    description: "צלם את האוכל שלך ותראה כמה זה ישפיע על מצב הפנים",
+    technologies: ["HTML", "CSS", "JS"],
+    icon: "M5 7h1l2-2h8l2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2 M12 13m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0",
+    link: "https://acne-ai.onrender.com/",
   },
   {
     id: "compiler-project",
@@ -16,17 +34,8 @@ const projects = [
     description:
       "קומפיילר בשביל הבגרות במדעי המחשב עם המחלקות של משרד החינוך לבגרות",
     technologies: ["HTML", "CSS", "JS", "Deno", "Typescript", "Express"],
-    icon: "M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z M12 8a4 4 0 100 8 4 4 0 000-8zm0-2v2 M12 16v2 M8 12H6 M18 12h-2 M15.657 8.343l-1.414 1.414 M9.757 14.243l-1.414 1.414 M15.657 15.657l-1.414-1.414 M9.757 9.757l-1.414-1.414",
+    icon: "M7 8l-4 4l4 4 M17 8l4 4l-4 4 M14 4l-4 16",
     link: "https://github.com/idandrori555/Online-Edu-Java-Compiler",
-  },
-  {
-    id: "terminal-portfolio",
-    category: "פורטפוליו",
-    title: "Terminal Portfolio",
-    description: "פורטפוליו בסיסי עם עיצוב של טרמינל וכמה פקודות",
-    technologies: ["HTML", "CSS", "JS"],
-    icon: "M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm4.5 4.5l3 3-3 3M13 12h4",
-    link: "/projects/terminal-portfolio",
   },
   {
     id: "mashov-api",
@@ -34,7 +43,7 @@ const projects = [
     title: "Mashov Api",
     description: "ממשק תכנות יישומים לא רשמי בשביל המשוב",
     technologies: ["Deno", "Typescript"],
-    icon: "M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z M8 8h8 M8 12h8 M8 16h8 M12 4v3 M12 17v3 M4 12h3 M17 12h3",
+    icon: "M3 15h18M3 9h18M6 15v-2M6 9V7M18 15v-2M18 9V7",
     link: "https://github.com/idandrori555/mashov-api",
   },
   {
@@ -43,7 +52,7 @@ const projects = [
     title: "Alias",
     description: "משחק כיף עם חברים, צריך להסביר מילים לחברים לקבוצה",
     technologies: ["HTML", "CSS", "JS"],
-    icon: "M14.828 14.828a4 4 0 01-5.656 0M9.172 9.172a4 4 0 015.656 0M12 18a6 6 0 100-12 6 6 0 000 12z",
+    icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
     link: "/projects/alias/",
   },
   {
@@ -52,7 +61,7 @@ const projects = [
     title: "Boil",
     description: "כלי עזר לכתיבת תבניות",
     technologies: ["BASH"],
-    icon: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4",
+    icon: "M7 8l-4 4l4 4 M17 8l4 4l-4 4 M14 4l-4 16",
     link: "https://github.com/idandrori555/boil",
   },
   {
@@ -63,15 +72,6 @@ const projects = [
     technologies: ["HTML", "CSS", "JS"],
     icon: "M12 12m-10 0a10 10 0 1120 0 10 10 0 01-20 0",
     link: "/projects/fill-free/",
-  },
-  {
-    id: "transclive",
-    category: "אפליקציית AI",
-    title: "Transclive",
-    description: "כלי לסיכום שיעורים בבית הספר עם בינה מלאכותית",
-    technologies: ["HTML", "CSS", "JS"],
-    icon: "M12 12m-10 0a10 10 0 1120 0 10 10 0 01-20 0",
-    link: "/projects/transclive/",
   },
 ];
 
