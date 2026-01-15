@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>עידן דרורי - Creative Developer</title>
+  <title>עידן דרורי</title>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -12,8 +12,9 @@
   <style>
     :root {
       --accent: #3b82f6;
-      --accent-secondary: #14b8a6;
-      --glass: rgba(15, 23, 42, 0.7);
+      --accent-glow: rgba(59, 130, 246, 0.5);
+      --glass: rgba(15, 23, 42, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.08);
     }
 
     html {
@@ -25,36 +26,46 @@
       color: #e2e8f0;
       overflow-x: hidden;
       font-family: 'Heebo', sans-serif;
-      /* Make all text non-selectable */
       user-select: none;
       -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
     }
 
-    /* Animated Background Canvas */
+    /* Background Noise Texture for Premium Feel */
+    .bg-noise {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
     #bg-canvas {
       position: fixed;
       top: 0;
       left: 0;
-      z-index: -1;
+      z-index: -2;
       width: 100%;
       height: 100%;
       opacity: 0.4;
     }
 
-    /* Glassmorphism Styles */
+    /* Enhanced Glassmorphism */
     .glass-panel {
       background: var(--glass);
-      backdrop-filter: blur(12px) saturate(180%);
-      -webkit-backdrop-filter: blur(12px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     }
 
     .glass-card {
-      background: rgba(30, 41, 59, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      background: rgba(30, 41, 59, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       position: relative;
       overflow: hidden;
     }
@@ -77,29 +88,48 @@
 
     .glass-card:hover {
       border-color: var(--accent);
-      transform: translateY(-10px) scale(1.02);
-      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.2);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.1);
     }
 
-    /* Text Glow Effect */
     .glow-text {
-      text-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+      text-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
     }
 
-    /* Tech Badges */
+    /* Tech Badge - Refined */
     .tech-badge {
-      background: rgba(59, 130, 246, 0.05);
-      border: 1px solid rgba(59, 130, 246, 0.15);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
       transition: all 0.3s ease;
     }
 
     .tech-badge:hover {
-      background: var(--accent);
-      color: white;
-      box-shadow: 0 0 15px var(--accent);
+      background: rgba(59, 130, 246, 0.1);
+      border-color: var(--accent);
+      color: #93c5fd;
+      transform: translateY(-2px);
     }
 
-    /* Section Animations */
+    /* Category Label for Tech Stack */
+    .tech-category {
+      position: relative;
+      padding-right: 1rem;
+    }
+
+    .tech-category::before {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    /* Animations */
     .reveal {
       opacity: 0;
       transform: translateY(30px);
@@ -113,13 +143,42 @@
 
     .masonry-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
-      gap: 2rem;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+      gap: 1.5rem;
     }
 
-    /* Custom Scrollbar */
+    /* Floating Navigation */
+    .nav-dock {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      padding: 0.5rem 0.5rem;
+      border-radius: 999px;
+      display: flex;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item {
+      padding: 0.75rem 1.5rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #94a3b8;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
     ::-webkit-scrollbar {
-      width: 8px;
+      width: 6px;
     }
 
     ::-webkit-scrollbar-track {
@@ -138,130 +197,176 @@
 </head>
 
 <body class="selection:bg-blue-500/30">
+  <div class="bg-noise"></div>
   <canvas id="bg-canvas"></canvas>
 
-  <!-- Hero Section (Reduced PT from 20 to 12) -->
-  <header class="relative min-h-[90vh] flex flex-col justify-center items-center text-center px-6 py-12">
+  <!-- Floating Navigation Dock -->
+  <nav class="nav-dock glass-panel">
+    <a href="#hero" class="nav-item">בית</a>
+    <a href="#about" class="nav-item">אודות</a>
+    <a href="#stack" class="nav-item">כלים</a>
+    <a href="#projects" class="nav-item">פרויקטים</a>
+  </nav>
+
+  <header id="hero" class="relative min-h-[95vh] flex flex-col justify-center items-center text-center px-6 pt-20">
+    <!-- Status Indicator -->
     <div
-      class="glass-panel px-4 py-1.5 mb-6 rounded-full text-blue-400 text-xs font-bold tracking-[0.2em] uppercase animate-pulse">
-      Creative Fullstack Developer
+      class="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full mb-8 animate-fade-in-up">
+      <span class="relative flex h-2 w-2">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+      </span>
+      <span class="text-green-400 text-xs font-bold tracking-wider uppercase">זמין לפרויקטים</span>
     </div>
 
-    <h1 class="text-6xl md:text-[10rem] font-black mb-6 tracking-tighter leading-none">
+    <h1 class="text-6xl md:text-[9rem] font-black mb-6 tracking-tighter leading-none relative z-10">
       עידן <span
-        class="bg-gradient-to-r from-blue-500 via-cyan-400 to-teal-500 text-transparent bg-clip-text glow-text">דרורי</span>
+        class="bg-gradient-to-r from-blue-500 via-indigo-400 to-teal-400 text-transparent bg-clip-text glow-text">דרורי</span>
     </h1>
 
-    <p class="text-xl md:text-3xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed">
-      הופך רעיונות מורכבים למוצרים דיגיטליים <span class="text-white font-medium">אלגנטיים</span> מבוססי AI.
+    <p class="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto font-light leading-relaxed mb-10">
+      מפתח Fullstack שמתמחה בבניית מוצרים חכמים. משלב בין <span class="text-white font-medium">ארכיטקטורה חזקה</span>
+      לבין <span class="text-white font-medium">Generative AI</span> ליצירת חוויות יוצאות דופן.
     </p>
 
-    <div class="mt-12 flex flex-wrap justify-center gap-6">
+    <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
       <a href="#projects"
-        class="group relative px-10 py-5 bg-blue-600 text-white rounded-2xl font-bold transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(37,99,235,0.4)] active:scale-95 overflow-hidden">
-        <span class="relative z-10">צפה בפרויקטים</span>
-        <div
-          class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
-        </div>
+        class="w-full sm:w-auto group relative px-8 py-4 bg-blue-600 text-white rounded-xl font-bold transition-all hover:bg-blue-500 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.5)] active:scale-95 text-center">
+        צפה בתיק העבודות
       </a>
-      <a href="https://github.com/idandrori555" target="_blank"
-        class="px-10 py-5 glass-panel hover:bg-white/5 rounded-2xl font-bold transition-all active:scale-95 border border-white/10">
-        GitHub
+      <a href="mailto:idandrori555@gmail.com"
+        class="w-full sm:w-auto px-8 py-4 glass-panel hover:bg-white/5 rounded-xl font-bold transition-all active:scale-95 border border-white/10 text-center flex items-center justify-center gap-2">
+        <span>צור קשר</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
       </a>
     </div>
 
-    <!-- Scroll Indicator -->
-    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce opacity-30">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7-7-7"></path>
-      </svg>
+    <!-- Mouse Scroll Indicator -->
+    <div class="absolute bottom-24 left-1/2 -translate-x-1/2 opacity-50 hidden md:flex flex-col items-center gap-2">
+      <span class="text-[10px] uppercase tracking-[0.2em] text-gray-500">גלילה</span>
+      <div class="w-[1px] h-12 bg-gradient-to-b from-blue-500 to-transparent"></div>
     </div>
   </header>
 
-  <!-- Main Container (Reduced Space-y from 40 to 24) -->
-  <main class="max-w-7xl mx-auto px-6 space-y-24 pb-20 pt-36">
+  <main class="max-w-7xl mx-auto px-6 space-y-32 pb-40">
 
     <!-- About Section -->
-    <section id="about" class="reveal grid lg:grid-cols-12 gap-8 items-stretch">
-      <div class="lg:col-span-8 glass-panel p-10 rounded-[3rem] relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-[80px]"></div>
-        <h2 class="text-5xl font-black mb-6 flex items-center gap-4">
-          קצת עלי
-          <span class="h-1 flex-grow bg-gradient-to-l from-blue-500/50 to-transparent rounded-full"></span>
+    <section id="about" class="reveal grid lg:grid-cols-12 gap-6 items-stretch">
+      <div
+        class="lg:col-span-8 glass-panel p-8 md:p-12 rounded-[2.5rem] relative overflow-hidden flex flex-col justify-center">
+        <!-- Decoration -->
+        <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full"></div>
+
+        <h2 class="text-3xl md:text-4xl font-black mb-6 flex items-center gap-3 relative z-10">
+          <span class="text-blue-500">/</span> על קצה המזלג
         </h2>
-        <p class="text-2xl text-gray-400 leading-relaxed font-light">
-          מפתח בן 17 שחי ונושם טכנולוגיה. אני מתמחה בבניית מערכות המשלבות <span class="text-blue-400 font-medium">Deep
-            Learning</span> וארכיטקטורות קצה מודרניות. אני מאמין שקוד הוא אמנות, ודיוק הוא המפתח לחוויות משתמש בלתי
-          נשכחות.
+        <p class="text-lg md:text-xl text-gray-400 leading-relaxed font-light relative z-10">
+          היי, אני עידן. בגיל 17 אני כבר מחזיק בניסיון מעשי עשיר בפיתוח מוצרים מקצה לקצה. אני לא רק "כותב קוד" – אני
+          פותר בעיות.
+          <br><br>
+          ההתמחות שלי היא בשילוב טכנולוגיות <span class="text-blue-400 font-medium">Deep Learning</span> בתוך אפליקציות
+          ווב מודרניות, מה שמאפשר לי לייצר כלים שלא רק נראים טוב, אלא גם "חושבים" ונותנים ערך אמיתי.
         </p>
       </div>
 
-      <div class="lg:col-span-4 grid grid-rows-2 gap-6">
+      <div class="lg:col-span-4 flex flex-col gap-6">
         <div
-          class="glass-panel p-6 rounded-[2.5rem] flex flex-col items-center justify-center group hover:border-blue-500/50 transition-colors">
-          <span class="text-6xl font-black text-white group-hover:scale-110 transition-transform">17</span>
-          <span class="text-blue-400/60 font-bold uppercase tracking-widest text-sm mt-2">הגיל שלי</span>
+          class="glass-panel p-8 rounded-[2.5rem] flex-1 flex flex-col items-center justify-center relative overflow-hidden group">
+          <div
+            class="absolute inset-0 bg-blue-500/5 scale-y-0 group-hover:scale-y-100 transition-transform origin-bottom duration-500">
+          </div>
+          <span class="text-5xl md:text-6xl font-black text-white count-up relative z-10" data-target="17"
+            data-suffix="">0</span>
+          <span class="text-gray-500 text-xs font-bold uppercase tracking-widest mt-2 relative z-10">גיל (אבל מי
+            סופר?)</span>
         </div>
         <div
-          class="glass-panel p-6 rounded-[2.5rem] flex flex-col items-center justify-center group hover:border-teal-500/50 transition-colors">
-          <span class="text-6xl font-black text-white group-hover:scale-110 transition-transform">12+</span>
-          <span class="text-teal-400/60 font-bold uppercase tracking-widest text-sm mt-2">פרויקטים חיים</span>
+          class="glass-panel p-8 rounded-[2.5rem] flex-1 flex flex-col items-center justify-center relative overflow-hidden group">
+          <div
+            class="absolute inset-0 bg-teal-500/5 scale-y-0 group-hover:scale-y-100 transition-transform origin-bottom duration-500">
+          </div>
+          <span class="text-5xl md:text-6xl font-black text-white count-up relative z-10" data-target="12"
+            data-suffix="+">0</span>
+          <span class="text-gray-500 text-xs font-bold uppercase tracking-widest mt-2 relative z-10">פרויקטים
+            מוכחים</span>
         </div>
       </div>
     </section>
 
-    <!-- Tech Section -->
-    <section class="reveal">
-      <div class="text-center mb-10">
-        <h2 class="text-sm font-bold tracking-[0.3em] text-blue-500 uppercase mb-4">Tech Stack</h2>
-        <h3 class="text-4xl font-black">הכלים שאני משתמש בהם</h3>
+    <!-- Tech Stack - Categorized for Better UX -->
+    <section id="stack" class="reveal">
+      <div class="flex flex-col md:flex-row justify-between items-end mb-10 px-2">
+        <div>
+          <h2 class="text-sm font-bold tracking-[0.2em] text-blue-500 uppercase mb-2">Tech Stack</h2>
+          <h3 class="text-3xl md:text-4xl font-black">ארגז הכלים שלי</h3>
+        </div>
       </div>
-      <div class="glass-panel p-10 rounded-[3.5rem] flex flex-wrap justify-center gap-4">
-        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Next.js</span>
-        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Node.js</span>
-        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">TypeScript</span>
-        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Bun</span>
-        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Generative AI</span>
-        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">C++</span>
-        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Tailwind</span>
-        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Firebase</span>
-        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Python</span>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Frontend -->
+        <div class="glass-panel p-8 rounded-[2rem]">
+          <h4 class="text-xl font-bold mb-6 flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-blue-400 box-shadow-glow"></div> Frontend
+          </h4>
+          <div class="flex flex-wrap gap-3">
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">React</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Next.js</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Tailwind CSS</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">TypeScript</span>
+          </div>
+        </div>
+
+        <!-- Backend & System -->
+        <div class="glass-panel p-8 rounded-[2rem]">
+          <h4 class="text-xl font-bold mb-6 flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-indigo-400"></div> Backend & Core
+          </h4>
+          <div class="flex flex-wrap gap-3">
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Node.js</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Bun</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Python</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">C++</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Firebase</span>
+          </div>
+        </div>
+
+        <!-- AI & Innovations -->
+        <div class="glass-panel p-8 rounded-[2rem]">
+          <h4 class="text-xl font-bold mb-6 flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-teal-400"></div> AI & Tools
+          </h4>
+          <div class="flex flex-wrap gap-3">
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Gemini API</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">LLM Integration</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Git</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Vercel</span>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- Projects -->
     <section id="projects" class="space-y-12">
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
-        <div>
-          <h2 class="text-6xl font-black tracking-tighter">פרויקטים</h2>
-          <p class="text-gray-500 mt-2 text-xl font-light italic">Selection of work & experiments</p>
-        </div>
+      <div class="flex items-center gap-4 mb-4">
+        <h2 class="text-4xl md:text-5xl font-black tracking-tight">נבחרים</h2>
+        <div class="h-[1px] flex-grow bg-white/10"></div>
       </div>
 
       <div id="projects-grid" class="masonry-grid">
         <!-- Injected by script.js -->
       </div>
     </section>
-  </main>
 
-  <footer class="max-w-7xl mx-auto px-6 pb-12">
-    <div class="glass-panel p-12 rounded-[4rem] text-center relative overflow-hidden group">
-      <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent"></div>
-
-      <h2 class="text-5xl md:text-7xl font-black mb-8 tracking-tight">רוצים לעבוד יחד?</h2>
-
-      <div class="flex flex-wrap justify-center gap-6 relative z-10">
-        <a href="mailto:idandrori555@gmail.com"
-          class="px-12 py-6 bg-white text-black rounded-2xl font-black text-xl hover:bg-blue-500 hover:text-white transition-all hover:scale-105 active:scale-95 shadow-2xl">
-          שלחו אימייל
-        </a>
-        <a href="https://github.com/idandrori555"
-          class="px-12 py-6 glass-panel rounded-2xl font-black text-xl hover:bg-white/10 transition-all active:scale-95">
-          GitHub
-        </a>
+    <!-- Minimal Footer -->
+    <footer class="text-center pt-10 border-t border-white/5">
+      <div class="flex justify-center gap-6 text-sm text-gray-400">
+        <a href="https://github.com/idandrori555" class="hover:text-blue-400 transition-colors">GitHub</a>
+        <a href="mailto:idandrori555@gmail.com" class="hover:text-blue-400 transition-colors">Email</a>
       </div>
-    </div>
-  </footer>
+    </footer>
+  </main>
 
   <script>
     // Background Animation
@@ -273,30 +378,33 @@
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
       particles = [];
-      for (let i = 0; i < 60; i++) {
+      for (let i = 0; i < 40; i++) {
         particles.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
-          size: Math.random() * 2 + 1
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          size: Math.random() * 2 + 0.5,
+          alpha: Math.random() * 0.5 + 0.1
         });
       }
     }
 
     function animate() {
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#3b82f6';
 
       particles.forEach(p => {
         p.x += p.vx;
         p.y += p.vy;
 
-        if (p.x < 0 || p.x > width) p.vx *= -1;
-        if (p.y < 0 || p.y > height) p.vy *= -1;
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(59, 130, 246, ${p.alpha})`;
         ctx.fill();
       });
 
@@ -319,8 +427,65 @@
       });
     }
 
-    window.addEventListener('scroll', reveal);
-    reveal(); // Initial check
+    // Active Link Logic for Floating Nav
+    const sections = document.querySelectorAll('section, header');
+    const navLinks = document.querySelectorAll('.nav-item');
+
+    function updateActiveLink() {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        if (scrollY >= (sectionTop - 300)) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href').includes(current)) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    // Count Up Logic
+    function countUp(el) {
+      const target = parseInt(el.getAttribute('data-target'));
+      const suffix = el.getAttribute('data-suffix') || '';
+      const duration = 2000;
+      const increment = target / (duration / 16);
+      let current = 0;
+
+      const updateCount = () => {
+        current += increment;
+        if (current < target) {
+          el.innerText = Math.floor(current);
+          requestAnimationFrame(updateCount);
+        } else {
+          el.innerText = target + suffix;
+        }
+      };
+      updateCount();
+    }
+
+    const countObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !entry.target.classList.contains('counted')) {
+          countUp(entry.target);
+          entry.target.classList.add('counted');
+        }
+      });
+    }, {threshold: 0.5});
+
+    document.querySelectorAll('.count-up').forEach(el => countObserver.observe(el));
+
+    window.addEventListener('scroll', () => {
+      reveal();
+      updateActiveLink();
+    });
+
+    reveal();
   </script>
 </body>
 
