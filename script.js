@@ -1,23 +1,13 @@
 const projects = [
   {
-    id: "magshi-date",
-    category: "לוח זמנים",
-    title: "Magshi Date 1",
+    id: "invalidate",
+    category: "אפליקציית AI",
+    title: "Invalidate AI",
     description:
-      "אפליקציה נקייה לבדיקת שיעורי מגשימים קרובים לפי תאריך. (באר שבע בלבד)שנה א",
-    technologies: ["HTML", "Tailwind", "JS"],
-    icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
-    link: "/projects/magshi-date/",
-  },
-  {
-    id: "magshi-date-2",
-    category: "לוח זמנים",
-    title: "Magshi Date 2",
-    description:
-      "אפליקציה נקייה לבדיקת שיעורי מגשימים קרובים לפי תאריך. (באר שבע בלבד)שנה ב",
-    technologies: ["HTML", "Tailwind", "JS"],
-    icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
-    link: "/projects/magshi-date-2/",
+      "אפליקציה כמו שאזאם אבל בשביל עובדות, והיא מופעלת על ידי בינה מלאכותית.",
+    technologies: ["HTML", "CSS", "JS"],
+    icon: "M12 6v6m0 0v6m0-6h6m-6 0H6",
+    link: "/u/invalidate/mock-v6/",
   },
   {
     id: "compiler-project",
@@ -85,108 +75,49 @@ const projects = [
   },
 ];
 
-const unlistedProjects = [
-  {
-    id: "invalidate",
-    category: "אפליקציית AI",
-    title: "Invalidate AI",
-    description:
-      "אפליקציה כמו שאזאם אבל בשביל עובדות, והיא מופעלת על ידי בינה מלאכותית.",
-    technologies: ["HTML", "CSS", "JS"],
-    icon: "M12 6v6m0 0v6m0-6h6m-6 0H6",
-    link: "/u/invalidate/mock-v6/",
-  },
-  {
-    id: "moovit-bus-pass-2",
-    category: "כלי",
-    title: "Moovit Bus Pass v2",
-    description: "גרסה משופרת של כרטיס האוטובוס המזויף",
-    technologies: ["HTML", "CSS", "JS"],
-    icon: "M3 10h18M3 6h18M3 14h18M3 18h18",
-    link: "/u/moovit-bus-pass/",
-  },
-  {
-    id: "organizer",
-    category: "ארגון",
-    title: "Organizer",
-    description: "כלי לארגון וסידור",
-    technologies: ["HTML", "CSS", "JS"],
-    icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
-    link: "/u/organizer/",
-  },
-  {
-    id: "poker-advisor",
-    category: "כלי",
-    title: "Poker Advisor",
-    description: "יועץ פוקר שעוזר לך להחליט מה לעשות",
-    technologies: ["HTML", "CSS", "TypeScript"],
-    icon: "M13 10V3L4 14h7v7l9-11h-7z",
-    link: "/u/poker-advisor/",
-  },
-  {
-    id: "poker-debt",
-    category: "כלי",
-    title: "Poker Debt",
-    description: "מחשבון חובות למשחקי פוקר",
-    technologies: ["HTML", "CSS", "JS"],
-    icon: "M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm4-8a2 2 0 11-4 0 2 2 0 014 0z",
-    link: "/u/poker-debt/index.html",
-  },
-];
-
-const projectTemplate = (project) => `<div class="card-hover">
-            <a href="${
-              project.link
-            }" target="_blank" rel="noopener noreferrer" class="block">
-            <div class="flex justify-between items-start mb-4">
-                <div class="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${
-                          project.icon
-                        }"/>
+const projectTemplate = (project) => `
+    <div class="glass-card p-8 rounded-[2.5rem] flex flex-col h-full group transition-all">
+        <a href="${project.link}" target="_blank" rel="noopener noreferrer" class="flex flex-col h-full">
+            <div class="flex justify-between items-start mb-6">
+                <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${project.icon}"/>
                     </svg>
                 </div>
-                <span class="bg-gray-800 text-gray-400 
-                             text-xs font-medium px-2.5 py-1 rounded-full border border-gray-700">
+                <span class="bg-white/5 text-gray-400 text-xs font-bold px-3 py-1.5 rounded-full border border-white/10 uppercase tracking-wider">
                     ${project.category}
                 </span>
             </div>
-                <h2 class="text-2xl font-bold text-gray-100 mb-3 
-                           hover:text-blue-400 transition-colors">
-                    ${project.title}
-                </h2>
-                <p class="text-gray-400 mb-6">
-                    ${project.description}
-                </p>
-                <div class="flex justify-between items-center flex-wrap gap-y-2">
-                    <div class="flex flex-wrap gap-2">
-                        ${project.technologies
-                          .map(
-                            (tech) => `
-                                <span class="bg-gray-800 text-gray-400 
-                                             text-xs font-medium px-2.5 py-1 rounded-full border border-gray-700">
-                                    ${tech}
-                                </span>
-                            `,
-                          )
-                          .join("")}
-                    </div>
-                </div>
-            </a>
-        </div>
-    `;
+            
+            <h3 class="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors">
+                ${project.title}
+            </h3>
+            
+            <p class="text-gray-400 leading-relaxed mb-8 flex-grow">
+                ${project.description}
+            </p>
+            
+            <div class="flex flex-wrap gap-2 pt-6 border-t border-white/5">
+                ${project.technologies
+                  .map(
+                    (tech) => `
+                    <span class="text-[10px] font-bold text-blue-300/60 border border-blue-300/20 px-2 py-1 rounded-md uppercase">
+                        ${tech}
+                    </span>
+                `,
+                  )
+                  .join("")}
+            </div>
+        </a>
+    </div>
+`;
 
 document.addEventListener("DOMContentLoaded", () => {
   const projectsContainer = document.querySelector("#projects-grid");
-  const unlistedProjectsContainer = document.querySelector(
-    "#unlisted-projects-grid",
-  );
 
-  projectsContainer.innerHTML = projects
-    .map((project) => projectTemplate(project))
-    .join("");
-
-  unlistedProjectsContainer.innerHTML = unlistedProjects
-    .map((project) => projectTemplate(project))
-    .join("");
+  if (projectsContainer) {
+    projectsContainer.innerHTML = projects
+      .map((project) => projectTemplate(project))
+      .join("");
+  }
 });

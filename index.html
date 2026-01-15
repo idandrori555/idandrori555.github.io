@@ -3,44 +3,325 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>עידן דורי - פרויקטים</title>
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>עידן דרורי - Creative Developer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="./tailwind.js" defer></script>
   <script src="./script.js" defer></script>
+  <style>
+    :root {
+      --accent: #3b82f6;
+      --accent-secondary: #14b8a6;
+      --glass: rgba(15, 23, 42, 0.7);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: #020617;
+      color: #e2e8f0;
+      overflow-x: hidden;
+      font-family: 'Heebo', sans-serif;
+      /* Make all text non-selectable */
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    /* Animated Background Canvas */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+      opacity: 0.4;
+    }
+
+    /* Glassmorphism Styles */
+    .glass-panel {
+      background: var(--glass);
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+      transform: translateX(-100%);
+      transition: 0.6s;
+    }
+
+    .glass-card:hover::before {
+      transform: translateX(100%);
+    }
+
+    .glass-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Text Glow Effect */
+    .glow-text {
+      text-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Tech Badges */
+    .tech-badge {
+      background: rgba(59, 130, 246, 0.05);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      transition: all 0.3s ease;
+    }
+
+    .tech-badge:hover {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 0 15px var(--accent);
+    }
+
+    /* Section Animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease-out;
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .masonry-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
+      gap: 2rem;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #020617;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
+  </style>
 </head>
 
-<body class="font-heebo min-h-screen py-12 px-4 bg-gray-900 text-gray-200">
-  <header class="max-w-5xl mx-auto text-center mb-16 px-4">
-    <h1
-      class="text-6xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-teal-300 text-transparent bg-clip-text inline-block">      פרויקטים
+<body class="selection:bg-blue-500/30">
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Hero Section (Reduced PT from 20 to 12) -->
+  <header class="relative min-h-[90vh] flex flex-col justify-center items-center text-center px-6 py-12">
+    <div
+      class="glass-panel px-4 py-1.5 mb-6 rounded-full text-blue-400 text-xs font-bold tracking-[0.2em] uppercase animate-pulse">
+      Creative Fullstack Developer
+    </div>
+
+    <h1 class="text-6xl md:text-[10rem] font-black mb-6 tracking-tighter leading-none">
+      עידן <span
+        class="bg-gradient-to-r from-blue-500 via-cyan-400 to-teal-500 text-transparent bg-clip-text glow-text">דרורי</span>
     </h1>
-    <p class="text-xl text-gray-400 max-w-2xl mx-auto">
-      אוסף של פרויקטים שפיתחתי במהלך השנים, הכוללים אפליקציות, כלים ועוד.
+
+    <p class="text-xl md:text-3xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed">
+      הופך רעיונות מורכבים למוצרים דיגיטליים <span class="text-white font-medium">אלגנטיים</span> מבוססי AI.
     </p>
+
+    <div class="mt-12 flex flex-wrap justify-center gap-6">
+      <a href="#projects"
+        class="group relative px-10 py-5 bg-blue-600 text-white rounded-2xl font-bold transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(37,99,235,0.4)] active:scale-95 overflow-hidden">
+        <span class="relative z-10">צפה בפרויקטים</span>
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+        </div>
+      </a>
+      <a href="https://github.com/idandrori555" target="_blank"
+        class="px-10 py-5 glass-panel hover:bg-white/5 rounded-2xl font-bold transition-all active:scale-95 border border-white/10">
+        GitHub
+      </a>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce opacity-30">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7-7-7"></path>
+      </svg>
+    </div>
   </header>
 
-  <main class="max-w-7xl mx-auto">
-    <div id="projects-grid"
-      class="masonry-grid"></div>
+  <!-- Main Container (Reduced Space-y from 40 to 24) -->
+  <main class="max-w-7xl mx-auto px-6 space-y-24 pb-20 pt-36">
 
-    <div class="mt-24">
-      <h2 class="text-4xl font-bold text-center mb-8 text-gray-300">פרויקטים לא רשמיים</h2>
-      <p class="text-lg text-gray-500 max-w-2xl mx-auto text-center mb-12">
-        אלו פרויקטים בפיתוח, ניסויים, או סתם דברים שבניתי בשביל הכיף. הם עשויים להיות לא גמורים או לא יציבים.
-      </p>
-      <div id="unlisted-projects-grid"
-        class="masonry-grid"></div>
-    </div>
+    <!-- About Section -->
+    <section id="about" class="reveal grid lg:grid-cols-12 gap-8 items-stretch">
+      <div class="lg:col-span-8 glass-panel p-10 rounded-[3rem] relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-[80px]"></div>
+        <h2 class="text-5xl font-black mb-6 flex items-center gap-4">
+          קצת עלי
+          <span class="h-1 flex-grow bg-gradient-to-l from-blue-500/50 to-transparent rounded-full"></span>
+        </h2>
+        <p class="text-2xl text-gray-400 leading-relaxed font-light">
+          מפתח בן 17 שחי ונושם טכנולוגיה. אני מתמחה בבניית מערכות המשלבות <span class="text-blue-400 font-medium">Deep
+            Learning</span> וארכיטקטורות קצה מודרניות. אני מאמין שקוד הוא אמנות, ודיוק הוא המפתח לחוויות משתמש בלתי
+          נשכחות.
+        </p>
+      </div>
+
+      <div class="lg:col-span-4 grid grid-rows-2 gap-6">
+        <div
+          class="glass-panel p-6 rounded-[2.5rem] flex flex-col items-center justify-center group hover:border-blue-500/50 transition-colors">
+          <span class="text-6xl font-black text-white group-hover:scale-110 transition-transform">17</span>
+          <span class="text-blue-400/60 font-bold uppercase tracking-widest text-sm mt-2">הגיל שלי</span>
+        </div>
+        <div
+          class="glass-panel p-6 rounded-[2.5rem] flex flex-col items-center justify-center group hover:border-teal-500/50 transition-colors">
+          <span class="text-6xl font-black text-white group-hover:scale-110 transition-transform">12+</span>
+          <span class="text-teal-400/60 font-bold uppercase tracking-widest text-sm mt-2">פרויקטים חיים</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tech Section -->
+    <section class="reveal">
+      <div class="text-center mb-10">
+        <h2 class="text-sm font-bold tracking-[0.3em] text-blue-500 uppercase mb-4">Tech Stack</h2>
+        <h3 class="text-4xl font-black">הכלים שאני משתמש בהם</h3>
+      </div>
+      <div class="glass-panel p-10 rounded-[3.5rem] flex flex-wrap justify-center gap-4">
+        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Next.js</span>
+        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Node.js</span>
+        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">TypeScript</span>
+        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Bun</span>
+        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Generative AI</span>
+        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">C++</span>
+        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Tailwind</span>
+        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Firebase</span>
+        <span class="tech-badge px-8 py-4 rounded-2xl font-bold text-lg">Python</span>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects" class="space-y-12">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
+        <div>
+          <h2 class="text-6xl font-black tracking-tighter">פרויקטים</h2>
+          <p class="text-gray-500 mt-2 text-xl font-light italic">Selection of work & experiments</p>
+        </div>
+      </div>
+
+      <div id="projects-grid" class="masonry-grid">
+        <!-- Injected by script.js -->
+      </div>
+    </section>
   </main>
 
-  <footer class="max-w-5xl mx-auto mt-24 px-4 pb-8">
-    <div class="border-t border-gray-800 pt-8 text-center">
-      <p class="text-gray-600">פרויקטים נוספים בקרוב!</p>
+  <footer class="max-w-7xl mx-auto px-6 pb-12">
+    <div class="glass-panel p-12 rounded-[4rem] text-center relative overflow-hidden group">
+      <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent"></div>
+
+      <h2 class="text-5xl md:text-7xl font-black mb-8 tracking-tight">רוצים לעבוד יחד?</h2>
+
+      <div class="flex flex-wrap justify-center gap-6 relative z-10">
+        <a href="mailto:idandrori555@gmail.com"
+          class="px-12 py-6 bg-white text-black rounded-2xl font-black text-xl hover:bg-blue-500 hover:text-white transition-all hover:scale-105 active:scale-95 shadow-2xl">
+          שלחו אימייל
+        </a>
+        <a href="https://github.com/idandrori555"
+          class="px-12 py-6 glass-panel rounded-2xl font-black text-xl hover:bg-white/10 transition-all active:scale-95">
+          GitHub
+        </a>
+      </div>
     </div>
   </footer>
+
+  <script>
+    // Background Animation
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, particles;
+
+    function init() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      particles = [];
+      for (let i = 0; i < 60; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5,
+          size: Math.random() * 2 + 1
+        });
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#3b82f6';
+
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', init);
+    init();
+    animate();
+
+    // Reveal on scroll
+    function reveal() {
+      const reveals = document.querySelectorAll('.reveal');
+      reveals.forEach(el => {
+        const windowHeight = window.innerHeight;
+        const elementTop = el.getBoundingClientRect().top;
+        if (elementTop < windowHeight - 100) {
+          el.classList.add('active');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', reveal);
+    reveal(); // Initial check
+  </script>
 </body>
 
 </html>
