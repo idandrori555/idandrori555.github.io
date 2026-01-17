@@ -162,17 +162,7 @@
     <a href="#projects" class="nav-item">פרויקטים</a>
   </nav>
 
-  <header id="hero" class="relative min-h-[95vh] flex flex-col justify-center items-center text-center px-6 pt-20">
-    <!-- Status Indicator -->
-    <div
-      class="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full mb-8 animate-fade-in-up">
-      <span class="relative flex h-2 w-2">
-        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-      </span>
-      <span class="text-green-400 text-xs font-bold tracking-wider uppercase">זמין לפרויקטים</span>
-    </div>
-
+  <header id="hero" class="relative min-h-[70vh] flex flex-col justify-center items-center text-center px-6 mb-44">
     <h1 class="text-6xl md:text-[9rem] font-black mb-6 tracking-tighter leading-none relative z-10">
       עידן <span
         class="bg-gradient-to-r from-blue-500 via-indigo-400 to-teal-400 text-transparent bg-clip-text glow-text">דרורי</span>
@@ -288,7 +278,6 @@
             <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Bun</span>
             <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Python</span>
             <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">C / C++</span>
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium"></span>
           </div>
         </div>
 
@@ -447,6 +436,7 @@
     });
 
     reveal();
+    updateActiveLink(); // Run on page load
   </script>
 </body>
 
