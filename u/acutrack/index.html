@@ -167,7 +167,7 @@
     </section>
   </main>
 
-  <!-- First Time / Setup Modal -->
+  <!-- Setup Modal -->
   <div id="setupModal"
     class="fixed inset-0 bg-slate-900/80 hidden z-[100] items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white w-full max-w-xs rounded-3xl p-8 shadow-2xl text-center space-y-6">
@@ -176,36 +176,30 @@
       </div>
       <div>
         <h3 class="text-xl font-bold">ברוכים הבאים!</h3>
-        <p class="text-sm text-slate-500 mt-2">כדי לשמור תמונות בענן בצורה בטוחה, נדרש מפתח API של ImgBB.</p>
+        <p class="text-sm text-slate-500 mt-2">נדרש מפתח API של ImgBB כדי לשמור תמונות.</p>
       </div>
       <div class="space-y-3">
         <input type="password" id="initialApiKeyInput" placeholder="הדבק כאן את המפתח"
           class="w-full p-4 bg-slate-100 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 text-center">
         <a href="https://api.imgbb.com/" target="_blank"
-          class="text-xs text-blue-600 hover:underline block font-semibold">
-          לחצו כאן להוצאת מפתח חינם (דקה אחת)
-        </a>
+          class="text-xs text-blue-600 hover:underline block font-semibold">לחצו כאן להוצאת מפתח חינם</a>
       </div>
-      <button onclick="saveInitialKey()"
-        class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-200">
-        בואו נתחיל
-      </button>
+      <button onclick="saveInitialKey()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">בואו
+        נתחיל</button>
     </div>
   </div>
 
-  <!-- Regular Settings Modal -->
+  <!-- Settings Modal -->
   <div id="settingsModal" class="fixed inset-0 bg-black/50 hidden z-50 items-center justify-center p-4">
     <div class="bg-white w-full max-w-xs rounded-2xl p-6 shadow-2xl space-y-4">
       <h3 class="text-lg font-bold">הגדרות</h3>
       <div class="space-y-2">
-        <label class="text-sm text-slate-600 block italic">ImgBB API Key</label>
-        <input type="password" id="apiKeyInput" placeholder="הדבק מפתח כאן"
-          class="w-full p-3 bg-slate-100 rounded-xl border-none focus:ring-2 focus:ring-blue-500">
+        <label class="text-sm text-slate-600 block">ImgBB API Key</label>
+        <input type="password" id="apiKeyInput" class="w-full p-3 bg-slate-100 rounded-xl">
       </div>
       <div class="space-y-2 pt-2">
-        <label class="text-sm text-slate-600 block italic">תאריך תחילת טיפול</label>
-        <input type="date" id="startDateInput"
-          class="w-full p-3 bg-slate-100 rounded-xl border-none focus:ring-2 focus:ring-blue-500">
+        <label class="text-sm text-slate-600 block">תאריך תחילת טיפול</label>
+        <input type="date" id="startDateInput" class="w-full p-3 bg-slate-100 rounded-xl">
       </div>
       <div class="flex gap-2 pt-4">
         <button onclick="saveSettings()" class="flex-1 bg-blue-600 text-white py-2 rounded-xl font-bold">שמור</button>
@@ -216,6 +210,7 @@
   </div>
 
   <script>
+    const BASE_IMG_URL = "https://i.ibb.co/";
     let currentViewDate = new Date();
     let selectedDateKey = formatDateKey(new Date());
     let userData = JSON.parse(localStorage.getItem('accutane_tracker_data')) || {};
@@ -228,9 +223,7 @@
     }
 
     function checkApiKey() {
-      if (!imgbbKey) {
-        document.getElementById('setupModal').style.display = 'flex';
-      }
+      if (!imgbbKey) document.getElementById('setupModal').style.display = 'flex';
     }
 
     function saveInitialKey() {
@@ -239,9 +232,7 @@
         imgbbKey = val;
         localStorage.setItem('imgbb_api_key', val);
         document.getElementById('setupModal').style.display = 'none';
-        showToast("המפתח נשמר בהצלחה!");
-      } else {
-        showToast("נא להזין מפתח תקין");
+        showToast("נשמר!");
       }
     }
 
@@ -280,7 +271,7 @@
       document.getElementById('selectedDateLabel').innerText = (formatDateKey(new Date()) === key ? 'היום, ' : '') + dateObj.toLocaleDateString('he-IL', options);
       if (startDate) {
         const diff = Math.floor((new Date(dateObj) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
-        document.getElementById('dayInTreatment').innerText = diff > 0 ? `יום ${diff} לטיפול` : 'לפני תחילת הטיפול';
+        document.getElementById('dayInTreatment').innerText = diff > 0 ? `יום ${diff} לטיפול` : 'לפני הטיפול';
       }
       loadEntry(key);
       renderCalendar();
@@ -290,7 +281,7 @@
       const counter = document.getElementById('journeyCounter');
       if (startDate) {
         const diff = Math.floor((new Date() - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
-        counter.innerText = diff > 0 ? `יום ${diff} למסע` : 'הטיפול טרם התחיל';
+        counter.innerText = diff > 0 ? `יום ${diff} למסע` : 'טרם התחיל';
       }
     }
 
@@ -311,7 +302,7 @@
       localStorage.setItem('imgbb_api_key', imgbbKey);
       closeSettings();
       renderCalendar();
-      showToast("הגדרות נשמרו");
+      showToast("נשמר");
     }
 
     function changeMonth(delta) {
@@ -342,55 +333,37 @@
     }
 
     async function uploadToImgBB(base64Data) {
-      if (!imgbbKey) throw new Error("חסר API Key של ImgBB");
       const body = new FormData();
       body.append('image', base64Data.split(',')[1]);
-
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
-        method: 'POST',
-        body: body
-      });
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {method: 'POST', body});
       const result = await response.json();
-
       if (result.success && result.data && result.data.display_url) {
-        return result.data.display_url;
+        // גוזרים את הקידומת כדי לשמור רק את הסוף
+        return result.data.display_url.replace(BASE_IMG_URL, "");
       }
-      throw new Error(result.error?.message || "שגיאת העלאה");
+      throw new Error("שגיאת העלאה");
     }
 
     async function saveEntry() {
-      if (!imgbbKey) {
-        showToast("נא להזין API Key");
-        checkApiKey();
-        return;
-      }
-
+      if (!imgbbKey) return checkApiKey();
       const p0Src = document.getElementById('preview0').src;
       const p1Src = document.getElementById('preview1').src;
-
-      const isNewP0 = p0Src.startsWith('data');
-      const isNewP1 = p1Src.startsWith('data');
-
-      if (!isNewP0 && !isNewP1) {
-        showToast("לא נבחרו תמונות חדשות");
-        return;
-      }
+      if (!p0Src.startsWith('data') && !p1Src.startsWith('data')) return showToast("אין שינויים");
 
       setLoading(true);
       try {
-        let finalUrl0 = userData[selectedDateKey]?.p0 || null;
-        let finalUrl1 = userData[selectedDateKey]?.p1 || null;
+        let finalP0 = userData[selectedDateKey]?.p0 || null;
+        let finalP1 = userData[selectedDateKey]?.p1 || null;
 
-        if (isNewP0) finalUrl0 = await uploadToImgBB(p0Src);
-        if (isNewP1) finalUrl1 = await uploadToImgBB(p1Src);
+        if (p0Src.startsWith('data')) finalP0 = await uploadToImgBB(p0Src);
+        if (p1Src.startsWith('data')) finalP1 = await uploadToImgBB(p1Src);
 
-        userData[selectedDateKey] = {p0: finalUrl0, p1: finalUrl1};
+        userData[selectedDateKey] = {p0: finalP0, p1: finalP1};
         localStorage.setItem('accutane_tracker_data', JSON.stringify(userData));
         renderCalendar();
         showToast("נשמר בהצלחה!");
       } catch (err) {
-        console.error(err);
-        showToast("שגיאה: " + err.message);
+        showToast("שגיאה בהעלאה");
       } finally {
         setLoading(false);
       }
@@ -411,15 +384,16 @@
         localStorage.setItem('accutane_tracker_data', JSON.stringify(userData));
         renderCalendar();
         loadEntry(selectedDateKey);
-        showToast("היום נמחק");
+        showToast("נמחק");
       }
     }
 
     function loadEntry(key) {
       const entry = userData[key];
       const delBtn = document.getElementById('deleteDayBtn');
-      updatePreview(0, entry ? entry.p0 : null);
-      updatePreview(1, entry ? entry.p1 : null);
+      // מוסיפים את הקידומת בחזרה בזמן הטעינה
+      updatePreview(0, entry?.p0 ? BASE_IMG_URL + entry.p0 : null);
+      updatePreview(1, entry?.p1 ? BASE_IMG_URL + entry.p1 : null);
       entry ? delBtn.classList.remove('hidden') : delBtn.classList.add('hidden');
     }
 
@@ -427,10 +401,10 @@
       const existing = document.querySelector('.toast-msg');
       if (existing) existing.remove();
       const toast = document.createElement('div');
-      toast.className = 'toast-msg fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-2 rounded-full text-sm shadow-xl z-[150]';
+      toast.className = 'toast-msg fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-2 rounded-full text-sm z-[150] shadow-xl';
       toast.innerText = msg;
       document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
+      setTimeout(() => toast.remove(), 2000);
     }
 
     window.onload = () => {
