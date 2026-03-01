@@ -71,6 +71,25 @@
       animation: spin 1s linear infinite;
     }
 
+    .image-loader {
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .img-loading-spinner {
+      border: 3px solid #e2e8f0;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+
     @keyframes spin {
       0% {
         transform: rotate(0deg);
@@ -135,7 +154,7 @@
       </div>
 
       <div class="grid grid-cols-2 gap-4 pt-2">
-        <div class="space-y-2">
+        <div class="space-y-2 relative">
           <label
             class="block aspect-[3/4] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 cursor-pointer overflow-hidden relative group">
             <input type="file" id="input0" accept="image/*" class="hidden" onchange="handlePhotoUpload(event, 0)">
@@ -146,8 +165,11 @@
               <span class="text-[10px] font-bold">צד ימין</span>
             </div>
           </label>
+          <div id="imgLoader0" class="image-loader hidden rounded-xl">
+            <div class="img-loading-spinner"></div>
+          </div>
         </div>
-        <div class="space-y-2">
+        <div class="space-y-2 relative">
           <label
             class="block aspect-[3/4] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 cursor-pointer overflow-hidden relative group">
             <input type="file" id="input1" accept="image/*" class="hidden" onchange="handlePhotoUpload(event, 1)">
@@ -158,6 +180,9 @@
               <span class="text-[10px] font-bold">צד שמאל</span>
             </div>
           </label>
+          <div id="imgLoader1" class="image-loader hidden rounded-xl">
+            <div class="img-loading-spinner"></div>
+          </div>
         </div>
       </div>
 
@@ -218,17 +243,35 @@
     const BASE_IMG_URL = "https://i.ibb.co/";
     let currentViewDate = new Date();
     let selectedDateKey = formatDateKey(new Date());
-    let userData = JSON.parse(localStorage.getItem('accutane_tracker_data')) || {};
+    let userData = {};
     let startDate = localStorage.getItem('accutane_start_date') || null;
     let imgbbKey = localStorage.getItem('imgbb_api_key') || '';
 
-    // Old ISO-like format for keys (YYYY-MM-DD)
+    // Unified formatter: always pads to YYYY-MM-DD
     function formatDateKey(date) {
       const d = new Date(date);
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    // Fix existing keys in storage that might not be padded
+    function normalizeStoredData() {
+      const raw = JSON.parse(localStorage.getItem('accutane_tracker_data')) || {};
+      const clean = {};
+      Object.keys(raw).forEach(key => {
+        // If key is in YYYY-M-D format, this will pad it correctly
+        const parts = key.split('-');
+        if (parts.length === 3) {
+          const paddedKey = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+          clean[paddedKey] = raw[key];
+        } else {
+          clean[key] = raw[key];
+        }
+      });
+      userData = clean;
+      localStorage.setItem('accutane_tracker_data', JSON.stringify(userData));
     }
 
     function checkApiKey() {
@@ -271,9 +314,7 @@
         if (dateKey === today) cell.classList.add('current-day');
         if (userData[dateKey]) cell.classList.add('has-photos');
 
-        if (startDate) {
-          if (dateKey === startDate) cell.classList.add('start-day');
-        }
+        if (startDate && dateKey === startDate) cell.classList.add('start-day');
 
         cell.onclick = () => selectDate(dateKey, dateObj);
         calendarDays.appendChild(cell);
@@ -298,7 +339,6 @@
 
     function exportData() {
       if (Object.keys(userData).length === 0) return showToast("אין נתונים לייצוא");
-
       const exportList = Object.entries(userData).map(([date, photos]) => ({
         date: date,
         photos: {
@@ -306,7 +346,6 @@
           left_side: photos.p1 ? BASE_IMG_URL + photos.p1 : null
         }
       }));
-
       const dataStr = JSON.stringify(exportList, null, 2);
       const blob = new Blob([dataStr], {type: 'application/json'});
       const url = URL.createObjectURL(blob);
@@ -314,7 +353,6 @@
       link.href = url;
       link.download = `accutane_journey_${new Date().toISOString().split('T')[0]}.json`;
       link.click();
-      showToast("קובץ ה-JSON ירד!");
     }
 
     function updateJourneyStatus() {
@@ -348,12 +386,45 @@
       renderCalendar();
     }
 
-    function handlePhotoUpload(event, index) {
+    function compressImage(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const maxDim = 1200;
+            if (width > height) {
+              if (width > maxDim) {height *= maxDim / width; width = maxDim;}
+            } else {
+              if (height > maxDim) {width *= maxDim / height; height = maxDim;}
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.7));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handlePhotoUpload(event, index) {
       const file = event.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => updatePreview(index, e.target.result);
-      reader.readAsDataURL(file);
+      document.getElementById(`imgLoader${index}`).classList.remove('hidden');
+      try {
+        const compressedData = await compressImage(file);
+        updatePreview(index, compressedData);
+      } catch (err) {
+        showToast("שגיאה בעיבוד התמונה");
+      } finally {
+        document.getElementById(`imgLoader${index}`).classList.add('hidden');
+      }
     }
 
     function updatePreview(index, src) {
@@ -387,14 +458,27 @@
         let finalP0 = userData[selectedDateKey]?.p0 || null;
         let finalP1 = userData[selectedDateKey]?.p1 || null;
 
-        if (p0Src.startsWith('data')) finalP0 = await uploadToImgBB(p0Src);
-        if (p1Src.startsWith('data')) finalP1 = await uploadToImgBB(p1Src);
+        if (p0Src.startsWith('data')) {
+          document.getElementById('imgLoader0').classList.remove('hidden');
+          finalP0 = await uploadToImgBB(p0Src);
+          document.getElementById('imgLoader0').classList.add('hidden');
+        }
+        if (p1Src.startsWith('data')) {
+          document.getElementById('imgLoader1').classList.remove('hidden');
+          finalP1 = await uploadToImgBB(p1Src);
+          document.getElementById('imgLoader1').classList.add('hidden');
+        }
 
         userData[selectedDateKey] = {p0: finalP0, p1: finalP1};
         localStorage.setItem('accutane_tracker_data', JSON.stringify(userData));
         renderCalendar();
         showToast("התקדמות נשמרה!");
-      } catch (err) {showToast("שגיאה בהעלאה. בדוק את המפתח.");}
+        loadEntry(selectedDateKey);
+      } catch (err) {
+        showToast("שגיאה בהעלאה. בדוק את המפתח.");
+        document.getElementById('imgLoader0').classList.add('hidden');
+        document.getElementById('imgLoader1').classList.add('hidden');
+      }
       finally {setLoading(false);}
     }
 
@@ -436,6 +520,7 @@
     }
 
     window.onload = () => {
+      normalizeStoredData(); // Fix any bad date formats on load
       renderCalendar();
       selectDate(selectedDateKey, new Date());
       checkApiKey();
