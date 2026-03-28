@@ -82,6 +82,15 @@ const projects = [
     icon: "M12 12m-10 0a10 10 0 1120 0 10 10 0 01-20 0",
     link: "/projects/fill-free/",
   },
+  {
+    id: "accutrack",
+    category: "אפליקציית מעקב",
+    title: "Accutrack",
+    description: "מעקב יומי אחרי ראוקוטן",
+    technologies: ["HTML", "CSS", "JS"],
+    icon: "M5 7h1l2-2h8l2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2 M12 13m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0",
+    link: "/projects/accutrack/",
+  },
 ];
 
 const projectTemplate = (project) => `

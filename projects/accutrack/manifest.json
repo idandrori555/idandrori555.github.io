@@ -1,0 +1,17 @@
+{
+  "name": "AccuTrack",
+  "short_name": "AccuTrack",
+  "description": "Track your Accutane journey with daily photo logs.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/10156/10156100.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
