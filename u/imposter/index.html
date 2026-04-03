@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>משחק המתחזה - הגדרות מתקדמות</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700&display=swap');
+
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 2rem;
+    }
+
+    input[type=range] {
+      height: 6px;
+      -webkit-appearance: none;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #4facfe;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .btn-action {
+      transition: all 0.2s;
+    }
+
+    .btn-action:active {
+      transform: scale(0.95);
+    }
+
+    .imposter-text {
+      color: #ff4d4d;
+      text-shadow: 0 0 15px rgba(255, 77, 77, 0.6);
+    }
+
+    @keyframes pulse-slow {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.8;
+      }
+    }
+
+    .animate-pulse-slow {
+      animation: pulse-slow 3s infinite;
+    }
+  </style>
+</head>
+
+<body class="p-4">
+
+  <div id="app" class="w-full max-w-sm glass-card p-8 shadow-2xl">
+    <!-- Screen 1: Advanced Setup -->
+    <div id="setup-screen" class="space-y-8">
+      <div class="text-center">
+        <h1 class="text-4xl font-black mb-2">המתחזה</h1>
+        <p class="text-blue-300 opacity-80">הגדרות משחק</p>
+      </div>
+
+      <div class="space-y-6">
+        <!-- Players Slider -->
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <label class="text-lg">כמות שחקנים:</label>
+            <span id="player-count-display" class="text-2xl font-bold text-blue-400">5</span>
+          </div>
+          <input type="range" id="player-slider" min="3" max="20" value="5" oninput="updateSettings()">
+        </div>
+
+        <!-- Imposters Slider -->
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <label class="text-lg">כמות מתחזים:</label>
+            <span id="imposter-count-display" class="text-2xl font-bold text-red-400">1</span>
+          </div>
+          <input type="range" id="imposter-slider" min="1" max="2" value="1" oninput="updateSettings()">
+        </div>
+      </div>
+
+      <button onclick="startGame()"
+        class="w-full py-5 rounded-2xl font-bold text-xl bg-blue-600 hover:bg-blue-500 shadow-lg btn-action">
+        התחל משחק
+      </button>
+    </div>
+
+    <!-- Screen 2: Role Reveal -->
+    <div id="reveal-screen" class="hidden text-center space-y-8">
+      <div class="space-y-1">
+        <p class="text-blue-200">להעביר ל:</p>
+        <div id="current-player-name" class="text-5xl font-black text-white"></div>
+      </div>
+
+      <div id="word-box" class="hidden p-10 rounded-3xl bg-white/10 border border-white/20 animate-pulse-slow">
+        <p class="text-sm text-blue-300 mb-2" id="box-header">המילה שלך:</p>
+        <div id="secret-word" class="text-5xl font-bold mb-4"></div>
+        <p id="role-desc" class="text-sm opacity-70"></p>
+      </div>
+
+      <div id="action-area" class="space-y-4">
+        <button id="show-word-btn" onclick="toggleWord(true)"
+          class="w-full py-6 rounded-2xl font-bold text-xl bg-blue-600 hover:bg-blue-500 shadow-lg btn-action">
+          לחץ לצפייה
+        </button>
+        <button id="next-player-btn" onclick="nextPlayer()"
+          class="hidden w-full py-5 rounded-2xl font-bold text-lg bg-green-600 hover:bg-green-500 shadow-lg btn-action">
+          הבנתי, העבר הלאה
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen 3: Game Started -->
+    <div id="game-screen" class="hidden text-center space-y-8">
+      <h2 class="text-4xl font-bold text-green-400">יוצאים לדרך!</h2>
+
+      <div class="p-6 bg-black/20 rounded-2xl text-right space-y-4">
+        <p class="font-bold border-b border-white/10 pb-2">תזכורת:</p>
+        <ul class="text-sm space-y-3 opacity-90">
+          <li class="flex gap-2"><span>•</span><span>יש במשחק <b id="final-imposter-count"></b> מתחזים.</span></li>
+          <li class="flex gap-2"><span>•</span><span>כל אחד אומר מילה אחת בתורו.</span></li>
+          <li class="flex gap-2"><span>•</span><span>המתחזים לא יודעים את המילה!</span></li>
+        </ul>
+      </div>
+
+      <div class="p-4 bg-white/5 rounded-xl">
+        <p class="text-blue-300 text-sm">הקטגוריה:</p>
+        <div id="revealed-category" class="text-2xl font-bold"></div>
+      </div>
+
+      <button onclick="resetGame()" class="w-full py-4 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10">
+        משחק חדש
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const categories = [
+      {cat: "אוכל", words: ["פיצה", "המבורגר", "סושי", "שקשוקה", "פלאפל", "פסטה", "סטייק", "סלט"]},
+      {cat: "חיות", words: ["פיל", "אריה", "ג'ירפה", "חתול", "כלב", "קוף", "זברה", "נמר"]},
+      {cat: "מקומות", words: ["בית ספר", "חוף הים", "בית חולים", "קניון", "שדה תעופה", "פאתי העיר", "יער"]},
+      {cat: "חפצים", words: ["מפתח", "טלפון", "מטריה", "כיסא", "משקפיים", "שעון", "מחשב"]},
+      {cat: "פירות/ירקות", words: ["בננה", "מלפפון", "עגבניה", "תפוח", "אבטיח", "תות", "גזר"]},
+      {cat: "ספורט", words: ["כדורגל", "כדורסל", "טניס", "שחייה", "ריצה", "ג'ודו"]}
+    ];
+
+    let gameData = {
+      playerCount: 5,
+      imposterCount: 1,
+      imposterIndices: [],
+      secretWord: "",
+      category: "",
+      currentPlayerIdx: 0
+    };
+
+    function updateSettings() {
+      const pSlider = document.getElementById('player-slider');
+      const iSlider = document.getElementById('imposter-slider');
+
+      const pCount = parseInt(pSlider.value);
+      // Limit imposters to be less than half of players for balance
+      const maxImposters = Math.max(1, Math.floor(pCount / 2));
+
+      iSlider.max = maxImposters;
+      if (parseInt(iSlider.value) > maxImposters) {
+        iSlider.value = maxImposters;
+      }
+
+      document.getElementById('player-count-display').innerText = pCount;
+      document.getElementById('imposter-count-display').innerText = iSlider.value;
+
+      gameData.playerCount = pCount;
+      gameData.imposterCount = parseInt(iSlider.value);
+    }
+
+    function startGame() {
+      const catObj = categories[Math.floor(Math.random() * categories.length)];
+      gameData.category = catObj.cat;
+      gameData.secretWord = catObj.words[Math.floor(Math.random() * catObj.words.length)];
+      gameData.currentPlayerIdx = 0;
+
+      // Randomly pick N imposter indices
+      gameData.imposterIndices = [];
+      while (gameData.imposterIndices.length < gameData.imposterCount) {
+        let randIdx = Math.floor(Math.random() * gameData.playerCount);
+        if (!gameData.imposterIndices.includes(randIdx)) {
+          gameData.imposterIndices.push(randIdx);
+        }
+      }
+
+      document.getElementById('setup-screen').classList.add('hidden');
+      document.getElementById('reveal-screen').classList.remove('hidden');
+      updateRevealScreen();
+    }
+
+    function updateRevealScreen() {
+      document.getElementById('current-player-name').innerText = `שחקן ${gameData.currentPlayerIdx + 1}`;
+      toggleWord(false);
+    }
+
+    function toggleWord(show) {
+      const wordBox = document.getElementById('word-box');
+      const showBtn = document.getElementById('show-word-btn');
+      const nextBtn = document.getElementById('next-player-btn');
+      const wordDisplay = document.getElementById('secret-word');
+      const roleDesc = document.getElementById('role-desc');
+      const header = document.getElementById('box-header');
+
+      if (show) {
+        wordBox.classList.remove('hidden');
+        showBtn.classList.add('hidden');
+        nextBtn.classList.remove('hidden');
+
+        if (gameData.imposterIndices.includes(gameData.currentPlayerIdx)) {
+          header.innerText = "זהירות!";
+          wordDisplay.innerText = "מתחזה";
+          wordDisplay.className = "text-5xl font-bold mb-4 imposter-text";
+          roleDesc.innerText = "אתה המתחזה! נסה להבין מה המילה מהאחרים בלי להיתפס.";
+        } else {
+          header.innerText = "המילה שלך:";
+          wordDisplay.innerText = gameData.secretWord;
+          wordDisplay.className = "text-5xl font-bold mb-4 text-white";
+          roleDesc.innerText = `קטגוריה: ${gameData.category}`;
+        }
+      } else {
+        wordBox.classList.add('hidden');
+        showBtn.classList.remove('hidden');
+        nextBtn.classList.add('hidden');
+      }
+    }
+
+    function nextPlayer() {
+      gameData.currentPlayerIdx++;
+      if (gameData.currentPlayerIdx < gameData.playerCount) {
+        updateRevealScreen();
+      } else {
+        showFinalScreen();
+      }
+    }
+
+    function showFinalScreen() {
+      document.getElementById('reveal-screen').classList.add('hidden');
+      document.getElementById('game-screen').classList.remove('hidden');
+      document.getElementById('revealed-category').innerText = gameData.category;
+      document.getElementById('final-imposter-count').innerText = gameData.imposterCount;
+    }
+
+    function resetGame() {
+      document.getElementById('game-screen').classList.add('hidden');
+      document.getElementById('setup-screen').classList.remove('hidden');
+    }
+  </script>
+</body>
+
+</html>
