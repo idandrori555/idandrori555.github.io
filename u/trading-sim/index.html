@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Price Action Simulator</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -13,53 +13,96 @@
       margin: 0;
       overflow: hidden;
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      touch-action: none;
     }
 
     canvas {
       display: block;
       cursor: crosshair;
+      touch-action: none;
     }
 
     .trading-panel {
       position: absolute;
-      top: 15px;
-      left: 15px;
+      top: 10px;
+      left: 10px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      background: rgba(15, 23, 42, 0.65);
-      padding: 14px;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.75);
+      padding: 12px;
       border-radius: 12px;
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       pointer-events: auto;
-      z-index: 10;
-      width: 200px;
+      z-index: 20;
+      width: 180px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 640px) {
+      .trading-panel {
+        width: calc(100% - 20px);
+        flex-direction: row;
+        flex-wrap: wrap;
+        top: auto;
+        bottom: 20px;
+        left: 10px;
+        padding: 10px;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .panel-header {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2px;
+      }
+
+      .input-group {
+        flex: 1;
+      }
+
+      .trade-buttons {
+        flex: 2;
+        display: flex;
+        gap: 4px;
+      }
+
+      .drawing-toolbar {
+        left: auto !important;
+        right: 10px !important;
+        top: 50% !important;
+        transform: translateY(-50%);
+        flex-direction: column;
+      }
     }
 
     .drawing-toolbar {
       position: absolute;
       top: 15px;
-      left: 230px;
+      left: 210px;
       display: flex;
       gap: 4px;
-      background: rgba(15, 23, 42, 0.65);
+      background: rgba(15, 23, 42, 0.7);
       padding: 6px;
       border-radius: 8px;
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       z-index: 10;
     }
 
     .tool-btn {
-      padding: 6px 10px;
-      border-radius: 4px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
       transition: all 0.2s;
       background: transparent;
       border: 1px solid transparent;
-      font-size: 11px;
-      font-weight: 600;
       color: #94a3b8;
     }
 
@@ -69,30 +112,16 @@
       color: #60a5fa;
     }
 
-    .status-badge {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: rgba(15, 23, 42, 0.5);
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      font-variant-numeric: tabular-nums;
-      opacity: 0.8;
-      backdrop-filter: blur(4px);
-    }
-
     .btn {
       transition: all 0.2s;
       text-transform: uppercase;
       font-weight: 800;
       font-size: 11px;
       letter-spacing: 0.05em;
-    }
-
-    .btn:active:not(:disabled) {
-      transform: scale(0.96);
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .stat-label {
@@ -103,96 +132,83 @@
     }
 
     .stat-value {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       font-family: 'Courier New', Courier, monospace;
     }
 
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    /* Style number input and remove arrows */
     input[type="number"] {
       background: rgba(0, 0, 0, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.1);
       color: white;
       padding: 4px 8px;
       border-radius: 4px;
-      font-size: 12px;
+      font-size: 14px;
       outline: none;
+      width: 100%;
       -moz-appearance: textfield;
-      /* Firefox */
     }
 
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button {
       -webkit-appearance: none;
-      /* Chrome, Safari, Edge, Opera */
       margin: 0;
-    }
-
-    input[type="number"]:focus {
-      border-color: #3b82f6;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="status-badge" id="status">Initializing...</div>
-
   <div class="trading-panel">
-    <div class="space-y-1 mb-1">
-      <div class="flex justify-between items-end border-b border-white/5 pb-1">
-        <span class="stat-label">Balance</span>
+    <div
+      class="panel-header flex flex-col sm:flex-row sm:justify-between sm:items-end border-b border-white/5 pb-1 mb-1">
+      <div class="flex justify-between items-center sm:block">
+        <span class="stat-label">Bal: </span>
         <span class="stat-value" id="balance-display">$100.00</span>
       </div>
-      <div class="flex justify-between items-end">
-        <span class="stat-label">Equity</span>
+      <div class="flex justify-between items-center sm:block">
+        <span class="stat-label">Eq: </span>
         <span class="stat-value text-blue-400" id="equity-display">$100.00</span>
       </div>
     </div>
 
     <div class="input-group">
-      <label class="stat-label">Lot Size (Multiplier)</label>
-      <input type="number" id="lot-size" value="1.0" min="0.1" step="0.1">
+      <label class="stat-label hidden sm:block">Lots</label>
+      <input type="number" id="lot-size" value="1.0" min="0.1" step="0.1" inputmode="decimal">
     </div>
 
     <div id="pnl-badge"
-      class="hidden text-center text-[10px] font-bold py-1 rounded bg-slate-900/50 border border-white/5">
+      class="hidden text-center text-[10px] font-bold py-1 rounded bg-slate-900/50 border border-white/5 sm:w-full">
       PnL: +$0.00
     </div>
 
-    <div class="flex gap-2">
-      <button id="buy-btn" class="btn flex-1 bg-emerald-600 hover:bg-emerald-500 py-2 rounded-md shadow-md">
+    <div class="trade-buttons flex gap-2">
+      <button id="buy-btn" class="btn flex-1 bg-emerald-600 hover:bg-emerald-500 rounded-md shadow-md">
         Buy
       </button>
-      <button id="sell-btn" class="btn flex-1 bg-rose-600 hover:bg-rose-500 py-2 rounded-md shadow-md">
+      <button id="sell-btn" class="btn flex-1 bg-rose-600 hover:bg-rose-500 rounded-md shadow-md">
         Sell
       </button>
     </div>
 
-    <div class="text-[8px] text-center opacity-30 uppercase tracking-tighter mt-1">
+    <div class="text-[8px] text-center opacity-30 uppercase tracking-tighter mt-1 hidden sm:block">
       Right-click drawing to delete<br>Drag SL/TP lines to adjust
     </div>
   </div>
 
   <div class="drawing-toolbar">
     <button id="tool-pan" title="Pan Chart" class="tool-btn active">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M15 18l-6-6 6-6" />
       </svg>
     </button>
     <button id="tool-line" title="Trendline" class="tool-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="19" y1="5" x2="5" y2="19"></line>
       </svg>
     </button>
     <button id="tool-rect" title="Rectangle" class="tool-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
       </svg>
     </button>
@@ -203,7 +219,6 @@
   <script>
     const canvas = document.getElementById('chart');
     const ctx = canvas.getContext('2d');
-    const statusEl = document.getElementById('status');
     const balanceEl = document.getElementById('balance-display');
     const equityEl = document.getElementById('equity-display');
     const pnlBadge = document.getElementById('pnl-badge');
@@ -333,7 +348,7 @@
 
         if (balance < requiredMargin || balance <= 0) {
           pnlBadge.classList.remove('hidden');
-          pnlBadge.innerText = "INSUFFICIENT FUNDS";
+          pnlBadge.innerText = "NO FUNDS";
           pnlBadge.style.color = "#f43f5e";
           setTimeout(() => {if (!position) pnlBadge.classList.add('hidden');}, 2000);
           return;
@@ -351,8 +366,8 @@
       updateTradingUI();
     }
 
-    buyBtn.onclick = () => handleTrade('buy');
-    sellBtn.onclick = () => handleTrade('sell');
+    buyBtn.onclick = (e) => {e.preventDefault(); handleTrade('buy');};
+    sellBtn.onclick = (e) => {e.preventDefault(); handleTrade('sell');};
 
     function setTool(toolName) {
       activeTool = toolName;
@@ -392,7 +407,6 @@
         if (candles.length > 1000) candles.shift();
       }
 
-      statusEl.innerText = `TF: 1m | PRC: ${currentPrice.toFixed(2)}`;
       updateTradingUI();
     }
 
@@ -443,11 +457,14 @@
         const slY = getY(position.sl);
         const tpY = getY(position.tp);
 
+        const slVal = calculatePnL(position.sl);
+        const tpVal = calculatePnL(position.tp);
+
         ctx.setLineDash([5, 5]);
-        ctx.strokeStyle = '#f43f5e';
+        ctx.strokeStyle = slVal >= 0 ? '#10b981' : '#f43f5e';
         ctx.beginPath(); ctx.moveTo(0, slY); ctx.lineTo(canvas.width, slY); ctx.stroke();
 
-        ctx.strokeStyle = '#10b981';
+        ctx.strokeStyle = tpVal >= 0 ? '#10b981' : '#f43f5e';
         ctx.beginPath(); ctx.moveTo(0, tpY); ctx.lineTo(canvas.width, tpY); ctx.stroke();
 
         ctx.setLineDash([10, 5]);
@@ -464,12 +481,9 @@
           ctx.fillText(text, 5, y + 4);
         };
 
-        const slDiff = position.type === 'buy' ? (position.sl - position.entry) : (position.entry - position.sl);
-        const tpDiff = position.type === 'buy' ? (position.tp - position.entry) : (position.entry - position.tp);
-
         drawLabel(entryY, `${position.type.toUpperCase()} ${position.lots}L @ ${position.entry.toFixed(1)}`, "white", position.type === 'buy' ? '#10b981' : '#f43f5e');
-        drawLabel(slY, `SL: $${(slDiff * position.lots).toFixed(2)}`, "white", "#ef4444");
-        drawLabel(tpY, `TP: +$${(tpDiff * position.lots).toFixed(2)}`, "white", "#22c55e");
+        drawLabel(slY, `SL: ${slVal >= 0 ? '+' : ''}$${slVal.toFixed(2)}`, "white", slVal >= 0 ? "#10b981" : "#ef4444");
+        drawLabel(tpY, `TP: ${tpVal >= 0 ? '+' : ''}$${tpVal.toFixed(2)}`, "white", tpVal >= 0 ? "#22c55e" : "#f43f5e");
       }
 
       const renderDraw = (d) => {
@@ -485,16 +499,12 @@
           ctx.fillStyle = 'rgba(96, 165, 250, 0.1)';
           ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
           ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-
           ctx.save();
           ctx.setLineDash([4, 4]);
           ctx.strokeStyle = 'rgba(96, 165, 250, 0.5)';
           ctx.lineWidth = 1;
           const midY = (y1 + y2) / 2;
-          ctx.beginPath();
-          ctx.moveTo(x1, midY);
-          ctx.lineTo(x2, midY);
-          ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(x1, midY); ctx.lineTo(x2, midY); ctx.stroke();
           ctx.restore();
         }
       };
@@ -533,27 +543,48 @@
       requestAnimationFrame(draw);
     }
 
-    canvas.addEventListener('mousedown', (e) => {
-      const my = e.clientY;
+    function onDown(x, y, button = 0) {
       if (position) {
         const slY = getY(position.sl);
         const tpY = getY(position.tp);
-        if (Math.abs(my - slY) < 15) {draggingElement = 'sl'; autoScroll = false; return;}
-        if (Math.abs(my - tpY) < 15) {draggingElement = 'tp'; autoScroll = false; return;}
+        if (Math.abs(y - slY) < 30) {draggingElement = 'sl'; autoScroll = false; return;}
+        if (Math.abs(y - tpY) < 30) {draggingElement = 'tp'; autoScroll = false; return;}
       }
-      if (e.button === 0) {
+      if (button === 0) {
         if (activeTool === 'pan') {
-          isDragging = true; draggingElement = 'pan'; autoScroll = false; lastMouseX = e.clientX;
+          isDragging = true; draggingElement = 'pan'; autoScroll = false; lastMouseX = x;
         } else {
           autoScroll = false;
-          const index = getIndex(e.clientX);
-          const price = getPrice(e.clientY);
+          const index = getIndex(x);
+          const price = getPrice(y);
           currentDrawing = {type: activeTool, i1: index, p1: price, i2: index, p2: price};
         }
       }
-    });
+    }
 
-    window.addEventListener('mouseup', () => {
+    function onMove(x, y) {
+      if (draggingElement === 'sl' && position) {
+        position.sl = getPrice(y);
+      } else if (draggingElement === 'tp' && position) {
+        position.tp = getPrice(y);
+      } else if (isDragging && draggingElement === 'pan') {
+        cameraX += (x - lastMouseX);
+        lastMouseX = x;
+      } else if (currentDrawing) {
+        let targetIdx = getIndex(x);
+        let targetPrice = getPrice(y);
+        if (currentDrawing.type === 'line') {
+          const dx = Math.abs(x - getX(currentDrawing.i1));
+          const dy = Math.abs(y - getY(currentDrawing.p1));
+          if (dy < 20) targetPrice = currentDrawing.p1;
+          else if (dx < 20) targetIdx = currentDrawing.i1;
+        }
+        currentDrawing.i2 = targetIdx;
+        currentDrawing.p2 = targetPrice;
+      }
+    }
+
+    function onUp() {
       if (currentDrawing) {
         drawings.push(currentDrawing);
         currentDrawing = null;
@@ -561,27 +592,49 @@
       }
       isDragging = false;
       draggingElement = null;
+    }
+
+    canvas.addEventListener('mousedown', (e) => onDown(e.clientX, e.clientY, e.button));
+    window.addEventListener('mousemove', (e) => onMove(e.clientX, e.clientY));
+    window.addEventListener('mouseup', onUp);
+
+    canvas.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      onDown(touch.clientX, touch.clientY, 0);
+    }, {passive: false});
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      onMove(touch.clientX, touch.clientY);
+    }, {passive: false});
+
+    canvas.addEventListener('touchend', onUp);
+
+    let initialPinchDistance = null;
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        initialPinchDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
     });
 
-    window.addEventListener('mousemove', (e) => {
-      if (draggingElement === 'sl' && position) {
-        position.sl = getPrice(e.clientY);
-      } else if (draggingElement === 'tp' && position) {
-        position.tp = getPrice(e.clientY);
-      } else if (isDragging && draggingElement === 'pan') {
-        cameraX += (e.clientX - lastMouseX);
-        lastMouseX = e.clientX;
-      } else if (currentDrawing) {
-        let targetIdx = getIndex(e.clientX);
-        let targetPrice = getPrice(e.clientY);
-        if (currentDrawing.type === 'line') {
-          const dx = Math.abs(e.clientX - getX(currentDrawing.i1));
-          const dy = Math.abs(e.clientY - getY(currentDrawing.p1));
-          if (dy < 20) targetPrice = currentDrawing.p1;
-          else if (dx < 20) targetIdx = currentDrawing.i1;
-        }
-        currentDrawing.i2 = targetIdx;
-        currentDrawing.p2 = targetPrice;
+    canvas.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2 && initialPinchDistance) {
+        const currentDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const zoomFactor = currentDist / initialPinchDistance;
+        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const mouseXInChart = centerX - cameraX;
+        const prevScale = scale;
+        scale = Math.max(0.1, Math.min(10, scale * (zoomFactor > 1 ? 1.05 : 0.95)));
+        cameraX -= (mouseXInChart * (scale / prevScale) - mouseXInChart);
+        initialPinchDistance = currentDist;
+        autoScroll = false;
       }
     });
 
@@ -605,7 +658,7 @@
           let t = ((mx - x1) * (x2 - x1) + (my - y1) * (y2 - y1)) / l2;
           t = Math.max(0, Math.min(1, t));
           const dist = Math.sqrt((mx - (x1 + t * (x2 - x1))) ** 2 + (my - (y1 + t * (y2 - y1))) ** 2);
-          return dist > 10;
+          return dist > 15;
         }
         if (d.type === 'rect') {
           const isInside = mx >= Math.min(x1, x2) && mx <= Math.max(x1, x2) && my >= Math.min(y1, y2) && my <= Math.max(y1, y2);
