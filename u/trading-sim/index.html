@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Price Action Simulator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      margin: 0;
+      overflow: hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    canvas {
+      display: block;
+      cursor: crosshair;
+    }
+
+    .trading-panel {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.65);
+      padding: 14px;
+      border-radius: 12px;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      pointer-events: auto;
+      z-index: 10;
+      width: 200px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .drawing-toolbar {
+      position: absolute;
+      top: 15px;
+      left: 230px;
+      display: flex;
+      gap: 4px;
+      background: rgba(15, 23, 42, 0.65);
+      padding: 6px;
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 10;
+    }
+
+    .tool-btn {
+      padding: 6px 10px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      background: transparent;
+      border: 1px solid transparent;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    .tool-btn.active {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: rgba(59, 130, 246, 0.5);
+      color: #60a5fa;
+    }
+
+    .status-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-variant-numeric: tabular-nums;
+      opacity: 0.8;
+      backdrop-filter: blur(4px);
+    }
+
+    .btn {
+      transition: all 0.2s;
+      text-transform: uppercase;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+
+    .stat-label {
+      font-size: 9px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .stat-value {
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* Style number input and remove arrows */
+    input[type="number"] {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      outline: none;
+      -moz-appearance: textfield;
+      /* Firefox */
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      /* Chrome, Safari, Edge, Opera */
+      margin: 0;
+    }
+
+    input[type="number"]:focus {
+      border-color: #3b82f6;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="status-badge" id="status">Initializing...</div>
+
+  <div class="trading-panel">
+    <div class="space-y-1 mb-1">
+      <div class="flex justify-between items-end border-b border-white/5 pb-1">
+        <span class="stat-label">Balance</span>
+        <span class="stat-value" id="balance-display">$100.00</span>
+      </div>
+      <div class="flex justify-between items-end">
+        <span class="stat-label">Equity</span>
+        <span class="stat-value text-blue-400" id="equity-display">$100.00</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label class="stat-label">Lot Size (Multiplier)</label>
+      <input type="number" id="lot-size" value="1.0" min="0.1" step="0.1">
+    </div>
+
+    <div id="pnl-badge"
+      class="hidden text-center text-[10px] font-bold py-1 rounded bg-slate-900/50 border border-white/5">
+      PnL: +$0.00
+    </div>
+
+    <div class="flex gap-2">
+      <button id="buy-btn" class="btn flex-1 bg-emerald-600 hover:bg-emerald-500 py-2 rounded-md shadow-md">
+        Buy
+      </button>
+      <button id="sell-btn" class="btn flex-1 bg-rose-600 hover:bg-rose-500 py-2 rounded-md shadow-md">
+        Sell
+      </button>
+    </div>
+
+    <div class="text-[8px] text-center opacity-30 uppercase tracking-tighter mt-1">
+      Right-click drawing to delete<br>Drag SL/TP lines to adjust
+    </div>
+  </div>
+
+  <div class="drawing-toolbar">
+    <button id="tool-pan" title="Pan Chart" class="tool-btn active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+    </button>
+    <button id="tool-line" title="Trendline" class="tool-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="5" x2="5" y2="19"></line>
+      </svg>
+    </button>
+    <button id="tool-rect" title="Rectangle" class="tool-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      </svg>
+    </button>
+  </div>
+
+  <canvas id="chart"></canvas>
+
+  <script>
+    const canvas = document.getElementById('chart');
+    const ctx = canvas.getContext('2d');
+    const statusEl = document.getElementById('status');
+    const balanceEl = document.getElementById('balance-display');
+    const equityEl = document.getElementById('equity-display');
+    const pnlBadge = document.getElementById('pnl-badge');
+    const buyBtn = document.getElementById('buy-btn');
+    const sellBtn = document.getElementById('sell-btn');
+    const lotInput = document.getElementById('lot-size');
+
+    // Constants
+    const TICK_INTERVAL_MS = 100;
+    const INITIAL_CANDLES = 100;
+    const CANDLE_WIDTH = 12;
+    const CANDLE_GAP = 4;
+    const TIMEFRAME_MS = 60000;
+
+    // State
+    let candles = [];
+    let currentCandle = null;
+    let currentPrice = 500;
+    let targetPrice = 500;
+    let balance = 100.00;
+    let position = null;
+
+    // View State
+    let cameraX = 0;
+    let scale = 1.0;
+    let isDragging = false;
+    let draggingElement = null;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    let autoScroll = true;
+
+    // Drawing State
+    let activeTool = 'pan';
+    let drawings = [];
+    let currentDrawing = null;
+
+    function createNewCandle(openPrice, startTime) {
+      return {
+        open: openPrice, high: openPrice, low: openPrice, close: openPrice,
+        startTime: startTime, endTime: startTime + TIMEFRAME_MS
+      };
+    }
+
+    function getNextPriceStep(price) {
+      return price + (Math.random() - 0.5) * 4;
+    }
+
+    function generateHistory() {
+      const now = Date.now();
+      let price = 500;
+      let time = now - (INITIAL_CANDLES * TIMEFRAME_MS);
+
+      for (let i = 0; i < INITIAL_CANDLES; i++) {
+        let candle = createNewCandle(price, time);
+        for (let t = 0; t < 10; t++) {
+          price = getNextPriceStep(price);
+          candle.high = Math.max(candle.high, price);
+          candle.low = Math.min(candle.low, price);
+        }
+        candle.close = price;
+        candles.push(candle);
+        time += TIMEFRAME_MS;
+      }
+      currentPrice = price;
+      targetPrice = price;
+      currentCandle = createNewCandle(currentPrice, time);
+    }
+
+    function calculatePnL(price = currentPrice) {
+      if (!position) return 0;
+      const diff = position.type === 'buy' ? (price - position.entry) : (position.entry - price);
+      return diff * position.lots;
+    }
+
+    function updateTradingUI() {
+      let pnl = calculatePnL();
+      if (position) {
+        pnlBadge.classList.remove('hidden');
+        pnlBadge.innerText = `PNL: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
+        pnlBadge.style.color = pnl >= 0 ? '#10b981' : '#f43f5e';
+      }
+
+      const equity = balance + pnl;
+      balanceEl.innerText = `$${balance.toFixed(2)}`;
+      equityEl.innerText = `$${equity.toFixed(2)}`;
+      equityEl.style.color = equity >= balance ? '#60a5fa' : '#f43f5e';
+
+      if (position && (equity <= 0)) closePosition();
+
+      if (position) {
+        lotInput.disabled = true;
+        if (position.type === 'buy') {
+          buyBtn.innerText = "Close";
+          buyBtn.className = "btn flex-1 bg-slate-700/80 hover:bg-slate-600/80 py-2 rounded-md border border-emerald-500/50";
+          sellBtn.classList.add('opacity-10', 'pointer-events-none');
+        } else {
+          sellBtn.innerText = "Close";
+          sellBtn.className = "btn flex-1 bg-slate-700/80 hover:bg-slate-600/80 py-2 rounded-md border border-rose-500/50";
+          buyBtn.classList.add('opacity-10', 'pointer-events-none');
+        }
+      } else {
+        lotInput.disabled = false;
+        buyBtn.innerText = "Buy";
+        buyBtn.className = "btn flex-1 bg-emerald-600/90 hover:bg-emerald-500/90 py-2 rounded-md";
+        sellBtn.innerText = "Sell";
+        sellBtn.className = "btn flex-1 bg-rose-600/90 hover:bg-rose-500/90 py-2 rounded-md";
+        buyBtn.classList.remove('opacity-10', 'pointer-events-none');
+        sellBtn.classList.remove('opacity-10', 'pointer-events-none');
+      }
+    }
+
+    function closePosition() {
+      if (position) {
+        balance += calculatePnL();
+        position = null;
+        pnlBadge.classList.add('hidden');
+        updateTradingUI();
+      }
+    }
+
+    function handleTrade(type) {
+      if (position) {
+        closePosition();
+      } else {
+        const lots = parseFloat(lotInput.value) || 0.1;
+        const requiredMargin = (currentPrice * lots) * 0.01;
+
+        if (balance < requiredMargin || balance <= 0) {
+          pnlBadge.classList.remove('hidden');
+          pnlBadge.innerText = "INSUFFICIENT FUNDS";
+          pnlBadge.style.color = "#f43f5e";
+          setTimeout(() => {if (!position) pnlBadge.classList.add('hidden');}, 2000);
+          return;
+        }
+
+        const offset = currentPrice * 0.05;
+        position = {
+          type,
+          entry: currentPrice,
+          lots: lots,
+          sl: type === 'buy' ? currentPrice - offset : currentPrice + offset,
+          tp: type === 'buy' ? currentPrice + offset : currentPrice - offset
+        };
+      }
+      updateTradingUI();
+    }
+
+    buyBtn.onclick = () => handleTrade('buy');
+    sellBtn.onclick = () => handleTrade('sell');
+
+    function setTool(toolName) {
+      activeTool = toolName;
+      ['pan', 'line', 'rect'].forEach(t => {
+        const btn = document.getElementById(`tool-${t}`);
+        if (t === toolName) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+    }
+
+    ['pan', 'line', 'rect'].forEach(tool => {
+      document.getElementById(`tool-${tool}`).onclick = () => setTool(tool);
+    });
+
+    function tick() {
+      const now = Date.now();
+      if (Math.random() > 0.8) {
+        targetPrice = getNextPriceStep(targetPrice);
+      }
+      currentPrice += (targetPrice - currentPrice) * 0.2;
+
+      if (position) {
+        if (position.type === 'buy') {
+          if (currentPrice <= position.sl || currentPrice >= position.tp) closePosition();
+        } else {
+          if (currentPrice >= position.sl || currentPrice <= position.tp) closePosition();
+        }
+      }
+
+      currentCandle.close = currentPrice;
+      currentCandle.high = Math.max(currentCandle.high, currentPrice);
+      currentCandle.low = Math.min(currentCandle.low, currentPrice);
+
+      if (now >= currentCandle.endTime) {
+        candles.push({...currentCandle});
+        currentCandle = createNewCandle(currentPrice, currentCandle.endTime);
+        if (candles.length > 1000) candles.shift();
+      }
+
+      statusEl.innerText = `TF: 1m | PRC: ${currentPrice.toFixed(2)}`;
+      updateTradingUI();
+    }
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    let lastMinPrice = 0;
+    let lastMaxPrice = 1000;
+    const getY = (price) => canvas.height - ((price - lastMinPrice) / (lastMaxPrice - lastMinPrice)) * canvas.height;
+    const getPrice = (y) => lastMinPrice + ((canvas.height - y) / canvas.height) * (lastMaxPrice - lastMinPrice);
+    const getX = (index) => cameraX + (index * (CANDLE_WIDTH + CANDLE_GAP) * scale);
+    const getIndex = (screenX) => (screenX - cameraX) / ((CANDLE_WIDTH + CANDLE_GAP) * scale);
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const effectiveWidth = (CANDLE_WIDTH + CANDLE_GAP) * scale;
+      const fullList = [...candles, currentCandle];
+
+      if (autoScroll) {
+        const totalWidth = fullList.length * effectiveWidth;
+        cameraX = canvas.width - totalWidth - (effectiveWidth * 3);
+      }
+
+      const visibleCount = Math.ceil(canvas.width / effectiveWidth);
+      const startIndex = Math.max(0, Math.floor(-cameraX / effectiveWidth));
+      const viewedSlice = fullList.slice(startIndex, startIndex + visibleCount + 5);
+
+      lastMinPrice = viewedSlice.length ? Math.min(...viewedSlice.map(c => c.low)) - 10 : currentPrice - 50;
+      lastMaxPrice = viewedSlice.length ? Math.max(...viewedSlice.map(c => c.high)) + 10 : currentPrice + 50;
+
+      if (position) {
+        lastMinPrice = Math.min(lastMinPrice, position.sl, position.tp) - 5;
+        lastMaxPrice = Math.max(lastMaxPrice, position.sl, position.tp) + 5;
+      }
+
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let y = 0; y < canvas.height; y += 100) {
+        ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
+      }
+      ctx.stroke();
+
+      if (position) {
+        const entryY = getY(position.entry);
+        const slY = getY(position.sl);
+        const tpY = getY(position.tp);
+
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = '#f43f5e';
+        ctx.beginPath(); ctx.moveTo(0, slY); ctx.lineTo(canvas.width, slY); ctx.stroke();
+
+        ctx.strokeStyle = '#10b981';
+        ctx.beginPath(); ctx.moveTo(0, tpY); ctx.lineTo(canvas.width, tpY); ctx.stroke();
+
+        ctx.setLineDash([10, 5]);
+        ctx.strokeStyle = position.type === 'buy' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(244, 63, 94, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(0, entryY); ctx.lineTo(canvas.width, entryY); ctx.stroke();
+        ctx.setLineDash([]);
+
+        const drawLabel = (y, text, color, bgColor) => {
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(0, y - 9, 85, 18);
+          ctx.fillStyle = color;
+          ctx.font = "bold 9px sans-serif";
+          ctx.fillText(text, 5, y + 4);
+        };
+
+        const slDiff = position.type === 'buy' ? (position.sl - position.entry) : (position.entry - position.sl);
+        const tpDiff = position.type === 'buy' ? (position.tp - position.entry) : (position.entry - position.tp);
+
+        drawLabel(entryY, `${position.type.toUpperCase()} ${position.lots}L @ ${position.entry.toFixed(1)}`, "white", position.type === 'buy' ? '#10b981' : '#f43f5e');
+        drawLabel(slY, `SL: $${(slDiff * position.lots).toFixed(2)}`, "white", "#ef4444");
+        drawLabel(tpY, `TP: +$${(tpDiff * position.lots).toFixed(2)}`, "white", "#22c55e");
+      }
+
+      const renderDraw = (d) => {
+        const x1 = getX(d.i1);
+        const y1 = getY(d.p1);
+        const x2 = getX(d.i2);
+        const y2 = getY(d.p2);
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 2;
+        if (d.type === 'line') {
+          ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        } else if (d.type === 'rect') {
+          ctx.fillStyle = 'rgba(96, 165, 250, 0.1)';
+          ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+          ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+          ctx.save();
+          ctx.setLineDash([4, 4]);
+          ctx.strokeStyle = 'rgba(96, 165, 250, 0.5)';
+          ctx.lineWidth = 1;
+          const midY = (y1 + y2) / 2;
+          ctx.beginPath();
+          ctx.moveTo(x1, midY);
+          ctx.lineTo(x2, midY);
+          ctx.stroke();
+          ctx.restore();
+        }
+      };
+      drawings.forEach(renderDraw);
+      if (currentDrawing) renderDraw(currentDrawing);
+
+      fullList.forEach((c, i) => {
+        const x = getX(i);
+        if (x + effectiveWidth < 0 || x > canvas.width) return;
+        const color = c.close >= c.open ? '#10b981' : '#f43f5e';
+        const bodyTop = getY(Math.max(c.open, c.close));
+        const bodyBottom = getY(Math.min(c.open, c.close));
+        ctx.strokeStyle = color;
+        ctx.lineWidth = Math.max(1, scale);
+        ctx.beginPath();
+        ctx.moveTo(x + (effectiveWidth - CANDLE_GAP * scale) / 2, getY(c.high));
+        ctx.lineTo(x + (effectiveWidth - CANDLE_GAP * scale) / 2, getY(c.low));
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.fillRect(x, bodyTop, effectiveWidth - (CANDLE_GAP * scale), Math.max(1, bodyBottom - bodyTop));
+      });
+
+      const lastY = getY(currentPrice);
+      ctx.setLineDash([2, 2]);
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.beginPath();
+      ctx.moveTo(0, lastY); ctx.lineTo(canvas.width, lastY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "rgba(30, 41, 59, 0.9)";
+      ctx.fillRect(canvas.width - 60, lastY - 9, 60, 18);
+      ctx.fillStyle = "white";
+      ctx.font = "bold 10px monospace";
+      ctx.fillText(currentPrice.toFixed(2), canvas.width - 55, lastY + 4);
+
+      requestAnimationFrame(draw);
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      const my = e.clientY;
+      if (position) {
+        const slY = getY(position.sl);
+        const tpY = getY(position.tp);
+        if (Math.abs(my - slY) < 15) {draggingElement = 'sl'; autoScroll = false; return;}
+        if (Math.abs(my - tpY) < 15) {draggingElement = 'tp'; autoScroll = false; return;}
+      }
+      if (e.button === 0) {
+        if (activeTool === 'pan') {
+          isDragging = true; draggingElement = 'pan'; autoScroll = false; lastMouseX = e.clientX;
+        } else {
+          autoScroll = false;
+          const index = getIndex(e.clientX);
+          const price = getPrice(e.clientY);
+          currentDrawing = {type: activeTool, i1: index, p1: price, i2: index, p2: price};
+        }
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (currentDrawing) {
+        drawings.push(currentDrawing);
+        currentDrawing = null;
+        setTool('pan');
+      }
+      isDragging = false;
+      draggingElement = null;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (draggingElement === 'sl' && position) {
+        position.sl = getPrice(e.clientY);
+      } else if (draggingElement === 'tp' && position) {
+        position.tp = getPrice(e.clientY);
+      } else if (isDragging && draggingElement === 'pan') {
+        cameraX += (e.clientX - lastMouseX);
+        lastMouseX = e.clientX;
+      } else if (currentDrawing) {
+        let targetIdx = getIndex(e.clientX);
+        let targetPrice = getPrice(e.clientY);
+        if (currentDrawing.type === 'line') {
+          const dx = Math.abs(e.clientX - getX(currentDrawing.i1));
+          const dy = Math.abs(e.clientY - getY(currentDrawing.p1));
+          if (dy < 20) targetPrice = currentDrawing.p1;
+          else if (dx < 20) targetIdx = currentDrawing.i1;
+        }
+        currentDrawing.i2 = targetIdx;
+        currentDrawing.p2 = targetPrice;
+      }
+    });
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const mouseXInChart = e.clientX - cameraX;
+      const prevScale = scale;
+      scale = Math.max(0.1, Math.min(10, scale - e.deltaY * 0.001 * scale));
+      cameraX -= (mouseXInChart * (scale / prevScale) - mouseXInChart);
+      autoScroll = false;
+    }, {passive: false});
+
+    canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      const mx = e.clientX; const my = e.clientY;
+      drawings = drawings.filter(d => {
+        const x1 = getX(d.i1); const y1 = getY(d.p1);
+        const x2 = getX(d.i2); const y2 = getY(d.p2);
+        if (d.type === 'line') {
+          const l2 = (x1 - x2) ** 2 + (y1 - y2) ** 2;
+          let t = ((mx - x1) * (x2 - x1) + (my - y1) * (y2 - y1)) / l2;
+          t = Math.max(0, Math.min(1, t));
+          const dist = Math.sqrt((mx - (x1 + t * (x2 - x1))) ** 2 + (my - (y1 + t * (y2 - y1))) ** 2);
+          return dist > 10;
+        }
+        if (d.type === 'rect') {
+          const isInside = mx >= Math.min(x1, x2) && mx <= Math.max(x1, x2) && my >= Math.min(y1, y2) && my <= Math.max(y1, y2);
+          return !isInside;
+        }
+        return true;
+      });
+    });
+
+    window.onload = () => {
+      resize();
+      generateHistory();
+      setInterval(tick, TICK_INTERVAL_MS);
+      requestAnimationFrame(draw);
+    };
+    window.addEventListener('resize', resize);
+  </script>
+</body>
+
+</html>
