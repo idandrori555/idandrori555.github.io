@@ -18,11 +18,11 @@ const projects = [
   {
     id: "compiler-project",
     category: "קומפיילר",
-    title: "Compiler Project",
+    title: "MOE Compiler Project (Wrapper)",
     description: "סביבת הרצה וקומפילציה אונליין שנבנתה במיוחד עבור תלמידי מדעי המחשב, התומכת במחלקות ובספריות הרשמיות של משרד החינוך לבגרות.",
     technologies: ["Deno", "TypeScript", "Express", "Docker", "Java CLI"],
     icon: "M7 8l-4 4l4 4 M17 8l4 4l-4 4 M14 4l-4 16",
-    link: "https://github.com/idandrori555/Online-Edu-Java-Compiler",
+    link: "https://github.com/idandrori555/Edu-Compiler",
   },
   {
     id: "mashov-api",
