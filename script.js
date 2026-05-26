@@ -90,39 +90,51 @@ const projects = [
 ];
 
 const projectTemplate = (project) => `
-    <div class="glass-card p-8 rounded-[2.5rem] flex flex-col h-full group transition-all duration-300 hover:border-blue-500/30 hover:shadow-[0_0_50px_-12px_rgba(59,130,246,0.2)]">
-        <a href="${project.link}" target="_blank" rel="noopener noreferrer" class="flex flex-col h-full justify-between">
+    <div class="glass-panel p-8 rounded-[2.5rem] flex flex-col h-full group relative overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(59,130,246,0.3)] hover:border-blue-400/40">
+        
+        <!-- Animated Background Glow -->
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+
+        <a href="${project.link}" target="_blank" rel="noopener noreferrer" class="flex flex-col h-full justify-between relative z-10">
             <div>
                 <div class="flex justify-between items-start mb-6">
-                    <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20 group-hover:scale-110 group-hover:bg-blue-500/20 transition-all duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <!-- Project Icon -->
+                    <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20 group-hover:scale-110 group-hover:rotate-3 group-hover:bg-blue-500/20 group-hover:border-blue-400/40 transition-all duration-300 shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-blue-400 group-hover:text-blue-300 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${project.icon}"/>
                         </svg>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="bg-white/5 text-gray-400 text-xs font-bold px-3 py-1.5 rounded-full border border-white/10 tracking-wider">
+                    
+                    <!-- Category & CTA Arrow -->
+                    <div class="flex items-center gap-3">
+                        <span class="bg-slate-800/80 text-gray-300 text-xs font-bold px-3 py-1.5 rounded-full border border-white/10 tracking-wider group-hover:border-white/20 transition-colors">
                             ${project.category}
                         </span>
-                        <!-- Visual indicator for recruiters that this card is a link -->
-                        <span class="text-blue-500 opacity-0 group-hover:opacity-100 group-hover:translate-x-[-4px] transition-all duration-300 font-bold text-lg">
-                        </span>
+                        
+                        <!-- Interactive Arrow (Visible on Hover) -->
+                        <div class="w-8 h-8 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                            <i class="fas fa-arrow-left text-blue-400 text-sm"></i>
+                        </div>
                     </div>
                 </div>
                 
-                <h3 class="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors duration-300">
+                <!-- Title -->
+                <h3 class="text-2xl font-black text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-l group-hover:from-blue-400 group-hover:to-teal-300 transition-all duration-300">
                     ${project.title}
                 </h3>
                 
-                <p class="text-gray-400 text-sm leading-relaxed mb-6">
+                <!-- Description -->
+                <p class="text-gray-400 text-sm leading-relaxed mb-6 group-hover:text-gray-300 transition-colors duration-300">
                     ${project.description}
                 </p>
             </div>
             
-            <div class="flex flex-wrap gap-2 pt-6 border-t border-white/5">
+            <!-- Tech Stack Footer -->
+            <div class="flex flex-wrap gap-2 pt-6 border-t border-white/5 group-hover:border-white/10 transition-colors duration-300">
                 ${project.technologies
     .map(
       (tech) => `
-                    <span class="text-[10px] font-mono font-bold text-blue-300/70 bg-blue-500/5 border border-blue-300/20 px-2 py-1 rounded-md uppercase tracking-wide">
+                    <span class="text-[11px] font-mono font-bold text-blue-200 bg-blue-900/30 border border-blue-700/50 px-2.5 py-1 rounded-md tracking-wide hover:bg-blue-800/50 transition-colors duration-200">
                         ${tech}
                     </span>
                 `
