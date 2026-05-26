@@ -29,7 +29,7 @@ const projects = [
     category: "ממשק תכנות יישומים (API)",
     title: "Mashov Api",
     description: "עטיפת API (Wrapper) לא רשמית, מהירה ומאובטחת למערכת 'משוב' של משרד החינוך, המאפשרת שליפת נתונים קלה לאפליקציות צד-שלישי.",
-    technologies: ["Deno", "TypeScript", "REST API", "Fetch API"],
+    technologies: ["Bun", "TypeScript"],
     icon: "M3 15h18M3 9h18M6 15v-2M6 9V7M18 15v-2M18 9V7",
     link: "https://github.com/idandrori555/mashov-api",
   },
@@ -38,7 +38,7 @@ const projects = [
     category: "אפליקציית AI",
     title: "Transclive",
     description: "כלי חכם המשתמש במודלי שפה כדי להקליט, לתמלל ולסכם שיעורים והרצאות בבית הספר בזמן אמת.",
-    technologies: ["JS Esm", "Web Audio API", "Gemini API", "LocalStore"],
+    technologies: ["HTML CSS JS", "Web Audio API", "Gemini API"],
     icon: "M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z M19 10v1a7 7 0 0 1-14 0v-1 M12 18v4 M8 22h8",
     link: "/projects/transclive/",
   },
@@ -47,7 +47,7 @@ const projects = [
     category: "אפליקציית AI",
     title: "Invalidate",
     description: "מנוע אימות עובדות מבוסס בינה מלאכותית הפועל בצורה דומה ל'שאזאם' – מקשיב או מקבל טקסט ומזהה מיידית האם הטענה נכונה או שקרית.",
-    technologies: ["JS", "AI Model Integration", "Fetch API"],
+    technologies: ["HTML CSS JS", "Gemini API"],
     icon: "M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0 M21 21l-6 -6 M15 7l.5 1.5l1.5 .5l-1.5 .5l-.5 1.5l-.5 -1.5l-1.5 -.5l1.5 -.5z",
     link: "/u/invalidate/mock-v6/",
   },
@@ -65,7 +65,7 @@ const projects = [
     category: "משחק ווב",
     title: "Alias",
     description: "גרסת דפדפן אינטראקטיבית ומהירה למשחק חברתי המבוסס על הסבר והבנת מילים תחת לחץ זמן.",
-    technologies: ["JavaScript", "CSS Grid", "DOM Manipulation"],
+    technologies: ["HTML CSS JS"],
     icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
     link: "/projects/alias/",
   },
@@ -83,7 +83,7 @@ const projects = [
     category: "אפליקציית מעקב",
     title: "Accutrack",
     description: "מערכת מעקב וניהול יומן אישי עבור מטופלים ברואקוטן, הכוללת ניטור תופעות לוואי, מינונים ותזכורות בדיקות דם.",
-    technologies: ["JavaScript", "LocalStorage", "CSS Variables"],
+    technologies: ["HTML CSS JS", "ImgBB API"],
     icon: "M5 7h1l2-2h8l2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2 M12 13m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0",
     link: "/projects/accutrack/",
   },
@@ -105,7 +105,7 @@ const projectTemplate = (project) => `
                         </span>
                         <!-- Visual indicator for recruiters that this card is a link -->
                         <span class="text-blue-500 opacity-0 group-hover:opacity-100 group-hover:translate-x-[-4px] transition-all duration-300 font-bold text-lg">
-                           &larr;
+                            larr;
                         </span>
                     </div>
                 </div>

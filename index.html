@@ -4,10 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>עידן דרורי | Full Stack Developer</title>
+  <title>עידן דרורי | Full Stack & Systems Developer</title>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet" />
-  <!-- FontAwesome for Recruiters' Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="./script.js" defer></script>
@@ -28,7 +27,6 @@
       color: #e2e8f0;
       overflow-x: hidden;
       font-family: 'Heebo', sans-serif;
-      /* REMOVED user-select: none to allow recruiters to copy text/email */
       line-height: 1.6;
     }
 
@@ -185,7 +183,6 @@
   <div class="bg-noise"></div>
   <canvas id="bg-canvas"></canvas>
 
-  <!-- Floating Navigation Dock -->
   <nav class="nav-dock glass-panel">
     <a href="#hero" class="nav-item">בית</a>
     <a href="#about" class="nav-item">אודות</a>
@@ -200,16 +197,14 @@
         class="bg-gradient-to-r from-blue-500 via-indigo-400 to-teal-400 text-transparent bg-clip-text glow-text">דרורי</span>
     </h1>
 
-    <!-- Quick Tech Subtitle for Recruiters scanning the page -->
     <div class="text-blue-400 font-mono tracking-widest text-sm md:text-base mb-4 uppercase z-10 font-bold">
-      Full-Stack Developer & AI Integrator
+      Full-Stack & Systems Developer
     </div>
 
     <p class="text-lg md:text-2xl text-gray-400 max-w-2xl mx-auto font-light leading-relaxed mb-8">
-      לוקח בעיות והופך אותן למוצרים שלא רק נראים טוב, אלא גם נותנים ערך אמיתי.
+      בונה אפליקציות ווב מקצה לקצה ומפתח מערכות low-level.
     </p>
 
-    <!-- Main Call to Actions -->
     <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mb-8 relative z-10">
       <a href="#projects"
         class="w-full sm:w-auto group relative px-8 py-4 bg-blue-600 text-white rounded-xl font-bold transition-all hover:bg-blue-500 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.5)] active:scale-95 text-center">
@@ -222,7 +217,6 @@
       </a>
     </div>
 
-    <!-- Recruiter Direct Contacts (Instant Access) -->
     <div class="flex flex-wrap justify-center items-center gap-6 text-gray-400 text-sm md:text-base border-t border-white/5 pt-6 w-full max-w-xl z-10">
       <a href="mailto:idandrori555@gmail.com" class="flex items-center gap-2 hover:text-blue-400 transition-colors">
         <i class="far fa-envelope text-blue-500"></i>
@@ -237,20 +231,17 @@
 
   <main class="max-w-7xl mx-auto px-6 space-y-32 pb-40 pt-10">
 
-    <!-- About Section -->
     <section id="about" class="reveal grid lg:grid-cols-12 gap-6 items-stretch">
       <div
         class="lg:col-span-8 glass-panel p-8 md:p-12 rounded-[2.5rem] relative overflow-hidden flex flex-col justify-center">
-        <!-- Decoration -->
         <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full"></div>
 
         <h2 class="text-3xl md:text-4xl font-black mb-6 flex items-center gap-3 relative z-10">
           <span class="text-blue-500">/</span> על קצה המזלג
         </h2>
         <p class="text-lg md:text-xl text-gray-400 leading-relaxed font-light relative z-10">
-        היי, אני עידן. בן 17, חי ונושם קוד. <br></br>
-אני פחות מאמין ב"לכתוב קוד רק כדי לכתוב אותו" ויותר בלבנות מערכות מקצה לקצה שפותרות בעיות אמיתיות.
-בשנים האחרונות אני מתרכז בשילוב טכנולוגיות AI בתוך אפליקציות ווב מודרניות, ומנסה לקחת קונספטים מורכבים ולהפוך אותם לכלים נוחים לשימוש, נקיים ואינטואיטיביים.
+          היי, אני עידן, בן 17.<br><br>
+          אני מפתח תוכנה המשלב בין פיתוח מערכות Low-Level ב-C ו-C++ לבין בניית אפליקציות Full-Stack מודרניות מבוססות AI. אני נהנה לקחת בעיות אמיתיות ואתגרים מורכבים ולהפוך אותם למוצרים מהירים, נקיים ואינטואיטיביים שמביאים ערך אמיתי למשתמש.
         </p>
       </div>
 
@@ -270,7 +261,7 @@
           <div
             class="absolute inset-0 bg-teal-500/5 scale-y-0 group-hover:scale-y-100 transition-transform origin-bottom duration-500">
           </div>
-          <span class="text-5xl md:text-6xl font-black text-white count-up relative z-10" data-target="12"
+          <span class="text-5xl md:text-6xl font-black text-white count-up relative z-10" data-target="9"
             data-suffix="+">0</span>
           <span class="text-gray-500 text-xs font-bold uppercase tracking-widest mt-2 relative z-10">פרויקטים
           </span>
@@ -278,74 +269,113 @@
       </div>
     </section>
 
-    <!-- Tech Stack - Categorized for Better UX -->
     <section id="stack" class="reveal">
       <div class="flex flex-col md:flex-row justify-between items-start mb-10 px-2 text-right">
         <div>
           <h2 class="text-sm font-bold tracking-[0.2em] text-blue-500 uppercase mb-2">Tech Stack</h2>
-          <h3 class="text-3xl md:text-4xl font-black">כלים</h3>
+          <h3 class="text-3xl md:text-4xl font-black">כלים וטכנולוגיות</h3>
         </div>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-6">
-        <!-- Frontend -->
+      <!-- Changed to lg:grid-cols-3 and md:grid-cols-2 for a perfect 6-card layout -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- 1. Languages -->
         <div class="glass-panel p-8 rounded-[2rem]">
           <h4 class="text-xl font-bold mb-6 flex items-center gap-3">
-            <div class="w-2 h-2 rounded-full bg-blue-400 box-shadow-glow"></div> Frontend
+            <div class="w-2 h-2 rounded-full bg-indigo-400"></div> Languages
           </h4>
           <div class="flex flex-wrap gap-3">
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">HTML</span>
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">CSS</span>
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">JS</span>
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">React</span>
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Vite</span>
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Tailwind</span>
             <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">TypeScript</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">JavaScript</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">C / C++</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Python</span>
           </div>
         </div>
 
-        <!-- Backend & System -->
+        <!-- 2. Frontend -->
         <div class="glass-panel p-8 rounded-[2rem]">
           <h4 class="text-xl font-bold mb-6 flex items-center gap-3">
-            <div class="w-2 h-2 rounded-full bg-indigo-400"></div> Backend & Core
+            <div class="w-2 h-2 rounded-full bg-blue-400"></div> Frontend
+          </h4>
+          <div class="flex flex-wrap gap-3">
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">React</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">TailwindCSS</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">HTML & CSS & JS</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Vite</span>
+          </div>
+        </div>
+
+        <!-- 3. Backend & Runtimes -->
+        <div class="glass-panel p-8 rounded-[2rem]">
+          <h4 class="text-xl font-bold mb-6 flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-emerald-400"></div> Backend & Runtimes
           </h4>
           <div class="flex flex-wrap gap-3">
             <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Node.js</span>
             <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Deno</span>
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Bun</span>
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Python</span>
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">C / C++</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Bun (Preferred)</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">TCP/IP Sockets</span>
           </div>
         </div>
 
-        <!-- AI & Innovations -->
+        <!-- 4. Databases & BaaS -->
         <div class="glass-panel p-8 rounded-[2rem]">
           <h4 class="text-xl font-bold mb-6 flex items-center gap-3">
-            <div class="w-2 h-2 rounded-full bg-teal-400"></div> AI & Tools
+            <div class="w-2 h-2 rounded-full bg-yellow-400"></div> Databases & Cloud
           </h4>
           <div class="flex flex-wrap gap-3">
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Gemini</span>
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Claude</span>
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">ChatGPT</span>
-            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">OpenCode</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">PostgreSQL</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">MySQL</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">MongoDB</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Redis</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">SQLite</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Supabase</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Firebase</span>
           </div>
         </div>
+
+        <!-- 5. Systems & DevOps -->
+        <div class="glass-panel p-8 rounded-[2rem]">
+          <h4 class="text-xl font-bold mb-6 flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-purple-400"></div> Systems & Tools
+          </h4>
+          <div class="flex flex-wrap gap-3">
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Linux</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Docker</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Git & GitHub</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Make</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">CMake</span>
+          </div>
+        </div>
+
+        <!-- 6. AI & Tools -->
+        <div class="glass-panel p-8 rounded-[2rem]">
+          <h4 class="text-xl font-bold mb-6 flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-teal-400"></div> AI Models & Tools
+          </h4>
+          <div class="flex flex-wrap gap-3">
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Claude</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">ChatGPT</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Gemini</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">OpenCode</span>
+            <span class="tech-badge px-4 py-2 rounded-lg text-sm font-medium">Gemini CLI</span>
+          </div>
+        </div>
+
       </div>
     </section>
 
-    <!-- Projects -->
     <section id="projects" class="space-y-12">
       <div class="flex items-center gap-4 mb-4">
-        <h2 class="text-4xl md:text-5xl font-black tracking-tight">נבחרים</h2>
+        <h2 class="text-4xl md:text-5xl font-black tracking-tight">פרויקטים נבחרים</h2>
         <div class="h-[1px] flex-grow bg-white/10"></div>
       </div>
 
       <div id="projects-grid" class="masonry-grid">
-        <!-- Injected by script.js -->
-      </div>
+        </div>
     </section>
 
-    <!-- Minimal Footer -->
     <footer class="text-center pt-10 border-t border-white/5">
       <div class="flex justify-center gap-6 text-sm text-gray-400">
         <a href="https://github.com/idandrori555" target="_blank" class="hover:text-blue-400 transition-colors">GitHub</a>
