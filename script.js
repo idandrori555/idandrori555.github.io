@@ -105,7 +105,6 @@ const projectTemplate = (project) => `
                         </span>
                         <!-- Visual indicator for recruiters that this card is a link -->
                         <span class="text-blue-500 opacity-0 group-hover:opacity-100 group-hover:translate-x-[-4px] transition-all duration-300 font-bold text-lg">
-                            larr;
                         </span>
                     </div>
                 </div>
