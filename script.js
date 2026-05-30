@@ -34,6 +34,15 @@ const projects = [
     link: "https://github.com/idandrori555/mashov-api",
   },
   {
+    id: "nomos",
+    category: "מסגרת פיתוח ווב",
+    title: "Nomos",
+    description: "מסגרת פיתוח ווב כמו אקפרס אבל ל-C++",
+    technologies: ["C++", "TCP Sockets"],
+    icon: "M12 2a3 3 0 1 0 3 3 3 3 0 0 0-3-3zM6 19a3 3 0 1 0 3 3 3 3 0 0 0-3-3zm12 0a3 3 0 1 0 3 3 3 3 0 0 0-3-3zm-5.4-8.8l4.8 6.4-1.6 1.2-4.8-6.4zM9.4 17.8l-4.8-6.4 1.6-1.2 4.8 6.4z",
+    link: "https://github.com/idandrori555/nomos",
+  },
+  {
     id: "transclive",
     category: "אפליקציית AI",
     title: "Transclive",
