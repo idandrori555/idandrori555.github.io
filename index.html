@@ -268,7 +268,7 @@
           <span class="text-blue-500"><i class="fas fa-terminal"></i></span> על קצה המזלג
         </h2>
         <p class="text-lg md:text-xl text-gray-300 leading-relaxed font-light relative z-10">
-          היי, אני עידן, בן 17.<br><br>
+          היי, אני עידן, בן <span id="age-text">17</span>.<br><br>
           אני מפתח תוכנה המשלב בין פיתוח מערכות Low-Level ב-C ו-C++ לבין בניית אפליקציות Full-Stack מודרניות מבוססות AI. אני נהנה לקחת בעיות אמיתיות ואתגרים מורכבים ולהפוך אותם למוצרים נקיים ואינטואיטיביים שמביאים ערך אמיתי למשתמש.
         </p>
       </div>
@@ -276,7 +276,7 @@
       <div class="lg:col-span-4 flex flex-col gap-6">
         <div class="glass-panel hover-card-effect p-8 rounded-[2.5rem] flex-1 flex flex-col items-center justify-center relative overflow-hidden group">
           <div class="absolute inset-0 bg-gradient-to-t from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <span class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-500 count-up relative z-10" data-target="17" data-suffix="">0</span>
+          <span class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-500 count-up relative z-10" data-target="0" data-suffix="">0</span>
           <span class="text-blue-400 text-xs font-bold uppercase tracking-widest mt-3 relative z-10">גיל (אבל מי סופר?)</span>
         </div>
         <div class="glass-panel hover-card-effect p-8 rounded-[2.5rem] flex-1 flex flex-col items-center justify-center relative overflow-hidden group">
@@ -573,6 +573,18 @@
       reveal();
       updateActiveLink();
     });
+
+    // --- Dynamic Age Calculation ---
+    const birthDate = new Date(2008, 8, 11); // 11 September 2008
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    document.getElementById('age-text').textContent = age;
+    const ageCountUp = document.querySelector('.count-up[data-suffix=""]');
+    if (ageCountUp) ageCountUp.dataset.target = age;
 
     // Run on page load
     reveal();
