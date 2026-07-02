@@ -43,6 +43,15 @@ const projects = [
     link: "https://github.com/idandrori555/nomos",
   },
   {
+    id: "physics-simulator",
+    category: "סימולטור פיזיקה",
+    title: "Physics Simulator",
+    description: "סימולטור פיזיקלי דו-ממדי המדמה כוחות, התנגשויות ותנועה בזמן אמת, תוך דגש על ביצועים גבוהים וניהול זיכרון יעיל.",
+    technologies: ["C++", "SDL3"],
+    icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12z M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z",
+    link: "https://github.com/idandrori555/physics-simulator",
+  },
+  {
     id: "transclive",
     category: "אפליקציית AI",
     title: "Transclive",
