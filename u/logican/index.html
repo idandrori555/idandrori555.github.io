@@ -1,0 +1,2237 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הלוגיקון - ויקיפדיה של כשלים לוגיים</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f7ff',
+                            100: '#ebf0ff',
+                            200: '#cedbff',
+                            300: '#a3beff',
+                            400: '#7095ff',
+                            500: '#3b66f6',
+                            600: '#2546eb',
+                            700: '#1b32d5',
+                            800: '#1a2ab0',
+                            900: '#1a278c',
+                            950: '#101754',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Rubik', 'Assistant', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Rubik & Assistant -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Rubik:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Rubik', 'Assistant', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b66f6;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2546eb;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col antialiased">
+
+<script>
+    const fallaciesData = [
+        {
+            id: "ad-hominem",
+            name: "פנייה לגופו של אדם (Ad Hominem)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 5, // 1 to 5 (most popular)
+            shortDesc: "תקיפת האופי, המראה, הרקע או המניעים של הטוען במקום להתמודד עם הטיעון עצמו.",
+            fullDesc: "כשל לוגי זה מתרחש כאשר במקום להשיב לטענותיו של היריב בצורה עניינית, תוקפים את האופי שלו, את המניעים שלו, או את הרקע האישי שלו. ההנחה המוטעית כאן היא שאם לאדם יש תכונה שלילית כלשהי, אז בהכרח כל טענה שהוא מציג היא שקרית או חסרת ערך.",
+            example: "פרופסור לוי מציג מחקר מקיף המראה כי מס חדש על משקאות ממותקים יקטין את שיעורי הסוכרת. המתנגדים למס משיבים: 'אל תקשיבו לו, הוא אדם כועס וממורמר שלא נבחר לראשות הדירקטוריון, והוא רק רוצה תשומת לב'.",
+            howToCounter: "הפרד בין הדובר לתוכן הטיעון. אמור בעדינות: 'האישיות שלי או העבר שלי אינם הנושא כאן. בוא נתמקד בנתונים ובמחקר שהצגתי ונבחן האם הם נכונים או לא'.",
+            icon: "fa-user-slash"
+        },
+        {
+            id: "straw-man",
+            name: "איש הקש (Straw Man)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 5,
+            shortDesc: "עיוות, הגזמה או פישוט יתר של טיעון היריב כדי להקל על תקיפתו והפרכתו.",
+            fullDesc: "בכשל איש הקש, יוצרים גרסה מעוותת, קיצונית או מופשטת מדי של טיעון היריב (גרסה זו היא 'איש הקש'), ואז תוקפים ומפרקים אותה בקלות, תוך העמדת פנים שהובס הטיעון המקורי והחזק של היריב.",
+            example: "דובר א': 'אני חושב שעלינו להפנות חלק מתקציב הביטחון לשיפור מערכת החינוך והבריאות בפריפריה'.\nדובר ב': 'אני לא מאמין שאתה רוצה להשאיר את המדינה שלנו חסרת הגנה לחלוטין ולתת לאויבים שלנו להשמיד אותנו מחר בבוקר!'.",
+            howToCounter: "החזר את הדיון למסלול המקורי מיד. 'זה לא מה שאמרתי. לא הצעתי לבטל את תקציב הביטחון, אלא לבצע חלוקה מחדש קטנה. בוא נדון בהצעה המדויקת שלי ולא בגרסה המוקצנת שהצגת'.",
+            icon: "fa-wheat-awn"
+        },
+        {
+            id: "slippery-slope",
+            name: "מדרון חלקלק (Slippery Slope)",
+            category: "causal",
+            categoryHebrew: "כשלי סיבתיות",
+            popularity: 5,
+            shortDesc: "טענה שצעד קטן וראשון יוביל בהכרח לשרשרת אירועים קיצונית ובלתי נמנעת, ללא הוכחה לקשר סיבתי.",
+            fullDesc: "כשל זה מניח שאם נאפשר לצעד א' לקרות, יתרחש בעקבותיו תהליך בלתי נמנע שיוביל לתוצאה קיצונית ונוראית ת', מבלי לספק שום הוכחה לוגית או מדעית לכך שצעד א' אכן גורר בהכרח את כל שאר השלבים באמצע.",
+            example: " אם נאפשר לתלמידים להשתמש בטלפונים בהפסקות, הם יתחילו להשתמש בהם גם בשיעורים, הציונים שלהם יקרסו, הם ינשרו מבית הספר, יתחברו לכנופיות רחוב ובסוף המדינה כולה תדרדר לאנרכיה מוחלטת.",
+            howToCounter: "הצבע על היעדר הקשר הסיבתי ההכרחי. שאל: 'איזה ביסוס יש לכך שצעד א' מוביל ישירות לת'? האם אין לנו דרך לעצור את התהליך באמצע או להציב גבולות ברורים?'.",
+            icon: "fa-mountain"
+        },
+        {
+            id: "false-dilemma",
+            name: "דילמה כוזבת / שחור או לבן (False Dilemma)",
+            category: "presumption",
+            categoryHebrew: "כשלי הנחת יסוד",
+            popularity: 4,
+            shortDesc: "הצגת שתי אפשרויות קיצוניות בלבד כברירה היחידה, תוך התעלמות מאפשרויות ביניים רבות אחרות.",
+            fullDesc: "כשל זה מצמצם מצב מורכב לשתי חלופות בלבד (לרוב קוטביות וקיצוניות), ומכריח את המאזין לבחור באחת מהן. בפועל, ברוב המקרים קיימות אפשרויות ביניים רבות, שילובים או חלופות נוספות שלא הוזכרו.",
+            example: "או שאתה תומך במאה אחוז ברפורמה החדשה, או שאתה שונא את המדינה ורוצה בהרס שלה. אין אמצע.",
+            howToCounter: "חשוף את מרחב הביניים והצג אפשרויות נוספות: 'זוהי הצגה פשטנית של המציאות. אני יכול לאהוב את המדינה ובו זמנית להסתייג מחלקים מסוימים ברפורמה ולהציע לה שינויים'.",
+            icon: "fa-arrows-split-up-and-left"
+        },
+        {
+            id: "appeal-to-authority",
+            name: "פנייה לסמכות כוזבת (Appeal to False Authority)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 4,
+            shortDesc: "הסתמכות על דעתו של 'מומחה' שאינו באמת מומחה בתחום המדובר כדי להוכיח טענה.",
+            fullDesc: "בעוד שהתייעצות עם מומחים היא הגיונית, הכשל מתרחש כאשר משתמשים בשמו של מומחה בתחום א' כדי להכריע בנושא בתחום ב', או כאשר מסתמכים על סמכות כללית של מישהו פופולרי (כמו סלבריטאי, פוליטיקאי או פילוסוף) מבלי להציג ראיות ממשיות.",
+            example: "שחקן הכדורגל המפורסם ביותר בעולם הצהיר בראיון שהתוסף התזונתי החדש מרפא דלקות פרקים תוך יומיים, ולכן זה בטוח נכון ועלינו לקנות את זה.",
+            howToCounter: "בחן את איכות הסמכות והראיות: 'עם כל הכבוד לפועלו של השחקן בכדורגל, הוא אינו רופא או תזונאי. האם יש מחקרים קליניים מבוקרי עמיתים שתומכים בטענה הזו?'.",
+            icon: "fa-user-tie"
+        },
+        {
+            id: "false-cause",
+            name: "קשר סיבתי כוזב / פוסט הוק (Post Hoc)",
+            category: "causal",
+            categoryHebrew: "כשלי סיבתיות",
+            popularity: 4,
+            shortDesc: "הנחה שאם אירוע ב' התרחש לאחר אירוע א', אז אירוע א' הוא זה שגרם לאירוע ב'.",
+            fullDesc: "הכשל הלטיני הידוע 'Post hoc ergo propter hoc' ('אחרי זה, לכן בגלל זה') מניח בצורה שגויה שסדר כרונולוגי פשוט מוכיח סיבתיות. לעיתים מדובר בצירוף מקרים בלבד, או שיש גורם שלישי סמוי שגרם לשני האירועים.",
+            example: "נעלתי את גרבי המזל שלי למבחן והוצאתי 100. זה אומר שלגרביים שלי יש כוח קסום שעוזר לי להצליח בלימודים.",
+            howToCounter: "בקש להוכיח את מנגנון הפעולה הסיבתי: 'איך בדיוק הגרביים משפיעות לוגית ופיזית על הידע שלך במבחן? האם ייתכן שהצלחת פשוט כי למדת קשה לפני כן?'.",
+            icon: "fa-bolt"
+        },
+        {
+            id: "circular-reasoning",
+            name: "טיעון מעגלי (Circular Reasoning)",
+            category: "presumption",
+            categoryHebrew: "כשלי הנחת יסוד",
+            popularity: 3,
+            shortDesc: "ניסיון להוכיח טענה באמצעות שימוש בטענה עצמה כהנחת יסוד.",
+            fullDesc: "בטיעון מעגלי, המסקנה של הטיעון כבר מונחת בתוך ההנחות שלו. הטיעון הולך במעגל ומנוסח מחדש, מבלי להציג שום ראיה חיצונית חדשה שמבססת אותו.",
+            example: "הספר המסתורי הזה תמיד דובר אמת וכל מה שכתוב בו נכון לחלוטין. מניין לי? כי כתוב בפירוש בעמוד הראשון של הספר שהוא נכתב על ידי כוח עליון שלעולם אינו משקר.",
+            howToCounter: "חשוף את המעגליות: 'אתה משתמש בנכונות של הספר כדי להוכיח שהספר נכון. אנחנו זקוקים לראיה חיצונית בלתי תלויה כדי לדעת אם הספר אכן דובר אמת'.",
+            icon: "fa-arrows-spin"
+        },
+        {
+            id: "bandwagon",
+            name: "פנייה אל ההמון (Bandwagon / Ad Populum)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 4,
+            shortDesc: "טענה שמשהו הוא נכון, טוב או מוסרי רק משום שהרבה אנשים מאמינים בו או עושים אותו.",
+            fullDesc: "כשל זה מתבסס על הלחץ החברתי והרצון להשתייך. הוא מניח שהרוב תמיד צודק ('מיליארד סינים לא טועים'). ההיסטוריה הוכיחה פעמים רבות שההמונים יכולים לטעות באופן קולקטיבי (למשל, הדעה ההיסטורית שהעולם שטוח או שהשמש מסתובבת סביב כדור הארץ).",
+            example: "כל החברים בכיתה משתמשים באפליקציה החדשה הזו שמבקשת גישה לכל התמונות וההודעות שלהם. זה אומר שזה בטוח לגמרי ולא צריך לדאוג לפרטיות.",
+            howToCounter: "הפרד בין פופולריות לאמת: 'העובדה שהרבה אנשים עושים משהו לא הופכת אותו אוטומטית לבטוח או נכון. בוא נבחן את תנאי השימוש ורמת האבטחה של האפליקציה בצורה אובייקטיבית'.",
+            icon: "fa-users"
+        },
+        {
+            id: "no-true-scotsman",
+            name: "אין סקוטי אמיתי (No True Scotsman)",
+            category: "ambiguity",
+            categoryHebrew: "כשלי עמימות והגדרה מחדש",
+            popularity: 3,
+            shortDesc: "הגנה על הכללה גורפת על ידי שינוי הגדרת הקבוצה ברגע שמוצגת דוגמה נגדית שמפריכה אותה.",
+            fullDesc: "כאשר מוצגת ראיה המפריכה טענה כללית, במקום לקבל את הראיה או לעדכן את הטענה, הדובר משנה את הקריטריונים של חברות בקבוצה באופן שרירותי, בדרך כלל על ידי הוספת המילה 'אמיתי' או 'טהור'.",
+            example: "רונן: 'אף ישראלי לא מתלונן על מנת חומוס'.\nדוד: 'אבל יוסי הוא ישראלי והוא ממש מתעב חומוס'.\nרונן: 'נו טוב, אבל יוסי הוא לא ישראלי *אמיתי*!'.",
+            howToCounter: "הצבע על השינוי השרירותי של הגדרת המונחים: 'בהתחלה אמרת ישראלי, כעת כשמצאנו דוגמה נגדית אתה משנה את ההגדרה ל-'ישראלי אמיתי'. מה הופך מישהו לישראלי אמיתי מעבר לעובדה שהוא פשוט מתאים לתיאוריה שלך?'.",
+            icon: "fa-user-check"
+        },
+        {
+            id: "red-herring",
+            name: "הרינג אדום (Red Herring / הסטת קשב)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 4,
+            shortDesc: "הכנסת נושא לא קשור לחלוטין לדיון כדי להסיח את הדעת מהנושא המקורי הקשה להתמודדות.",
+            fullDesc: "מקור השם הוא במנהג להשתמש בדג הרינג מעושן בעל ריח חזק כדי להטעות כלבי ציד ולהסיט אותם מהמסלול. בדיון לוגי, זהו נושא צדדי, מפתה ומרגש שמטרתו לגרום לכולם לשכוח על מה באמת מתווכחים.",
+            example: "עיתונאי: 'מדוע פרויקט הרכבת הקלה שלך חרג מהתקציב במיליארד שקלים?'.\nפוליטיקאי: 'תודה על השאלה. מה שבאמת חשוב כרגע זה לדבר על הגאווה הלאומית שלנו, על החיילים המדהימים שמגינים עלינו ועל אחדות העם שכולנו זקוקים לה'.",
+            howToCounter: "גלה ערנות והחזר את הפוקוס: 'זה נושא חשוב מאוד, אך נשמח לחזור אליו בהזדמנות אחרת. כרגע השאלה היא ספציפית לגבי החריגה של מיליארד שקלים בתקציב הרכבת. נשמח לתשובה'.",
+            icon: "fa-fish"
+        },
+        {
+            id: "texas-sharpshooter",
+            name: "הצלף הטקסני (Texas Sharpshooter)",
+            category: "statistical",
+            categoryHebrew: "כשלי סטטיסטיקה ומחקר",
+            popularity: 2,
+            shortDesc: "בחירת מקבץ נתונים נוח שמתאים לתיאוריה מסוימת והתעלמות מכל שאר הנתונים שמפריכים אותה.",
+            fullDesc: "השם מגיע ממשל על צלף שיורה על קיר אסם באקראי, ואז ניגש לקיר, מצייר עיגול מטרה סביב ריכוז חורי הקליעים הגדול ביותר ומציג את עצמו כצלף מומחה. במחקר או בדיון, מדובר במציאת דפוסים איפה שהם אינם קיימים באמת, על ידי התעלמות מכוונת מההקשר הכללי ומנתונים סותרים.",
+            example: "יצרנית משקאות קלים פרסמה מחקר שמצא כי בקרב 5 המדינות שבהן שותים הכי הרבה מהמשקה שלהם, יש אחוז גבוה מאוד של אנשים מאושרים. הם כמובן לא סיפרו שהם בדקו 100 מדינות וסיננו את ה-95 האחרות שבהן לא היה שום קשר כזה.",
+            howToCounter: "דרוש את התמונה המלאה ומדגם רנדומלי: 'האם הנתונים האלו מייצגים את כלל האוכלוסייה או שמא בחרתם רק את המקרים שמתאימים לכם? מה קורה בשאר המקרים שלא הצגתם?'.",
+            icon: "fa-crosshairs"
+        },
+        {
+            id: "appeal-to-ignorance",
+            name: "פנייה אל הבורות (Appeal to Ignorance)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 3,
+            shortDesc: "טענה שמשהו הוא נכון רק מפני שטרם הוכח שהוא שקרי, או להפך.",
+            fullDesc: "כשל זה מתעלם מכך שחוסר בראיות אינו מהווה ראיה בפני עצמה. חוסר היכולת שלנו להוכיח או להפריך משהו בגלל מגבלות טכנולוגיות או חוסר מידע, אינו הופך את הטענה ההפוכה לנכונה אוטומטית. נטל ההוכחה תמיד מוטל על מי שטוען את הטענה האקטיבית.",
+            example: "אף מדען לא הצליח להוכיח באופן מוחלט וסופי שחייזרים לא בנו את הפירמידות במצרים, ולכן המסקנה הלוגית היחידה היא שהם אכן בנו אותן.",
+            howToCounter: "הסבר את עקרון נטל ההוכחה: 'חוסר הוכחה לשלילה אינו מהווה אישור לחיוב. נטל ההוכחה הוא על מי שטוען שהחייזרים בנו אותן, ולא על שאר העולם להפריך זאת'.",
+            icon: "fa-question"
+        },
+        {
+            id: "appeal-to-pity",
+            name: "פנייה אל הרחמים (Appeal to Pity / Ad Misericordiam)",
+            category: "emotion",
+            categoryHebrew: "כשלי פנייה לרגש",
+            popularity: 3,
+            shortDesc: "ניסיון לזכות בתמיכה בטיעון על ידי ניצול רגשות האשם או הרחמים של הצד השני.",
+            fullDesc: "פנייה אל הרחמים היא סוג של הסטת קשב רגשית. במקום להציע ראיות לוגיות או עובדות שתומכות במסקנה, הדובר מנסה לגרום למאזין לחוש רחמים או אשמה ובכך להסכים עם הדרישה או הטענה שלו.",
+            example: "מרצה נכבד, אני ממש מתחנן שלא תכשיל אותי בקורס הזה. אם אכשל, ההורים שלי יתאכזבו מאוד, המלגה שלי תבוטל ואאלץ לעזוב את האוניברסיטה ולחזור לגור ברחוב.",
+            howToCounter: "הבע אמפתיה אך שמור על הפרדה לוגית: 'אני מאוד מצטער לשמוע על הקשיים שלך ואשמח לנסות לעזור לך למצוא פתרונות תמיכה, אך הציון בקורס חייב לשקף אך ורק את השליטה שלך בחומר האקדמי והמבחן שעשית'.",
+            icon: "fa-face-sad-tear"
+        },
+        {
+            id: "loaded-question",
+            name: "שאלה מכשילה / טעונה (Loaded Question)",
+            category: "presumption",
+            categoryHebrew: "כשלי הנחת יסוד",
+            popularity: 2,
+            shortDesc: "שאילת שאלה המכילה הנחת יסוד מובנית ולא מוכחת, כך שכל תשובה ישירה אליה תפליל את העונה.",
+            fullDesc: "שאלה טעונה היא מלכודת רטורית. השאלה מנוסחת כך שהמשיב אינו יכול לענות עליה ב'כן' או 'לא' פשוט מבלי להסכים עם אשמה או הנחה מוקדמת פוגענית ששתל השואל.",
+            example: "האם כבר הפסקת להעתיק במבחנים של בית הספר?",
+            howToCounter: "אל תענה ישירות על השאלה ('כן' או 'לא' יפלילו אותך). במקום זאת, אתגר את הנחת היסוד עצמה: 'אני לא יכול לענות על השאלה הזו, מכיוון שמעולם לא העתקתי במבחנים, ולכן המושג 'להפסיק' אינו רלוונטי לגביי'.",
+            icon: "fa-circle-question"
+        },
+        {
+            id: "fallacy-fallacy",
+            name: "כשל הכשל (The Fallacy Fallacy)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 1, // Rare / Less-known
+            shortDesc: "הנחה שאם טיעון מסוים מכיל כשל לוגי, אז המסקנה שלו היא בהכרח שקרית לחלוטין.",
+            fullDesc: "זהו כשל מתוחכם במיוחד. לפעמים אנשים מציגים טענה שהיא נכונה עובדתית, אך הדרך שבה הם מנסים להוכיח אותה או לנמק אותה היא גרועה ומכילה כשל לוגי. הכשל שלנו הוא לחשוב שבגלל שההוכחה שלהם לקויה, אז המסקנה עצמה בהכרח שקרית. במציאות, טענה נכונה יכולה להיות מלווה בטיעון גרוע.",
+            example: "יוסי אומר: 'עדיף לאכול פירות וירקות כי חבר שלי אמר לי שזה בריא מאוד והחבר הזה הוא גאון שלעולם לא טועה (פנייה לסמכות כוזבת)'. דוד משיב: 'השתמשת בכשל לוגי! לכן, פירות וירקות הם לא באמת בריאים'.",
+            howToCounter: "הפרד בין המסקנה לבין דרך ההוכחה: 'אמנם הטיעון שהצגתי היה לקוי והשתמשתי בהוכחה שאינה תקפה, אך המסקנה עצמה עדיין נכונה עובדתית ומגובה במחקרים תזונתיים אחרים שאשמח להציג'.",
+            icon: "fa-shield-halved"
+        }
+    ];
+
+    // Quiz Questions Data
+    const quizQuestions = [
+        {
+            quote: '"אנחנו לא יכולים לאשר את ניסוי התרופה החדשה הזו. אם נאשר אותה, מחר נאשר כל תרופה שתגיע, בעוד חודש אנשים יקחו סמים חופשי ברחובות והחברה כולה תתפרק."',
+            options: [
+                { id: "slippery-slope", text: "מדרון חלקלק" },
+                { id: "straw-man", text: "איש הקש" },
+                { id: "circular-reasoning", text: "טיעון מעגלי" }
+            ],
+            correct: "slippery-slope",
+            explanation: "נכון! זהו כשל מדרון חלקלק מובהק המקשר בין אישור תרופה אחת להתמוטטות החברה כולה ללא קשר סיבתי מוכח."
+        },
+        {
+            quote: '"פגשתי שלושה אנשים מהעיר חיפה והם היו ממש נחמדים אליי, לכן כל תושבי חיפה הם האנשים הכי נחמדים וטובי לב במדינה."',
+            options: [
+                { id: "texas-sharpshooter", text: "הצלף הטקסני (הכללה פזיזה)" },
+                { id: "ad-hominem", text: "פנייה לגופו של אדם" },
+                { id: "false-dilemma", text: "דילמה כוזבת" }
+            ],
+            correct: "texas-sharpshooter",
+            explanation: "מדויק! זוהי סטטיסטיקה מוטה והכללה פזיזה על בסיס מדגם קטן ונוח (בדומה לצלף הטקסני)."
+        },
+        {
+            quote: '"למה שנקשיב להצעות של השר בנושא משבר הדיור? הרי כולם יודעים שהוא נולד למשפחה עשירה ומעולם לא היה צריך לדאוג לשכר דירה בעצמו!"',
+            options: [
+                { id: "appeal-to-ignorance", text: "פנייה אל הבורות" },
+                { id: "ad-hominem", text: "פנייה לגופו של אדם (אד הומינם)" },
+                { id: "loaded-question", text: "שאלה מכשילה" }
+            ],
+            correct: "ad-hominem",
+            explanation: "מעולה! במקום להתמודד עם הצעות החוק של השר בצורה עניינית, הדובר תוקף את הרקע המשפחתי והאישי שלו (אד הומינם)."
+        }
+    ];
+</script>
+
+<!-- Header and Navigation -->
+<header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <!-- Brand Logo (Now acts as an active scroll-to-top button) -->
+            <div onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex items-center gap-3 cursor-pointer select-none hover:opacity-90 transition-opacity">
+                <div class="bg-brand-500 text-white p-2.5 rounded-xl shadow-lg shadow-brand-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-brain text-xl"></i>
+                </div>
+                <div>
+                    <span class="font-black text-xl tracking-tight text-brand-600 dark:text-brand-400">הלוגיקון</span>
+                    <span class="hidden sm:inline-block text-xs font-semibold bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-300 px-2 py-0.5 rounded-full mr-2">אנציקלופדיית כשלים</span>
+                </div>
+            </div>
+
+            <!-- Header Tools -->
+            <div class="flex items-center gap-4">
+                <!-- Navigation Quick Links -->
+                <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+                    <a href="#fallacies-catalog" class="text-slate-600 hover:text-brand-500 dark:text-slate-300 dark:hover:text-brand-400 transition-colors">מאגר הכשלים</a>
+                    <a href="#interactive-quiz" class="text-slate-600 hover:text-brand-500 dark:text-slate-300 dark:hover:text-brand-400 transition-colors">בוחן טריוויה</a>
+                    <a href="#suggest-fallacy" class="text-slate-600 hover:text-brand-500 dark:text-slate-300 dark:hover:text-brand-400 transition-colors">הצעת כשל</a>
+                </nav>
+
+                <div class="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden md:block"></div>
+
+                <!-- Dark/Light Theme Toggle (Functional Theme switcher) -->
+                <button id="theme-toggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:ring-2 hover:ring-brand-500/50 transition-all" aria-label="Toggle Theme">
+                    <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-12 md:py-20 transition-colors">
+    <!-- Decorative background elements -->
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full filter blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-indigo-500/10 rounded-full filter blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white leading-tight">
+            להתווכח כמו מקצוענים. <br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-indigo-500 dark:from-brand-400 dark:to-indigo-400">לזהות כשלים לוגיים בשנייה.</span>
+        </h1>
+        <p class="mt-6 text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
+            ברוכים הבאים ל<strong>הלוגיקון</strong> – המדריך המקיף שלכם לעולם של רטוריקה, היגיון וכשלים לוגיים. למדו לזהות מניפולציות בחדשות, ברשתות החברתיות ובשיחות היום-יום, והבינו פעם אחת ולתמיד איך לבנות טיעון מנצח.
+        </p>
+
+        <!-- Stats Counter Section -->
+        <div class="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 p-4 rounded-2xl">
+                <span class="block text-3xl font-extrabold text-brand-600 dark:text-brand-400" id="total-fallacies-count">0</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">כשלים רשומים במאגר</span>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 p-4 rounded-2xl">
+                <span class="block text-3xl font-extrabold text-brand-600 dark:text-brand-400">4</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">קטגוריות ראשיות</span>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 p-4 rounded-2xl">
+                <span class="block text-3xl font-extrabold text-brand-600 dark:text-brand-400">100%</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">דוגמאות מהחיים</span>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 p-4 rounded-2xl">
+                <span class="block text-3xl font-extrabold text-brand-600 dark:text-brand-400">זלאשאע</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">בוחן ומנתח דיונים</span>
+            </div>
+        </div>
+
+        <div class="mt-10 flex flex-wrap justify-center gap-4">
+            <a href="#fallacies-catalog" class="px-8 py-4 bg-brand-500 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/20 hover:bg-brand-600 transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                חקור את המאגר
+            </a>
+            <a href="#interactive-quiz" class="px-8 py-4 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-white font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-gamepad"></i>
+                בחן את עצמך
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Highlight Card: Fallacy of the Day -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-6 relative z-20">
+    <div class="bg-gradient-to-r from-brand-600 to-indigo-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-brand-500/10">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="max-w-2xl">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-sm mb-3">
+                    <i class="fa-solid fa-star"></i>
+                    כשל לוגי יומי נבחר
+                </span>
+                <h3 class="text-2xl sm:text-3xl font-bold" id="daily-fallacy-name">טוען...</h3>
+                <p class="mt-3 text-white/80 text-sm sm:text-base leading-relaxed" id="daily-fallacy-desc">
+                    טוען את הכשל היומי שלנו עבורך...
+                </p>
+                <div class="mt-4 p-4 bg-white/10 rounded-xl border border-white/10 text-xs sm:text-sm">
+                    <strong>דוגמה מהחיים: </strong>
+                    <span id="daily-fallacy-example" class="italic">...</span>
+                </div>
+            </div>
+            <div class="flex-shrink-0">
+                <button id="view-daily-btn" class="w-full lg:w-auto px-6 py-3 bg-white text-brand-600 font-bold rounded-xl hover:bg-slate-100 transition-colors flex items-center justify-center gap-2">
+                    קרא הסבר מלא ודרכי התמודדות
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Search, Catalog & Filter Grid -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow" id="fallacies-catalog">
+    <div class="text-center md:text-right mb-8">
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2 justify-center md:justify-start">
+            <i class="fa-solid fa-book-open text-brand-500"></i>
+            קטלוג הכשלים הלוגיים המלא
+        </h2>
+        <p class="text-slate-500 dark:text-slate-400 mt-2">השתמשו בחיפוש או בסינונים כדי למצוא כשל מסוים ולהבין כיצד הוא פועל.</p>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 mb-8 shadow-sm transition-colors">
+        <!-- Live Search Input -->
+        <div class="relative w-full mb-6">
+            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-lg"></i>
+            </div>
+            <input type="text" id="search-input" placeholder="חפשו לפי שם הכשל, מילות מפתח או דוגמה..." class="w-full pl-4 pr-11 py-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all text-sm sm:text-base">
+        </div>
+
+        <!-- Filter Buttons (Categories) -->
+        <div class="flex flex-col gap-4">
+            <div>
+                <span class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2.5">סינון לפי קטגוריה:</span>
+                <div class="flex flex-wrap gap-2" id="category-filters">
+                    <button data-category="all" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-brand-500 text-white transition-all shadow-sm cursor-pointer">
+                        הכל
+                    </button>
+                    <button data-category="relevance" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                        רלוונטיות
+                    </button>
+                    <button data-category="causal" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                        סיבתיות
+                    </button>
+                    <button data-category="presumption" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                        הנחת יסוד
+                    </button>
+                    <button data-category="emotion" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                        פנייה לרגש
+                    </button>
+                    <button data-category="statistical" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                        סטטיסטיקה ומחקר
+                    </button>
+                    <button data-category="ambiguity" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                        עמימות והגדרה
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sorting & Popularity Selection -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">מיון לפי:</span>
+                    <select id="sort-select" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-200 cursor-pointer">
+                        <option value="popularity-desc">הכי פופולריים / נפוצים</option>
+                        <option value="popularity-asc">הכי פחות מוכרים / נדירים</option>
+                        <option value="name-asc">א'-ב' עולה</option>
+                        <option value="name-desc">א'-ב' יורד</option>
+                    </select>
+                </div>
+                <div class="text-xs text-slate-400 dark:text-slate-500" id="results-count">
+                    מציג 15 כשלים לוגיים
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fallacies Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="fallacies-grid">
+        <!-- Dynamic Fallacy Cards will be rendered here -->
+    </div>
+
+    <!-- Empty State for Search -->
+    <div id="empty-state" class="hidden text-center py-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl transition-colors">
+        <div class="text-brand-500 text-5xl mb-4"><i class="fa-regular fa-face-frown"></i></div>
+        <h3 class="text-xl font-bold text-slate-800 dark:text-white">לא מצאנו כשל כזה...</h3>
+        <p class="text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto px-4">נסו לחפש מילה אחרת או להשתמש בסינונים כדי למצוא את מבוקשכם. אולי הכשל המבוקש טרם נוסף למאגר?</p>
+        <button onclick="resetFilters()" class="mt-5 px-5 py-2.5 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors text-sm font-medium cursor-pointer">אפס את כל החיפושים</button>
+    </div>
+</main>
+
+<!-- Detail Modal (Slide-over/Center modal for full explanation) -->
+<div id="detail-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm transition-opacity" id="modal-backdrop"></div>
+
+    <div class="flex min-h-screen items-center justify-center p-4 sm:p-6 lg:p-8">
+        <!-- Modal Panel -->
+        <div class="relative w-full max-w-3xl transform rounded-3xl bg-white dark:bg-slate-900 p-6 sm:p-10 text-right shadow-2xl transition-all border border-slate-100 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+            
+            <!-- Close Button -->
+            <button id="close-modal-btn" class="absolute top-5 left-5 p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 transition-colors cursor-pointer">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Fallacy Category Badge -->
+            <span id="modal-category" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
+                קטגוריה
+            </span>
+
+            <!-- Title -->
+            <h3 class="mt-4 text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight flex items-center gap-3">
+                <i id="modal-icon" class="fa-solid fa-brain text-brand-500 text-xl sm:text-2xl"></i>
+                <span id="modal-title">שם הכשל הלוגי</span>
+            </h3>
+
+            <!-- Fallacy Popularity Level -->
+            <div class="mt-3 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                <span>רמת פופולריות ונפיצות:</span>
+                <span id="modal-popularity-stars" class="flex text-amber-500 gap-0.5">
+                    <!-- Dynamic Stars -->
+                </span>
+            </div>
+
+            <hr class="my-6 border-slate-100 dark:border-slate-800">
+
+            <!-- Description Section -->
+            <div class="space-y-6">
+                <div>
+                    <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">מה זה אומר? (הגדרה)</h4>
+                    <p id="modal-desc" class="text-slate-700 dark:text-slate-300 leading-relaxed text-base sm:text-lg">
+                        הסבר מפורט על מהות הכשל...
+                    </p>
+                </div>
+
+                <!-- Example block with quote styling -->
+                <div class="bg-slate-50 dark:bg-slate-800/40 border-r-4 border-brand-500 rounded-l-2xl p-5">
+                    <h4 class="text-sm font-bold text-brand-600 dark:text-brand-400 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-quote-right"></i>
+                        דוגמה מהחיים האמיתיים:
+                    </h4>
+                    <p id="modal-example" class="text-slate-700 dark:text-slate-300 italic leading-relaxed text-sm sm:text-base">
+                        דוגמה קונקרטית לאיך נשמע הטיעון...
+                    </p>
+                </div>
+
+                <!-- How to Counter / Respond -->
+                <div class="bg-emerald-50/50 dark:bg-emerald-950/20 border-r-4 border-emerald-500 rounded-l-2xl p-5">
+                    <h4 class="text-sm font-bold text-emerald-600 dark:text-emerald-400 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        איך להתמודד ולהגיב לטיעון כזה?
+                    </h4>
+                    <p id="modal-counter" class="text-slate-700 dark:text-slate-300 leading-relaxed text-sm sm:text-base">
+                        הדרכה פרקטית וטקטיקה רטורית להפרכת הכשל...
+                    </p>
+                </div>
+            </div>
+
+            <!-- Modal Footer Action -->
+            <div class="mt-8 flex justify-end">
+                <button id="close-modal-footer-btn" class="px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/10 transition-colors cursor-pointer">
+                    סגור והמשך לחקור
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Quiz Section -->
+<section id="interactive-quiz" class="bg-slate-100 dark:bg-slate-900 border-t border-b border-slate-200 dark:border-slate-800 py-16 transition-colors">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-10">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-100 text-brand-800 dark:bg-brand-900/50 dark:text-brand-300 mb-3">
+                <i class="fa-solid fa-gamepad"></i>
+                אימון מוחי מעשי
+            </span>
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white">מבחן הכשלים הלוגיים הגדול</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">האם תצליחו לזהות איזה כשל לוגי מופיע בציטוטים הבאים? בחנו את חדות המחשבה שלכם.</p>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 sm:p-10 shadow-lg relative overflow-hidden transition-colors">
+            
+            <!-- Progress Bar -->
+            <div class="absolute top-0 right-0 left-0 h-1.5 bg-slate-100 dark:bg-slate-800">
+                <div id="quiz-progress" class="h-full bg-brand-500 transition-all duration-300" style="width: 33%"></div>
+            </div>
+
+            <!-- Quiz Play State -->
+            <div id="quiz-play-state">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider" id="quiz-question-number">שאלה 1 מתוך 3</span>
+                    <span class="text-xs font-semibold px-2.5 py-1 bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300 rounded-md" id="quiz-score">ניקוד: 0/3</span>
+                </div>
+
+                <!-- The Quote -->
+                <div class="bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 mb-8 border border-slate-200/50 dark:border-slate-800 text-center relative">
+                    <div class="absolute -top-3 right-6 bg-brand-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs"><i class="fa-solid fa-quote-right"></i></div>
+                    <p class="text-slate-800 dark:text-slate-100 font-medium text-lg italic leading-relaxed" id="quiz-quote-text">
+                        "טוען את הציטוט..."
+                    </p>
+                </div>
+
+                <!-- Answer Options -->
+                <div class="space-y-3" id="quiz-options-container">
+                    <!-- Options will be generated here dynamically -->
+                </div>
+
+                <!-- Feedback Area -->
+                <div id="quiz-feedback" class="mt-6 hidden p-4 rounded-2xl border transition-all">
+                    <!-- Answer Feedback text -->
+                </div>
+
+                <!-- Next Question Button -->
+                <div class="mt-6 flex justify-end">
+                    <button id="quiz-next-btn" class="hidden px-6 py-3 bg-brand-500 text-white font-semibold rounded-xl hover:bg-brand-600 transition-colors items-center gap-2 cursor-pointer">
+                        השאלה הבאה
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quiz Result State -->
+            <div id="quiz-result-state" class="hidden text-center py-6">
+                <div class="text-brand-500 text-6xl mb-4"><i class="fa-solid fa-trophy"></i></div>
+                <h3 class="text-2xl font-black text-slate-900 dark:text-white">כל הכבוד! סיימתם את הבוחן</h3>
+                <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg" id="quiz-final-score-text">
+                    הצלחתם לזהות 2 מתוך 3 כשלים בצורה נכונה.
+                </p>
+                <p class="text-slate-400 dark:text-slate-500 text-sm mt-1 max-w-md mx-auto">
+                    המשך לחקור את מאגר הכשלים כדי להשיג ציון מושלם בפעם הבאה!
+                </p>
+                <button onclick="resetQuiz()" class="mt-6 px-6 py-3 bg-brand-500 text-white font-semibold rounded-xl hover:bg-brand-600 transition-colors shadow-lg shadow-brand-500/15 cursor-pointer">
+                    נסה שוב מחדש
+                </button>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Suggestion Form Section -->
+<section id="suggest-fallacy" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm transition-colors">
+        <div class="text-center md:text-right mb-8">
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2 justify-center md:justify-start">
+                <i class="fa-solid fa-paper-plane text-brand-500"></i>
+                מכירים כשל לוגי שלא מופיע כאן?
+            </h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">סייעו לנו להגדיל את האנציקלופדיה הלוגית! שלחו אלינו כשל לוגי חדש עם הסבר קצר ודוגמה, ואנו נסקור ונוסיף אותו לאתר.</p>
+        </div>
+
+        <form id="suggest-form" class="space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label for="suggest-name" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">שם הכשל הלוגי (בעברית או לועזית)</label>
+                    <input type="text" id="suggest-name" required placeholder="לדוגמה: אד הומינם, מדרון חלקלק..." class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                </div>
+                <div>
+                    <label for="suggest-category" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">קטגוריה משוערת</label>
+                    <select id="suggest-category" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm cursor-pointer">
+                        <option value="relevance">כשלים של רלוונטיות</option>
+                        <option value="causal">כשלי סיבתיות</option>
+                        <option value="presumption">כשלי הנחת יסוד</option>
+                        <option value="emotion">כשלי פנייה לרגש</option>
+                        <option value="statistical">כשלי סטטיסטיקה ומחקר</option>
+                        <option value="ambiguity">כשלי עמימות והגדרה</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label for="suggest-desc" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">הסבר והגדרה קצרה</label>
+                <textarea id="suggest-desc" rows="3" required placeholder="הסבירו מהו הכשל וכיצד הוא בא לידי ביטוי..." class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"></textarea>
+            </div>
+
+            <div>
+                <label for="suggest-example" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">דוגמה מהחיים האמיתיים</label>
+                <textarea id="suggest-example" rows="2" required placeholder="לדוגמה: 'אם תאכל שוקולד, תפסיק ללמוד באוניברסיטה...'" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"></textarea>
+            </div>
+
+            <!-- Custom Interactive Alert/Toast within the form -->
+            <div id="form-feedback" class="hidden p-4 rounded-xl text-center font-semibold text-sm"></div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="px-6 py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/10 transition-colors flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    שלח הצעה לבדיקה
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-12 mt-auto transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <!-- Logo and Slogan (Now clickable to scroll back up smoothly) -->
+        <div onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex flex-col items-center gap-3 cursor-pointer select-none hover:opacity-90 transition-opacity">
+            <div class="bg-brand-500 text-white p-2.5 rounded-2xl flex items-center justify-center shadow-md">
+                <i class="fa-solid fa-brain text-xl"></i>
+            </div>
+            <span class="font-black text-xl text-slate-900 dark:text-white">הלוגיקון</span>
+            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md">המרכז הלימודי הגדול ביותר בישראל לזיהוי כשלים לוגיים, פיתוח חשיבה ביקורתית, ורטוריקה נכונה.</p>
+        </div>
+
+        <hr class="my-8 border-slate-200 dark:border-slate-800">
+
+        <!-- Copyright / Attribution -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 dark:text-slate-500">
+            <div>
+                &copy; 2026 הלוגיקון. כל הזכויות שמורות. מוגש כשירות לציבור להגברת החשיבה הביקורתית והרציונלית.
+            </div>
+            <div class="flex gap-4">
+                <a href="#fallacies-catalog" class="hover:underline">מאגר הכשלים</a>
+                <a href="#interactive-quiz" class="hover:underline">טריוויה</a>
+                <a href="#suggest-fallacy" class="hover:underline">הצעת כשל</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Interactive Logic & Theme Management -->
+<script>
+    // Theme Switcher Logic
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+
+    // System theme detection
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        themeIcon.className = 'fa-solid fa-sun text-lg text-yellow-400';
+    } else {
+        document.documentElement.classList.remove('dark');
+        themeIcon.className = 'fa-solid fa-moon text-lg';
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            themeIcon.className = 'fa-solid fa-moon text-lg';
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            themeIcon.className = 'fa-solid fa-sun text-lg text-yellow-400';
+        }
+    });
+
+    // Main App Logic (Searching, Filtering, Modals)
+    const fallaciesGrid = document.getElementById('fallacies-grid');
+    const searchInput = document.getElementById('search-input');
+    const categoryFilters = document.getElementById('category-filters');
+    const sortSelect = document.getElementById('sort-select');
+    const resultsCount = document.getElementById('results-count');
+    const emptyState = document.getElementById('empty-state');
+    const totalFallaciesCount = document.getElementById('total-fallacies-count');
+
+    let activeCategory = 'all';
+    let searchQuery = '';
+    let currentSort = 'popularity-desc';
+
+    // Initialize Page
+    window.onload = function() {
+        totalFallaciesCount.innerText = fallaciesData.length;
+        renderFallacies();
+        setupDailyFallacy();
+        initQuiz();
+    };
+
+    // Render Fallacy Cards
+    function renderFallacies() {
+        // Filter logic
+        let filtered = fallaciesData.filter(fallacy => {
+            const matchesCategory = (activeCategory === 'all' || fallacy.category === activeCategory);
+            const matchesSearch = (
+                fallacy.name.toLowerCase().includes(searchQuery) ||
+                fallacy.shortDesc.toLowerCase().includes(searchQuery) ||
+                fallacy.fullDesc.toLowerCase().includes(searchQuery) ||
+                fallacy.example.toLowerCase().includes(searchQuery)
+            );
+            return matchesCategory && matchesSearch;
+        });
+
+        // Sorting logic
+        filtered.sort((a, b) => {
+            if (currentSort === 'popularity-desc') {
+                return b.popularity - a.popularity;
+            } else if (currentSort === 'popularity-asc') {
+                return a.popularity - b.popularity;
+            } else if (currentSort === 'name-asc') {
+                return a.name.localeCompare(b.name, 'he');
+            } else if (currentSort === 'name-desc') {
+                return b.name.localeCompare(a.name, 'he');
+            }
+            return 0;
+        });
+
+        // Clear existing grid
+        fallaciesGrid.innerHTML = '';
+
+        if (filtered.length === 0) {
+            emptyState.classList.remove('hidden');
+            fallaciesGrid.classList.add('hidden');
+            resultsCount.innerText = 'מציג 0 כשלים לוגיים';
+        } else {
+            emptyState.classList.add('hidden');
+            fallaciesGrid.classList.remove('hidden');
+            resultsCount.innerText = `מציג ${filtered.length} כשלים לוגיים`;
+
+            filtered.forEach(fallacy => {
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 cursor-pointer hover:shadow-xl hover:border-brand-500/30 dark:hover:border-brand-500/30 transform hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between';
+                card.onclick = () => openFallacyDetail(fallacy.id);
+
+                // Popularity star construction
+                let stars = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= fallacy.popularity) {
+                        stars += '<i class="fa-solid fa-star text-amber-400 text-[10px]"></i>';
+                    } else {
+                        stars += '<i class="fa-regular fa-star text-slate-300 dark:text-slate-700 text-[10px]"></i>';
+                    }
+                }
+
+                card.innerHTML = `
+                    <div>
+                        <!-- Header / Category Badge -->
+                        <div class="flex items-center justify-between gap-2 mb-4">
+                            <span class="text-[11px] font-bold px-2.5 py-1 bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300 rounded-lg">
+                                ${fallacy.categoryHebrew}
+                            </span>
+                            <div class="flex items-center gap-1">
+                                ${stars}
+                            </div>
+                        </div>
+
+                        <!-- Fallacy Name -->
+                        <h4 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-brand-500 transition-colors flex items-center gap-2">
+                            <i class="fa-solid ${fallacy.icon} text-brand-500 text-sm"></i>
+                            ${fallacy.name}
+                        </h4>
+
+                        <!-- Fallacy Short Description -->
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mt-2.5 leading-relaxed">
+                            ${fallacy.shortDesc}
+                        </p>
+                    </div>
+
+                    <!-- Footer Action link inside card -->
+                    <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-brand-500 dark:text-brand-400 font-bold">
+                        <span>קראו עוד ודרכי התמודדות</span>
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </div>
+                `;
+                fallaciesGrid.appendChild(card);
+            });
+        }
+    }
+
+    // Set up Daily Fallacy card
+    function setupDailyFallacy() {
+        // Choose fallacy based on the day of the month
+        const day = new Date().getDate();
+        const index = day % fallaciesData.length;
+        const daily = fallaciesData[index];
+
+        document.getElementById('daily-fallacy-name').innerText = daily.name;
+        document.getElementById('daily-fallacy-desc').innerText = daily.shortDesc;
+        document.getElementById('daily-fallacy-example').innerText = daily.example;
+
+        document.getElementById('view-daily-btn').onclick = () => {
+            openFallacyDetail(daily.id);
+        };
+    }
+
+    // Live Search Handling
+    searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.toLowerCase().trim();
+        renderFallacies();
+    });
+
+    // Category Buttons Filtering
+    categoryFilters.addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+
+        // Reset active states
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.className = 'filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer';
+        });
+
+        // Set clicked active
+        btn.className = 'filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-brand-500 text-white transition-all shadow-sm cursor-pointer';
+        activeCategory = btn.getAttribute('data-category');
+        renderFallacies();
+    });
+
+    // Sorting Selection
+    sortSelect.addEventListener('change', (e) => {
+        currentSort = e.target.value;
+        renderFallacies();
+    });
+
+    // Reset Filters Button action
+    function resetFilters() {
+        searchInput.value = '';
+        searchQuery = '';
+        activeCategory = 'all';
+
+        // Select the "All" filter button
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            if (b.getAttribute('data-category') === 'all') {
+                b.className = 'filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-brand-500 text-white transition-all shadow-sm cursor-pointer';
+            } else {
+                b.className = 'filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer';
+            }
+        });
+
+        renderFallacies();
+    }
+
+    // Modal Open/Close Logic
+    const detailModal = document.getElementById('detail-modal');
+    const modalBackdrop = document.getElementById('modal-backdrop');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const closeModalFooterBtn = document.getElementById('close-modal-footer-btn');
+
+    function openFallacyDetail(id) {
+        const item = fallaciesData.find(f => f.id === id);
+        if (!item) return;
+
+        // Populate Modal Fields
+        document.getElementById('modal-category').innerText = item.categoryHebrew;
+        document.getElementById('modal-icon').className = `fa-solid ${item.icon} text-brand-500 text-xl sm:text-2xl`;
+        document.getElementById('modal-title').innerText = item.name;
+        document.getElementById('modal-desc').innerText = item.fullDesc;
+        document.getElementById('modal-example').innerText = item.example;
+        document.getElementById('modal-counter').innerText = item.howToCounter;
+
+        // Stars Render inside Modal
+        const starsContainer = document.getElementById('modal-popularity-stars');
+        starsContainer.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= item.popularity) {
+                starsContainer.innerHTML += '<i class="fa-solid fa-star text-amber-500"></i>';
+            } else {
+                starsContainer.innerHTML += '<i class="fa-regular fa-star text-slate-300 dark:text-slate-700"></i>';
+            }
+        }
+
+        // Show Modal
+        detailModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // block page scroll
+    }
+
+    function closeModal() {
+        detailModal.classList.add('hidden');
+        document.body.style.overflow = ''; // restore scroll
+    }
+
+    closeModalBtn.onclick = closeModal;
+    closeModalFooterBtn.onclick = closeModal;
+    modalBackdrop.onclick = closeModal;
+
+    // Trivia Game State & Mechanics
+    let currentQuizIndex = 0;
+    let quizScore = 0;
+    let answerSelected = false;
+
+    function initQuiz() {
+        currentQuizIndex = 0;
+        quizScore = 0;
+        answerSelected = false;
+
+        document.getElementById('quiz-play-state').classList.remove('hidden');
+        document.getElementById('quiz-result-state').classList.add('hidden');
+        document.getElementById('quiz-score').innerText = `ניקוד: 0/${quizQuestions.length}`;
+
+        loadQuizQuestion();
+    }
+
+    function loadQuizQuestion() {
+        answerSelected = false;
+        const question = quizQuestions[currentQuizIndex];
+
+        // Header Update
+        document.getElementById('quiz-question-number').innerText = `שאלה ${currentQuizIndex + 1} מתוך ${quizQuestions.length}`;
+        document.getElementById('quiz-progress').style.width = `${((currentQuizIndex + 1) / quizQuestions.length) * 100}%`;
+
+        // Quote Update
+        document.getElementById('quiz-quote-text').innerText = question.quote;
+
+        // Render Options
+        const container = document.getElementById('quiz-options-container');
+        container.innerHTML = '';
+
+        // Reset Feedback
+        const feedback = document.getElementById('quiz-feedback');
+        feedback.classList.add('hidden');
+        document.getElementById('quiz-next-btn').classList.add('hidden');
+
+        question.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'w-full text-right px-5 py-4 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-brand-50 dark:hover:bg-brand-950/20 hover:border-brand-300 dark:hover:border-brand-900 transition-all flex items-center justify-between font-medium text-slate-700 dark:text-slate-200 cursor-pointer';
+            btn.innerHTML = `
+                <span>${opt.text}</span>
+                <i class="fa-regular fa-circle text-slate-300 dark:text-slate-700"></i>
+            `;
+            btn.onclick = () => selectQuizAnswer(opt.id, btn);
+            container.appendChild(btn);
+        });
+    }
+
+    function selectQuizAnswer(selectedId, selectedButton) {
+        if (answerSelected) return; // Prevent multiple clicks
+        answerSelected = true;
+
+        const question = quizQuestions[currentQuizIndex];
+        const feedback = document.getElementById('quiz-feedback');
+        const nextBtn = document.getElementById('quiz-next-btn');
+        const optionsButtons = document.getElementById('quiz-options-container').children;
+
+        // Disable all options and show correct/incorrect styling
+        for (let btn of optionsButtons) {
+            btn.onclick = null; // Disable future click events
+        }
+
+        if (selectedId === question.correct) {
+            // Correct Answer
+            quizScore++;
+            selectedButton.className = 'w-full text-right px-5 py-4 border-2 border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 rounded-2xl flex items-center justify-between font-bold';
+            selectedButton.innerHTML = `
+                <span>${selectedButton.innerText}</span>
+                <i class="fa-solid fa-circle-check text-emerald-500 text-lg"></i>
+            `;
+
+            feedback.className = 'mt-6 p-4 rounded-2xl border border-emerald-200 bg-emerald-50/50 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-400 text-sm leading-relaxed';
+            feedback.innerHTML = `<h5 class="font-bold text-base mb-1">כל הכבוד! תשובה נכונה.</h5> ${question.explanation}`;
+        } else {
+            // Incorrect Answer
+            selectedButton.className = 'w-full text-right px-5 py-4 border-2 border-rose-500 bg-rose-50 text-rose-800 dark:bg-rose-950/20 dark:text-rose-400 rounded-2xl flex items-center justify-between font-bold';
+            selectedButton.innerHTML = `
+                <span>${selectedButton.innerText}</span>
+                <i class="fa-solid fa-circle-xmark text-rose-500 text-lg"></i>
+            `;
+
+            // Highlight the correct one
+            for (let btn of optionsButtons) {
+                const optText = btn.innerText;
+                const matchesCorrectOption = question.options.find(o => o.text === optText && o.id === question.correct);
+                if (matchesCorrectOption) {
+                    btn.className = 'w-full text-right px-5 py-4 border border-emerald-500 bg-emerald-50/30 text-emerald-700 dark:bg-emerald-950/10 dark:text-emerald-400 rounded-2xl flex items-center justify-between font-semibold';
+                    btn.innerHTML = `
+                        <span>${btn.innerText}</span>
+                        <i class="fa-regular fa-circle-check text-emerald-500"></i>
+                    `;
+                }
+            }
+
+            feedback.className = 'mt-6 p-4 rounded-2xl border border-rose-200 bg-rose-50/50 text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-400 text-sm leading-relaxed';
+            feedback.innerHTML = `<h5 class="font-bold text-base mb-1">תשובה לא מדויקת.</h5> ${question.explanation}`;
+        }
+
+        // Update score badge in play state
+        document.getElementById('quiz-score').innerText = `ניקוד: ${quizScore}/${quizQuestions.length}`;
+
+        // Show feedback and next button
+        feedback.classList.remove('hidden');
+        nextBtn.classList.remove('hidden');
+        nextBtn.className = 'px-6 py-3 bg-brand-500 text-white font-semibold rounded-xl hover:bg-brand-600 transition-colors flex items-center gap-2 animate-bounce cursor-pointer';
+    }
+
+    document.getElementById('quiz-next-btn').onclick = () => {
+        currentQuizIndex++;
+        if (currentQuizIndex < quizQuestions.length) {
+            loadQuizQuestion();
+        } else {
+            // Quiz complete - Show results
+            document.getElementById('quiz-play-state').classList.add('hidden');
+            document.getElementById('quiz-result-state').classList.remove('hidden');
+            document.getElementById('quiz-final-score-text').innerText = `הצלחתם לזהות ${quizScore} מתוך ${quizQuestions.length} כשלים לוגיים בצורה נכונה.`;
+        }
+    };
+
+    function resetQuiz() {
+        initQuiz();
+    }
+
+    // Suggestion Form handler with fully active simulated pending/loader state
+    const suggestForm = document.getElementById('suggest-form');
+    const formFeedback = document.getElementById('form-feedback');
+
+    suggestForm.onsubmit = function(e) {
+        e.preventDefault();
+
+        const submitBtn = suggestForm.querySelector('button[type="submit"]');
+        const originalBtnContent = submitBtn.innerHTML;
+
+        // Toggle visual loading indicator
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+            <i class="fa-solid fa-circle-notch animate-spin"></i>
+            שולח הצעה...
+        `;
+
+        // Simulate network processing delay (1.2 seconds) to show live loader
+        setTimeout(() => {
+            const name = document.getElementById('suggest-name').value;
+            
+            // Render custom feedback alert
+            formFeedback.className = 'p-4 rounded-xl text-center font-semibold text-sm bg-emerald-50 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/30 dark:border-emerald-900 dark:text-emerald-400';
+            formFeedback.innerText = `תודה רבה! הצעתך עבור הכשל הלוגי "${name}" התקבלה בהצלחה ותיבדק על ידי צוות המגיהים הלוגיים שלנו בקרוב.`;
+            formFeedback.classList.remove('hidden');
+
+            // Reset form fields
+            suggestForm.reset();
+
+            // Restore action button state
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnContent;
+
+            // Automatically hide toast notification after 8 seconds
+            setTimeout(() => {
+                formFeedback.classList.add('hidden');
+            }, 8000);
+        }, 1200);
+    };
+</script>
+
+</body>
+</html<!DOCTYPE html>
+<html lang="he" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הלוגיקון - ויקיפדיה של כשלים לוגיים</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f7ff',
+                            100: '#ebf0ff',
+                            200: '#cedbff',
+                            300: '#a3beff',
+                            400: '#7095ff',
+                            500: '#3b66f6',
+                            600: '#2546eb',
+                            700: '#1b32d5',
+                            800: '#1a2ab0',
+                            900: '#1a278c',
+                            950: '#101754',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Rubik', 'Assistant', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Rubik & Assistant -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Rubik:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Rubik', 'Assistant', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b66f6;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2546eb;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col antialiased">
+
+<script>
+    const fallaciesData = [
+        {
+            id: "ad-hominem",
+            name: "פנייה לגופו של אדם (Ad Hominem)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 5, // 1 to 5 (most popular)
+            shortDesc: "תקיפת האופי, המראה, הרקע או המניעים של הטוען במקום להתמודד עם הטיעון עצמו.",
+            fullDesc: "כשל לוגי זה מתרחש כאשר במקום להשיב לטענותיו של היריב בצורה עניינית, תוקפים את האופי שלו, את המניעים שלו, או את הרקע האישי שלו. ההנחה המוטעית כאן היא שאם לאדם יש תכונה שלילית כלשהי, אז בהכרח כל טענה שהוא מציג היא שקרית או חסרת ערך.",
+            example: "פרופסור לוי מציג מחקר מקיף המראה כי מס חדש על משקאות ממותקים יקטין את שיעורי הסוכרת. המתנגדים למס משיבים: 'אל תקשיבו לו, הוא אדם כועס וממורמר שלא נבחר לראשות הדירקטוריון, והוא רק רוצה תשומת לב'.",
+            howToCounter: "הפרד בין הדובר לתוכן הטיעון. אמור בעדינות: 'האישיות שלי או העבר שלי אינם הנושא כאן. בוא נתמקד בנתונים ובמחקר שהצגתי ונבחן האם הם נכונים או לא'.",
+            icon: "fa-user-slash"
+        },
+        {
+            id: "straw-man",
+            name: "איש הקש (Straw Man)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 5,
+            shortDesc: "עיוות, הגזמה או פישוט יתר של טיעון היריב כדי להקל על תקיפתו והפרכתו.",
+            fullDesc: "בכשל איש הקש, יוצרים גרסה מעוותת, קיצונית או מופשטת מדי של טיעון היריב (גרסה זו היא 'איש הקש'), ואז תוקפים ומפרקים אותה בקלות, תוך העמדת פנים שהובס הטיעון המקורי והחזק של היריב.",
+            example: "דובר א': 'אני חושב שעלינו להפנות חלק מתקציב הביטחון לשיפור מערכת החינוך והבריאות בפריפריה'.\nדובר ב': 'אני לא מאמין שאתה רוצה להשאיר את המדינה שלנו חסרת הגנה לחלוטין ולתת לאויבים שלנו להשמיד אותנו מחר בבוקר!'.",
+            howToCounter: "החזר את הדיון למסלול המקורי מיד. 'זה לא מה שאמרתי. לא הצעתי לבטל את תקציב הביטחון, אלא לבצע חלוקה מחדש קטנה. בוא נדון בהצעה המדויקת שלי ולא בגרסה המוקצנת שהצגת'.",
+            icon: "fa-wheat-awn"
+        },
+        {
+            id: "slippery-slope",
+            name: "מדרון חלקלק (Slippery Slope)",
+            category: "causal",
+            categoryHebrew: "כשלי סיבתיות",
+            popularity: 5,
+            shortDesc: "טענה שצעד קטן וראשון יוביל בהכרח לשרשרת אירועים קיצונית ובלתי נמנעת, ללא הוכחה לקשר סיבתי.",
+            fullDesc: "כשל זה מניח שאם נאפשר לצעד א' לקרות, יתרחש בעקבותיו תהליך בלתי נמנע שיוביל לתוצאה קיצונית ונוראית ת', מבלי לספק שום הוכחה לוגית או מדעית לכך שצעד א' אכן גורר בהכרח את כל שאר השלבים באמצע.",
+            example: " אם נאפשר לתלמידים להשתמש בטלפונים בהפסקות, הם יתחילו להשתמש בהם גם בשיעורים, הציונים שלהם יקרסו, הם ינשרו מבית הספר, יתחברו לכנופיות רחוב ובסוף המדינה כולה תדרדר לאנרכיה מוחלטת.",
+            howToCounter: "הצבע על היעדר הקשר הסיבתי ההכרחי. שאל: 'איזה ביסוס יש לכך שצעד א' מוביל ישירות לת'? האם אין לנו דרך לעצור את התהליך באמצע או להציב גבולות ברורים?'.",
+            icon: "fa-mountain"
+        },
+        {
+            id: "false-dilemma",
+            name: "דילמה כוזבת / שחור או לבן (False Dilemma)",
+            category: "presumption",
+            categoryHebrew: "כשלי הנחת יסוד",
+            popularity: 4,
+            shortDesc: "הצגת שתי אפשרויות קיצוניות בלבד כברירה היחידה, תוך התעלמות מאפשרויות ביניים רבות אחרות.",
+            fullDesc: "כשל זה מצמצם מצב מורכב לשתי חלופות בלבד (לרוב קוטביות וקיצוניות), ומכריח את המאזין לבחור באחת מהן. בפועל, ברוב המקרים קיימות אפשרויות ביניים רבות, שילובים או חלופות נוספות שלא הוזכרו.",
+            example: "או שאתה תומך במאה אחוז ברפורמה החדשה, או שאתה שונא את המדינה ורוצה בהרס שלה. אין אמצע.",
+            howToCounter: "חשוף את מרחב הביניים והצג אפשרויות נוספות: 'זוהי הצגה פשטנית של המציאות. אני יכול לאהוב את המדינה ובו זמנית להסתייג מחלקים מסוימים ברפורמה ולהציע לה שינויים'.",
+            icon: "fa-arrows-split-up-and-left"
+        },
+        {
+            id: "appeal-to-authority",
+            name: "פנייה לסמכות כוזבת (Appeal to False Authority)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 4,
+            shortDesc: "הסתמכות על דעתו של 'מומחה' שאינו באמת מומחה בתחום המדובר כדי להוכיח טענה.",
+            fullDesc: "בעוד שהתייעצות עם מומחים היא הגיונית, הכשל מתרחש כאשר משתמשים בשמו של מומחה בתחום א' כדי להכריע בנושא בתחום ב', או כאשר מסתמכים על סמכות כללית של מישהו פופולרי (כמו סלבריטאי, פוליטיקאי או פילוסוף) מבלי להציג ראיות ממשיות.",
+            example: "שחקן הכדורגל המפורסם ביותר בעולם הצהיר בראיון שהתוסף התזונתי החדש מרפא דלקות פרקים תוך יומיים, ולכן זה בטוח נכון ועלינו לקנות את זה.",
+            howToCounter: "בחן את איכות הסמכות והראיות: 'עם כל הכבוד לפועלו של השחקן בכדורגל, הוא אינו רופא או תזונאי. האם יש מחקרים קליניים מבוקרי עמיתים שתומכים בטענה הזו?'.",
+            icon: "fa-user-tie"
+        },
+        {
+            id: "false-cause",
+            name: "קשר סיבתי כוזב / פוסט הוק (Post Hoc)",
+            category: "causal",
+            categoryHebrew: "כשלי סיבתיות",
+            popularity: 4,
+            shortDesc: "הנחה שאם אירוע ב' התרחש לאחר אירוע א', אז אירוע א' הוא זה שגרם לאירוע ב'.",
+            fullDesc: "הכשל הלטיני הידוע 'Post hoc ergo propter hoc' ('אחרי זה, לכן בגלל זה') מניח בצורה שגויה שסדר כרונולוגי פשוט מוכיח סיבתיות. לעיתים מדובר בצירוף מקרים בלבד, או שיש גורם שלישי סמוי שגרם לשני האירועים.",
+            example: "נעלתי את גרבי המזל שלי למבחן והוצאתי 100. זה אומר שלגרביים שלי יש כוח קסום שעוזר לי להצליח בלימודים.",
+            howToCounter: "בקש להוכיח את מנגנון הפעולה הסיבתי: 'איך בדיוק הגרביים משפיעות לוגית ופיזית על הידע שלך במבחן? האם ייתכן שהצלחת פשוט כי למדת קשה לפני כן?'.",
+            icon: "fa-bolt"
+        },
+        {
+            id: "circular-reasoning",
+            name: "טיעון מעגלי (Circular Reasoning)",
+            category: "presumption",
+            categoryHebrew: "כשלי הנחת יסוד",
+            popularity: 3,
+            shortDesc: "ניסיון להוכיח טענה באמצעות שימוש בטענה עצמה כהנחת יסוד.",
+            fullDesc: "בטיעון מעגלי, המסקנה של הטיעון כבר מונחת בתוך ההנחות שלו. הטיעון הולך במעגל ומנוסח מחדש, מבלי להציג שום ראיה חיצונית חדשה שמבססת אותו.",
+            example: "הספר המסתורי הזה תמיד דובר אמת וכל מה שכתוב בו נכון לחלוטין. מניין לי? כי כתוב בפירוש בעמוד הראשון של הספר שהוא נכתב על ידי כוח עליון שלעולם אינו משקר.",
+            howToCounter: "חשוף את המעגליות: 'אתה משתמש בנכונות של הספר כדי להוכיח שהספר נכון. אנחנו זקוקים לראיה חיצונית בלתי תלויה כדי לדעת אם הספר אכן דובר אמת'.",
+            icon: "fa-arrows-spin"
+        },
+        {
+            id: "bandwagon",
+            name: "פנייה אל ההמון (Bandwagon / Ad Populum)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 4,
+            shortDesc: "טענה שמשהו הוא נכון, טוב או מוסרי רק משום שהרבה אנשים מאמינים בו או עושים אותו.",
+            fullDesc: "כשל זה מתבסס על הלחץ החברתי והרצון להשתייך. הוא מניח שהרוב תמיד צודק ('מיליארד סינים לא טועים'). ההיסטוריה הוכיחה פעמים רבות שההמונים יכולים לטעות באופן קולקטיבי (למשל, הדעה ההיסטורית שהעולם שטוח או שהשמש מסתובבת סביב כדור הארץ).",
+            example: "כל החברים בכיתה משתמשים באפליקציה החדשה הזו שמבקשת גישה לכל התמונות וההודעות שלהם. זה אומר שזה בטוח לגמרי ולא צריך לדאוג לפרטיות.",
+            howToCounter: "הפרד בין פופולריות לאמת: 'העובדה שהרבה אנשים עושים משהו לא הופכת אותו אוטומטית לבטוח או נכון. בוא נבחן את תנאי השימוש ורמת האבטחה של האפליקציה בצורה אובייקטיבית'.",
+            icon: "fa-users"
+        },
+        {
+            id: "no-true-scotsman",
+            name: "אין סקוטי אמיתי (No True Scotsman)",
+            category: "ambiguity",
+            categoryHebrew: "כשלי עמימות והגדרה מחדש",
+            popularity: 3,
+            shortDesc: "הגנה על הכללה גורפת על ידי שינוי הגדרת הקבוצה ברגע שמוצגת דוגמה נגדית שמפריכה אותה.",
+            fullDesc: "כאשר מוצגת ראיה המפריכה טענה כללית, במקום לקבל את הראיה או לעדכן את הטענה, הדובר משנה את הקריטריונים של חברות בקבוצה באופן שרירותי, בדרך כלל על ידי הוספת המילה 'אמיתי' או 'טהור'.",
+            example: "רונן: 'אף ישראלי לא מתלונן על מנת חומוס'.\nדוד: 'אבל יוסי הוא ישראלי והוא ממש מתעב חומוס'.\nרונן: 'נו טוב, אבל יוסי הוא לא ישראלי *אמיתי*!'.",
+            howToCounter: "הצבע על השינוי השרירותי של הגדרת המונחים: 'בהתחלה אמרת ישראלי, כעת כשמצאנו דוגמה נגדית אתה משנה את ההגדרה ל-'ישראלי אמיתי'. מה הופך מישהו לישראלי אמיתי מעבר לעובדה שהוא פשוט מתאים לתיאוריה שלך?'.",
+            icon: "fa-user-check"
+        },
+        {
+            id: "red-herring",
+            name: "הרינג אדום (Red Herring / הסטת קשב)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 4,
+            shortDesc: "הכנסת נושא לא קשור לחלוטין לדיון כדי להסיח את הדעת מהנושא המקורי הקשה להתמודדות.",
+            fullDesc: "מקור השם הוא במנהג להשתמש בדג הרינג מעושן בעל ריח חזק כדי להטעות כלבי ציד ולהסיט אותם מהמסלול. בדיון לוגי, זהו נושא צדדי, מפתה ומרגש שמטרתו לגרום לכולם לשכוח על מה באמת מתווכחים.",
+            example: "עיתונאי: 'מדוע פרויקט הרכבת הקלה שלך חרג מהתקציב במיליארד שקלים?'.\nפוליטיקאי: 'תודה על השאלה. מה שבאמת חשוב כרגע זה לדבר על הגאווה הלאומית שלנו, על החיילים המדהימים שמגינים עלינו ועל אחדות העם שכולנו זקוקים לה'.",
+            howToCounter: "גלה ערנות והחזר את הפוקוס: 'זה נושא חשוב מאוד, אך נשמח לחזור אליו בהזדמנות אחרת. כרגע השאלה היא ספציפית לגבי החריגה של מיליארד שקלים בתקציב הרכבת. נשמח לתשובה'.",
+            icon: "fa-fish"
+        },
+        {
+            id: "texas-sharpshooter",
+            name: "הצלף הטקסני (Texas Sharpshooter)",
+            category: "statistical",
+            categoryHebrew: "כשלי סטטיסטיקה ומחקר",
+            popularity: 2,
+            shortDesc: "בחירת מקבץ נתונים נוח שמתאים לתיאוריה מסוימת והתעלמות מכל שאר הנתונים שמפריכים אותה.",
+            fullDesc: "השם מגיע ממשל על צלף שיורה על קיר אסם באקראי, ואז ניגש לקיר, מצייר עיגול מטרה סביב ריכוז חורי הקליעים הגדול ביותר ומציג את עצמו כצלף מומחה. במחקר או בדיון, מדובר במציאת דפוסים איפה שהם אינם קיימים באמת, על ידי התעלמות מכוונת מההקשר הכללי ומנתונים סותרים.",
+            example: "יצרנית משקאות קלים פרסמה מחקר שמצא כי בקרב 5 המדינות שבהן שותים הכי הרבה מהמשקה שלהם, יש אחוז גבוה מאוד של אנשים מאושרים. הם כמובן לא סיפרו שהם בדקו 100 מדינות וסיננו את ה-95 האחרות שבהן לא היה שום קשר כזה.",
+            howToCounter: "דרוש את התמונה המלאה ומדגם רנדומלי: 'האם הנתונים האלו מייצגים את כלל האוכלוסייה או שמא בחרתם רק את המקרים שמתאימים לכם? מה קורה בשאר המקרים שלא הצגתם?'.",
+            icon: "fa-crosshairs"
+        },
+        {
+            id: "appeal-to-ignorance",
+            name: "פנייה אל הבורות (Appeal to Ignorance)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 3,
+            shortDesc: "טענה שמשהו הוא נכון רק מפני שטרם הוכח שהוא שקרי, או להפך.",
+            fullDesc: "כשל זה מתעלם מכך שחוסר בראיות אינו מהווה ראיה בפני עצמה. חוסר היכולת שלנו להוכיח או להפריך משהו בגלל מגבלות טכנולוגיות או חוסר מידע, אינו הופך את הטענה ההפוכה לנכונה אוטומטית. נטל ההוכחה תמיד מוטל על מי שטוען את הטענה האקטיבית.",
+            example: "אף מדען לא הצליח להוכיח באופן מוחלט וסופי שחייזרים לא בנו את הפירמידות במצרים, ולכן המסקנה הלוגית היחידה היא שהם אכן בנו אותן.",
+            howToCounter: "הסבר את עקרון נטל ההוכחה: 'חוסר הוכחה לשלילה אינו מהווה אישור לחיוב. נטל ההוכחה הוא על מי שטוען שהחייזרים בנו אותן, ולא על שאר העולם להפריך זאת'.",
+            icon: "fa-question"
+        },
+        {
+            id: "appeal-to-pity",
+            name: "פנייה אל הרחמים (Appeal to Pity / Ad Misericordiam)",
+            category: "emotion",
+            categoryHebrew: "כשלי פנייה לרגש",
+            popularity: 3,
+            shortDesc: "ניסיון לזכות בתמיכה בטיעון על ידי ניצול רגשות האשם או הרחמים של הצד השני.",
+            fullDesc: "פנייה אל הרחמים היא סוג של הסטת קשב רגשית. במקום להציע ראיות לוגיות או עובדות שתומכות במסקנה, הדובר מנסה לגרום למאזין לחוש רחמים או אשמה ובכך להסכים עם הדרישה או הטענה שלו.",
+            example: "מרצה נכבד, אני ממש מתחנן שלא תכשיל אותי בקורס הזה. אם אכשל, ההורים שלי יתאכזבו מאוד, המלגה שלי תבוטל ואאלץ לעזוב את האוניברסיטה ולחזור לגור ברחוב.",
+            howToCounter: "הבע אמפתיה אך שמור על הפרדה לוגית: 'אני מאוד מצטער לשמוע על הקשיים שלך ואשמח לנסות לעזור לך למצוא פתרונות תמיכה, אך הציון בקורס חייב לשקף אך ורק את השליטה שלך בחומר האקדמי והמבחן שעשית'.",
+            icon: "fa-face-sad-tear"
+        },
+        {
+            id: "loaded-question",
+            name: "שאלה מכשילה / טעונה (Loaded Question)",
+            category: "presumption",
+            categoryHebrew: "כשלי הנחת יסוד",
+            popularity: 2,
+            shortDesc: "שאילת שאלה המכילה הנחת יסוד מובנית ולא מוכחת, כך שכל תשובה ישירה אליה תפליל את העונה.",
+            fullDesc: "שאלה טעונה היא מלכודת רטורית. השאלה מנוסחת כך שהמשיב אינו יכול לענות עליה ב'כן' או 'לא' פשוט מבלי להסכים עם אשמה או הנחה מוקדמת פוגענית ששתל השואל.",
+            example: "האם כבר הפסקת להעתיק במבחנים של בית הספר?",
+            howToCounter: "אל תענה ישירות על השאלה ('כן' או 'לא' יפלילו אותך). במקום זאת, אתגר את הנחת היסוד עצמה: 'אני לא יכול לענות על השאלה הזו, מכיוון שמעולם לא העתקתי במבחנים, ולכן המושג 'להפסיק' אינו רלוונטי לגביי'.",
+            icon: "fa-circle-question"
+        },
+        {
+            id: "fallacy-fallacy",
+            name: "כשל הכשל (The Fallacy Fallacy)",
+            category: "relevance",
+            categoryHebrew: "כשלים של רלוונטיות",
+            popularity: 1, // Rare / Less-known
+            shortDesc: "הנחה שאם טיעון מסוים מכיל כשל לוגי, אז המסקנה שלו היא בהכרח שקרית לחלוטין.",
+            fullDesc: "זהו כשל מתוחכם במיוחד. לפעמים אנשים מציגים טענה שהיא נכונה עובדתית, אך הדרך שבה הם מנסים להוכיח אותה או לנמק אותה היא גרועה ומכילה כשל לוגי. הכשל שלנו הוא לחשוב שבגלל שההוכחה שלהם לקויה, אז המסקנה עצמה בהכרח שקרית. במציאות, טענה נכונה יכולה להיות מלווה בטיעון גרוע.",
+            example: "יוסי אומר: 'עדיף לאכול פירות וירקות כי חבר שלי אמר לי שזה בריא מאוד והחבר הזה הוא גאון שלעולם לא טועה (פנייה לסמכות כוזבת)'. דוד משיב: 'השתמשת בכשל לוגי! לכן, פירות וירקות הם לא באמת בריאים'.",
+            howToCounter: "הפרד בין המסקנה לבין דרך ההוכחה: 'אמנם הטיעון שהצגתי היה לקוי והשתמשתי בהוכחה שאינה תקפה, אך המסקנה עצמה עדיין נכונה עובדתית ומגובה במחקרים תזונתיים אחרים שאשמח להציג'.",
+            icon: "fa-shield-halved"
+        }
+    ];
+
+    // Quiz Questions Data
+    const quizQuestions = [
+        {
+            quote: '"אנחנו לא יכולים לאשר את ניסוי התרופה החדשה הזו. אם נאשר אותה, מחר נאשר כל תרופה שתגיע, בעוד חודש אנשים יקחו סמים חופשי ברחובות והחברה כולה תתפרק."',
+            options: [
+                { id: "slippery-slope", text: "מדרון חלקלק" },
+                { id: "straw-man", text: "איש הקש" },
+                { id: "circular-reasoning", text: "טיעון מעגלי" }
+            ],
+            correct: "slippery-slope",
+            explanation: "נכון! זהו כשל מדרון חלקלק מובהק המקשר בין אישור תרופה אחת להתמוטטות החברה כולה ללא קשר סיבתי מוכח."
+        },
+        {
+            quote: '"פגשתי שלושה אנשים מהעיר חיפה והם היו ממש נחמדים אליי, לכן כל תושבי חיפה הם האנשים הכי נחמדים וטובי לב במדינה."',
+            options: [
+                { id: "texas-sharpshooter", text: "הצלף הטקסני (הכללה פזיזה)" },
+                { id: "ad-hominem", text: "פנייה לגופו של אדם" },
+                { id: "false-dilemma", text: "דילמה כוזבת" }
+            ],
+            correct: "texas-sharpshooter",
+            explanation: "מדויק! זוהי סטטיסטיקה מוטה והכללה פזיזה על בסיס מדגם קטן ונוח (בדומה לצלף הטקסני)."
+        },
+        {
+            quote: '"למה שנקשיב להצעות של השר בנושא משבר הדיור? הרי כולם יודעים שהוא נולד למשפחה עשירה ומעולם לא היה צריך לדאוג לשכר דירה בעצמו!"',
+            options: [
+                { id: "appeal-to-ignorance", text: "פנייה אל הבורות" },
+                { id: "ad-hominem", text: "פנייה לגופו של אדם (אד הומינם)" },
+                { id: "loaded-question", text: "שאלה מכשילה" }
+            ],
+            correct: "ad-hominem",
+            explanation: "מעולה! במקום להתמודד עם הצעות החוק של השר בצורה עניינית, הדובר תוקף את הרקע המשפחתי והאישי שלו (אד הומינם)."
+        }
+    ];
+</script>
+
+<!-- Header and Navigation -->
+<header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <!-- Brand Logo (Now acts as an active scroll-to-top button) -->
+            <div onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex items-center gap-3 cursor-pointer select-none hover:opacity-90 transition-opacity">
+                <div class="bg-brand-500 text-white p-2.5 rounded-xl shadow-lg shadow-brand-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-brain text-xl"></i>
+                </div>
+                <div>
+                    <span class="font-black text-xl tracking-tight text-brand-600 dark:text-brand-400">הלוגיקון</span>
+                    <span class="hidden sm:inline-block text-xs font-semibold bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-300 px-2 py-0.5 rounded-full mr-2">אנציקלופדיית כשלים</span>
+                </div>
+            </div>
+
+            <!-- Header Tools -->
+            <div class="flex items-center gap-4">
+                <!-- Navigation Quick Links -->
+                <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+                    <a href="#fallacies-catalog" class="text-slate-600 hover:text-brand-500 dark:text-slate-300 dark:hover:text-brand-400 transition-colors">מאגר הכשלים</a>
+                    <a href="#interactive-quiz" class="text-slate-600 hover:text-brand-500 dark:text-slate-300 dark:hover:text-brand-400 transition-colors">בוחן טריוויה</a>
+                    <a href="#suggest-fallacy" class="text-slate-600 hover:text-brand-500 dark:text-slate-300 dark:hover:text-brand-400 transition-colors">הצעת כשל</a>
+                </nav>
+
+                <div class="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden md:block"></div>
+
+                <!-- Dark/Light Theme Toggle (Functional Theme switcher) -->
+                <button id="theme-toggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:ring-2 hover:ring-brand-500/50 transition-all" aria-label="Toggle Theme">
+                    <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-12 md:py-20 transition-colors">
+    <!-- Decorative background elements -->
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full filter blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-indigo-500/10 rounded-full filter blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white leading-tight">
+            להתווכח כמו מקצוענים. <br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-indigo-500 dark:from-brand-400 dark:to-indigo-400">לזהות כשלים לוגיים בשנייה.</span>
+        </h1>
+        <p class="mt-6 text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
+            ברוכים הבאים ל<strong>הלוגיקון</strong> – המדריך המקיף שלכם לעולם של רטוריקה, היגיון וכשלים לוגיים. למדו לזהות מניפולציות בחדשות, ברשתות החברתיות ובשיחות היום-יום, והבינו פעם אחת ולתמיד איך לבנות טיעון מנצח.
+        </p>
+
+        <!-- Stats Counter Section -->
+        <div class="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 p-4 rounded-2xl">
+                <span class="block text-3xl font-extrabold text-brand-600 dark:text-brand-400" id="total-fallacies-count">0</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">כשלים רשומים במאגר</span>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 p-4 rounded-2xl">
+                <span class="block text-3xl font-extrabold text-brand-600 dark:text-brand-400">4</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">קטגוריות ראשיות</span>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 p-4 rounded-2xl">
+                <span class="block text-3xl font-extrabold text-brand-600 dark:text-brand-400">100%</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">דוגמאות מהחיים</span>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 p-4 rounded-2xl">
+                <span class="block text-3xl font-extrabold text-brand-600 dark:text-brand-400">אינטראקטיבי</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">בוחן ומנתח דיונים</span>
+            </div>
+        </div>
+
+        <div class="mt-10 flex flex-wrap justify-center gap-4">
+            <a href="#fallacies-catalog" class="px-8 py-4 bg-brand-500 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/20 hover:bg-brand-600 transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                חקור את המאגר
+            </a>
+            <a href="#interactive-quiz" class="px-8 py-4 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-white font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-gamepad"></i>
+                בחן את עצמך
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Highlight Card: Fallacy of the Day -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-6 relative z-20">
+    <div class="bg-gradient-to-r from-brand-600 to-indigo-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-brand-500/10">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="max-w-2xl">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-sm mb-3">
+                    <i class="fa-solid fa-star"></i>
+                    כשל לוגי יומי נבחר
+                </span>
+                <h3 class="text-2xl sm:text-3xl font-bold" id="daily-fallacy-name">טוען...</h3>
+                <p class="mt-3 text-white/80 text-sm sm:text-base leading-relaxed" id="daily-fallacy-desc">
+                    טוען את הכשל היומי שלנו עבורך...
+                </p>
+                <div class="mt-4 p-4 bg-white/10 rounded-xl border border-white/10 text-xs sm:text-sm">
+                    <strong>דוגמה מהחיים: </strong>
+                    <span id="daily-fallacy-example" class="italic">...</span>
+                </div>
+            </div>
+            <div class="flex-shrink-0">
+                <button id="view-daily-btn" class="w-full lg:w-auto px-6 py-3 bg-white text-brand-600 font-bold rounded-xl hover:bg-slate-100 transition-colors flex items-center justify-center gap-2">
+                    קרא הסבר מלא ודרכי התמודדות
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Search, Catalog & Filter Grid -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow" id="fallacies-catalog">
+    <div class="text-center md:text-right mb-8">
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2 justify-center md:justify-start">
+            <i class="fa-solid fa-book-open text-brand-500"></i>
+            קטלוג הכשלים הלוגיים המלא
+        </h2>
+        <p class="text-slate-500 dark:text-slate-400 mt-2">השתמשו בחיפוש או בסינונים כדי למצוא כשל מסוים ולהבין כיצד הוא פועל.</p>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 mb-8 shadow-sm transition-colors">
+        <!-- Live Search Input -->
+        <div class="relative w-full mb-6">
+            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-lg"></i>
+            </div>
+            <input type="text" id="search-input" placeholder="חפשו לפי שם הכשל, מילות מפתח או דוגמה..." class="w-full pl-4 pr-11 py-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all text-sm sm:text-base">
+        </div>
+
+        <!-- Filter Buttons (Categories) -->
+        <div class="flex flex-col gap-4">
+            <div>
+                <span class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2.5">סינון לפי קטגוריה:</span>
+                <div class="flex flex-wrap gap-2" id="category-filters">
+                    <button data-category="all" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-brand-500 text-white transition-all shadow-sm cursor-pointer">
+                        הכל
+                    </button>
+                    <button data-category="relevance" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                        רלוונטיות
+                    </button>
+                    <button data-category="causal" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                        סיבתיות
+                    </button>
+                    <button data-category="presumption" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                        הנחת יסוד
+                    </button>
+                    <button data-category="emotion" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                        פנייה לרגש
+                    </button>
+                    <button data-category="statistical" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                        סטטיסטיקה ומחקר
+                    </button>
+                    <button data-category="ambiguity" class="filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                        עמימות והגדרה
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sorting & Popularity Selection -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">מיון לפי:</span>
+                    <select id="sort-select" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-200 cursor-pointer">
+                        <option value="popularity-desc">הכי פופולריים / נפוצים</option>
+                        <option value="popularity-asc">הכי פחות מוכרים / נדירים</option>
+                        <option value="name-asc">א'-ב' עולה</option>
+                        <option value="name-desc">א'-ב' יורד</option>
+                    </select>
+                </div>
+                <div class="text-xs text-slate-400 dark:text-slate-500" id="results-count">
+                    מציג 15 כשלים לוגיים
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fallacies Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="fallacies-grid">
+        <!-- Dynamic Fallacy Cards will be rendered here -->
+    </div>
+
+    <!-- Empty State for Search -->
+    <div id="empty-state" class="hidden text-center py-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl transition-colors">
+        <div class="text-brand-500 text-5xl mb-4"><i class="fa-regular fa-face-frown"></i></div>
+        <h3 class="text-xl font-bold text-slate-800 dark:text-white">לא מצאנו כשל כזה...</h3>
+        <p class="text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto px-4">נסו לחפש מילה אחרת או להשתמש בסינונים כדי למצוא את מבוקשכם. אולי הכשל המבוקש טרם נוסף למאגר?</p>
+        <button onclick="resetFilters()" class="mt-5 px-5 py-2.5 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors text-sm font-medium cursor-pointer">אפס את כל החיפושים</button>
+    </div>
+</main>
+
+<!-- Detail Modal (Slide-over/Center modal for full explanation) -->
+<div id="detail-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm transition-opacity" id="modal-backdrop"></div>
+
+    <div class="flex min-h-screen items-center justify-center p-4 sm:p-6 lg:p-8">
+        <!-- Modal Panel -->
+        <div class="relative w-full max-w-3xl transform rounded-3xl bg-white dark:bg-slate-900 p-6 sm:p-10 text-right shadow-2xl transition-all border border-slate-100 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+            
+            <!-- Close Button -->
+            <button id="close-modal-btn" class="absolute top-5 left-5 p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 transition-colors cursor-pointer">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Fallacy Category Badge -->
+            <span id="modal-category" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
+                קטגוריה
+            </span>
+
+            <!-- Title -->
+            <h3 class="mt-4 text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight flex items-center gap-3">
+                <i id="modal-icon" class="fa-solid fa-brain text-brand-500 text-xl sm:text-2xl"></i>
+                <span id="modal-title">שם הכשל הלוגי</span>
+            </h3>
+
+            <!-- Fallacy Popularity Level -->
+            <div class="mt-3 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                <span>רמת פופולריות ונפיצות:</span>
+                <span id="modal-popularity-stars" class="flex text-amber-500 gap-0.5">
+                    <!-- Dynamic Stars -->
+                </span>
+            </div>
+
+            <hr class="my-6 border-slate-100 dark:border-slate-800">
+
+            <!-- Description Section -->
+            <div class="space-y-6">
+                <div>
+                    <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">מה זה אומר? (הגדרה)</h4>
+                    <p id="modal-desc" class="text-slate-700 dark:text-slate-300 leading-relaxed text-base sm:text-lg">
+                        הסבר מפורט על מהות הכשל...
+                    </p>
+                </div>
+
+                <!-- Example block with quote styling -->
+                <div class="bg-slate-50 dark:bg-slate-800/40 border-r-4 border-brand-500 rounded-l-2xl p-5">
+                    <h4 class="text-sm font-bold text-brand-600 dark:text-brand-400 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-quote-right"></i>
+                        דוגמה מהחיים האמיתיים:
+                    </h4>
+                    <p id="modal-example" class="text-slate-700 dark:text-slate-300 italic leading-relaxed text-sm sm:text-base">
+                        דוגמה קונקרטית לאיך נשמע הטיעון...
+                    </p>
+                </div>
+
+                <!-- How to Counter / Respond -->
+                <div class="bg-emerald-50/50 dark:bg-emerald-950/20 border-r-4 border-emerald-500 rounded-l-2xl p-5">
+                    <h4 class="text-sm font-bold text-emerald-600 dark:text-emerald-400 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        איך להתמודד ולהגיב לטיעון כזה?
+                    </h4>
+                    <p id="modal-counter" class="text-slate-700 dark:text-slate-300 leading-relaxed text-sm sm:text-base">
+                        הדרכה פרקטית וטקטיקה רטורית להפרכת הכשל...
+                    </p>
+                </div>
+            </div>
+
+            <!-- Modal Footer Action -->
+            <div class="mt-8 flex justify-end">
+                <button id="close-modal-footer-btn" class="px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/10 transition-colors cursor-pointer">
+                    סגור והמשך לחקור
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Quiz Section -->
+<section id="interactive-quiz" class="bg-slate-100 dark:bg-slate-900 border-t border-b border-slate-200 dark:border-slate-800 py-16 transition-colors">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-10">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-100 text-brand-800 dark:bg-brand-900/50 dark:text-brand-300 mb-3">
+                <i class="fa-solid fa-gamepad"></i>
+                אימון מוחי מעשי
+            </span>
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white">מבחן הכשלים הלוגיים הגדול</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">האם תצליחו לזהות איזה כשל לוגי מופיע בציטוטים הבאים? בחנו את חדות המחשבה שלכם.</p>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 sm:p-10 shadow-lg relative overflow-hidden transition-colors">
+            
+            <!-- Progress Bar -->
+            <div class="absolute top-0 right-0 left-0 h-1.5 bg-slate-100 dark:bg-slate-800">
+                <div id="quiz-progress" class="h-full bg-brand-500 transition-all duration-300" style="width: 33%"></div>
+            </div>
+
+            <!-- Quiz Play State -->
+            <div id="quiz-play-state">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider" id="quiz-question-number">שאלה 1 מתוך 3</span>
+                    <span class="text-xs font-semibold px-2.5 py-1 bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300 rounded-md" id="quiz-score">ניקוד: 0/3</span>
+                </div>
+
+                <!-- The Quote -->
+                <div class="bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 mb-8 border border-slate-200/50 dark:border-slate-800 text-center relative">
+                    <div class="absolute -top-3 right-6 bg-brand-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs"><i class="fa-solid fa-quote-right"></i></div>
+                    <p class="text-slate-800 dark:text-slate-100 font-medium text-lg italic leading-relaxed" id="quiz-quote-text">
+                        "טוען את הציטוט..."
+                    </p>
+                </div>
+
+                <!-- Answer Options -->
+                <div class="space-y-3" id="quiz-options-container">
+                    <!-- Options will be generated here dynamically -->
+                </div>
+
+                <!-- Feedback Area -->
+                <div id="quiz-feedback" class="mt-6 hidden p-4 rounded-2xl border transition-all">
+                    <!-- Answer Feedback text -->
+                </div>
+
+                <!-- Next Question Button -->
+                <div class="mt-6 flex justify-end">
+                    <button id="quiz-next-btn" class="hidden px-6 py-3 bg-brand-500 text-white font-semibold rounded-xl hover:bg-brand-600 transition-colors items-center gap-2 cursor-pointer">
+                        השאלה הבאה
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quiz Result State -->
+            <div id="quiz-result-state" class="hidden text-center py-6">
+                <div class="text-brand-500 text-6xl mb-4"><i class="fa-solid fa-trophy"></i></div>
+                <h3 class="text-2xl font-black text-slate-900 dark:text-white">כל הכבוד! סיימתם את הבוחן</h3>
+                <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg" id="quiz-final-score-text">
+                    הצלחתם לזהות 2 מתוך 3 כשלים בצורה נכונה.
+                </p>
+                <p class="text-slate-400 dark:text-slate-500 text-sm mt-1 max-w-md mx-auto">
+                    המשך לחקור את מאגר הכשלים כדי להשיג ציון מושלם בפעם הבאה!
+                </p>
+                <button onclick="resetQuiz()" class="mt-6 px-6 py-3 bg-brand-500 text-white font-semibold rounded-xl hover:bg-brand-600 transition-colors shadow-lg shadow-brand-500/15 cursor-pointer">
+                    נסה שוב מחדש
+                </button>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Suggestion Form Section -->
+<section id="suggest-fallacy" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm transition-colors">
+        <div class="text-center md:text-right mb-8">
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2 justify-center md:justify-start">
+                <i class="fa-solid fa-paper-plane text-brand-500"></i>
+                מכירים כשל לוגי שלא מופיע כאן?
+            </h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">סייעו לנו להגדיל את האנציקלופדיה הלוגית! שלחו אלינו כשל לוגי חדש עם הסבר קצר ודוגמה, ואנו נסקור ונוסיף אותו לאתר.</p>
+        </div>
+
+        <form id="suggest-form" class="space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label for="suggest-name" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">שם הכשל הלוגי (בעברית או לועזית)</label>
+                    <input type="text" id="suggest-name" required placeholder="לדוגמה: אד הומינם, מדרון חלקלק..." class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                </div>
+                <div>
+                    <label for="suggest-category" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">קטגוריה משוערת</label>
+                    <select id="suggest-category" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm cursor-pointer">
+                        <option value="relevance">כשלים של רלוונטיות</option>
+                        <option value="causal">כשלי סיבתיות</option>
+                        <option value="presumption">כשלי הנחת יסוד</option>
+                        <option value="emotion">כשלי פנייה לרגש</option>
+                        <option value="statistical">כשלי סטטיסטיקה ומחקר</option>
+                        <option value="ambiguity">כשלי עמימות והגדרה</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label for="suggest-desc" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">הסבר והגדרה קצרה</label>
+                <textarea id="suggest-desc" rows="3" required placeholder="הסבירו מהו הכשל וכיצד הוא בא לידי ביטוי..." class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"></textarea>
+            </div>
+
+            <div>
+                <label for="suggest-example" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">דוגמה מהחיים האמיתיים</label>
+                <textarea id="suggest-example" rows="2" required placeholder="לדוגמה: 'אם תאכל שוקולד, תפסיק ללמוד באוניברסיטה...'" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"></textarea>
+            </div>
+
+            <!-- Custom Interactive Alert/Toast within the form -->
+            <div id="form-feedback" class="hidden p-4 rounded-xl text-center font-semibold text-sm"></div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="px-6 py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/10 transition-colors flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    שלח הצעה לבדיקה
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-12 mt-auto transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <!-- Logo and Slogan (Now clickable to scroll back up smoothly) -->
+        <div onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex flex-col items-center gap-3 cursor-pointer select-none hover:opacity-90 transition-opacity">
+            <div class="bg-brand-500 text-white p-2.5 rounded-2xl flex items-center justify-center shadow-md">
+                <i class="fa-solid fa-brain text-xl"></i>
+            </div>
+            <span class="font-black text-xl text-slate-900 dark:text-white">הלוגיקון</span>
+            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md">המרכז הלימודי הגדול ביותר בישראל לזיהוי כשלים לוגיים, פיתוח חשיבה ביקורתית, ורטוריקה נכונה.</p>
+        </div>
+
+        <hr class="my-8 border-slate-200 dark:border-slate-800">
+
+        <!-- Copyright / Attribution -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 dark:text-slate-500">
+            <div>
+                &copy; 2026 הלוגיקון. כל הזכויות שמורות. מוגש כשירות לציבור להגברת החשיבה הביקורתית והרציונלית.
+            </div>
+            <div class="flex gap-4">
+                <a href="#fallacies-catalog" class="hover:underline">מאגר הכשלים</a>
+                <a href="#interactive-quiz" class="hover:underline">טריוויה</a>
+                <a href="#suggest-fallacy" class="hover:underline">הצעת כשל</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Interactive Logic & Theme Management -->
+<script>
+    // Theme Switcher Logic
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+
+    // System theme detection
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        themeIcon.className = 'fa-solid fa-sun text-lg text-yellow-400';
+    } else {
+        document.documentElement.classList.remove('dark');
+        themeIcon.className = 'fa-solid fa-moon text-lg';
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            themeIcon.className = 'fa-solid fa-moon text-lg';
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            themeIcon.className = 'fa-solid fa-sun text-lg text-yellow-400';
+        }
+    });
+
+    // Main App Logic (Searching, Filtering, Modals)
+    const fallaciesGrid = document.getElementById('fallacies-grid');
+    const searchInput = document.getElementById('search-input');
+    const categoryFilters = document.getElementById('category-filters');
+    const sortSelect = document.getElementById('sort-select');
+    const resultsCount = document.getElementById('results-count');
+    const emptyState = document.getElementById('empty-state');
+    const totalFallaciesCount = document.getElementById('total-fallacies-count');
+
+    let activeCategory = 'all';
+    let searchQuery = '';
+    let currentSort = 'popularity-desc';
+
+    // Initialize Page
+    window.onload = function() {
+        totalFallaciesCount.innerText = fallaciesData.length;
+        renderFallacies();
+        setupDailyFallacy();
+        initQuiz();
+    };
+
+    // Render Fallacy Cards
+    function renderFallacies() {
+        // Filter logic
+        let filtered = fallaciesData.filter(fallacy => {
+            const matchesCategory = (activeCategory === 'all' || fallacy.category === activeCategory);
+            const matchesSearch = (
+                fallacy.name.toLowerCase().includes(searchQuery) ||
+                fallacy.shortDesc.toLowerCase().includes(searchQuery) ||
+                fallacy.fullDesc.toLowerCase().includes(searchQuery) ||
+                fallacy.example.toLowerCase().includes(searchQuery)
+            );
+            return matchesCategory && matchesSearch;
+        });
+
+        // Sorting logic
+        filtered.sort((a, b) => {
+            if (currentSort === 'popularity-desc') {
+                return b.popularity - a.popularity;
+            } else if (currentSort === 'popularity-asc') {
+                return a.popularity - b.popularity;
+            } else if (currentSort === 'name-asc') {
+                return a.name.localeCompare(b.name, 'he');
+            } else if (currentSort === 'name-desc') {
+                return b.name.localeCompare(a.name, 'he');
+            }
+            return 0;
+        });
+
+        // Clear existing grid
+        fallaciesGrid.innerHTML = '';
+
+        if (filtered.length === 0) {
+            emptyState.classList.remove('hidden');
+            fallaciesGrid.classList.add('hidden');
+            resultsCount.innerText = 'מציג 0 כשלים לוגיים';
+        } else {
+            emptyState.classList.add('hidden');
+            fallaciesGrid.classList.remove('hidden');
+            resultsCount.innerText = `מציג ${filtered.length} כשלים לוגיים`;
+
+            filtered.forEach(fallacy => {
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 cursor-pointer hover:shadow-xl hover:border-brand-500/30 dark:hover:border-brand-500/30 transform hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between';
+                card.onclick = () => openFallacyDetail(fallacy.id);
+
+                // Popularity star construction
+                let stars = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= fallacy.popularity) {
+                        stars += '<i class="fa-solid fa-star text-amber-400 text-[10px]"></i>';
+                    } else {
+                        stars += '<i class="fa-regular fa-star text-slate-300 dark:text-slate-700 text-[10px]"></i>';
+                    }
+                }
+
+                card.innerHTML = `
+                    <div>
+                        <!-- Header / Category Badge -->
+                        <div class="flex items-center justify-between gap-2 mb-4">
+                            <span class="text-[11px] font-bold px-2.5 py-1 bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300 rounded-lg">
+                                ${fallacy.categoryHebrew}
+                            </span>
+                            <div class="flex items-center gap-1">
+                                ${stars}
+                            </div>
+                        </div>
+
+                        <!-- Fallacy Name -->
+                        <h4 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-brand-500 transition-colors flex items-center gap-2">
+                            <i class="fa-solid ${fallacy.icon} text-brand-500 text-sm"></i>
+                            ${fallacy.name}
+                        </h4>
+
+                        <!-- Fallacy Short Description -->
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mt-2.5 leading-relaxed">
+                            ${fallacy.shortDesc}
+                        </p>
+                    </div>
+
+                    <!-- Footer Action link inside card -->
+                    <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-brand-500 dark:text-brand-400 font-bold">
+                        <span>קראו עוד ודרכי התמודדות</span>
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </div>
+                `;
+                fallaciesGrid.appendChild(card);
+            });
+        }
+    }
+
+    // Set up Daily Fallacy card
+    function setupDailyFallacy() {
+        // Choose fallacy based on the day of the month
+        const day = new Date().getDate();
+        const index = day % fallaciesData.length;
+        const daily = fallaciesData[index];
+
+        document.getElementById('daily-fallacy-name').innerText = daily.name;
+        document.getElementById('daily-fallacy-desc').innerText = daily.shortDesc;
+        document.getElementById('daily-fallacy-example').innerText = daily.example;
+
+        document.getElementById('view-daily-btn').onclick = () => {
+            openFallacyDetail(daily.id);
+        };
+    }
+
+    // Live Search Handling
+    searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.toLowerCase().trim();
+        renderFallacies();
+    });
+
+    // Category Buttons Filtering
+    categoryFilters.addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+
+        // Reset active states
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.className = 'filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer';
+        });
+
+        // Set clicked active
+        btn.className = 'filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-brand-500 text-white transition-all shadow-sm cursor-pointer';
+        activeCategory = btn.getAttribute('data-category');
+        renderFallacies();
+    });
+
+    // Sorting Selection
+    sortSelect.addEventListener('change', (e) => {
+        currentSort = e.target.value;
+        renderFallacies();
+    });
+
+    // Reset Filters Button action
+    function resetFilters() {
+        searchInput.value = '';
+        searchQuery = '';
+        activeCategory = 'all';
+
+        // Select the "All" filter button
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            if (b.getAttribute('data-category') === 'all') {
+                b.className = 'filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-brand-500 text-white transition-all shadow-sm cursor-pointer';
+            } else {
+                b.className = 'filter-btn px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer';
+            }
+        });
+
+        renderFallacies();
+    }
+
+    // Modal Open/Close Logic
+    const detailModal = document.getElementById('detail-modal');
+    const modalBackdrop = document.getElementById('modal-backdrop');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const closeModalFooterBtn = document.getElementById('close-modal-footer-btn');
+
+    function openFallacyDetail(id) {
+        const item = fallaciesData.find(f => f.id === id);
+        if (!item) return;
+
+        // Populate Modal Fields
+        document.getElementById('modal-category').innerText = item.categoryHebrew;
+        document.getElementById('modal-icon').className = `fa-solid ${item.icon} text-brand-500 text-xl sm:text-2xl`;
+        document.getElementById('modal-title').innerText = item.name;
+        document.getElementById('modal-desc').innerText = item.fullDesc;
+        document.getElementById('modal-example').innerText = item.example;
+        document.getElementById('modal-counter').innerText = item.howToCounter;
+
+        // Stars Render inside Modal
+        const starsContainer = document.getElementById('modal-popularity-stars');
+        starsContainer.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= item.popularity) {
+                starsContainer.innerHTML += '<i class="fa-solid fa-star text-amber-500"></i>';
+            } else {
+                starsContainer.innerHTML += '<i class="fa-regular fa-star text-slate-300 dark:text-slate-700"></i>';
+            }
+        }
+
+        // Show Modal
+        detailModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // block page scroll
+    }
+
+    function closeModal() {
+        detailModal.classList.add('hidden');
+        document.body.style.overflow = ''; // restore scroll
+    }
+
+    closeModalBtn.onclick = closeModal;
+    closeModalFooterBtn.onclick = closeModal;
+    modalBackdrop.onclick = closeModal;
+
+    // Trivia Game State & Mechanics
+    let currentQuizIndex = 0;
+    let quizScore = 0;
+    let answerSelected = false;
+
+    function initQuiz() {
+        currentQuizIndex = 0;
+        quizScore = 0;
+        answerSelected = false;
+
+        document.getElementById('quiz-play-state').classList.remove('hidden');
+        document.getElementById('quiz-result-state').classList.add('hidden');
+        document.getElementById('quiz-score').innerText = `ניקוד: 0/${quizQuestions.length}`;
+
+        loadQuizQuestion();
+    }
+
+    function loadQuizQuestion() {
+        answerSelected = false;
+        const question = quizQuestions[currentQuizIndex];
+
+        // Header Update
+        document.getElementById('quiz-question-number').innerText = `שאלה ${currentQuizIndex + 1} מתוך ${quizQuestions.length}`;
+        document.getElementById('quiz-progress').style.width = `${((currentQuizIndex + 1) / quizQuestions.length) * 100}%`;
+
+        // Quote Update
+        document.getElementById('quiz-quote-text').innerText = question.quote;
+
+        // Render Options
+        const container = document.getElementById('quiz-options-container');
+        container.innerHTML = '';
+
+        // Reset Feedback
+        const feedback = document.getElementById('quiz-feedback');
+        feedback.classList.add('hidden');
+        document.getElementById('quiz-next-btn').classList.add('hidden');
+
+        question.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'w-full text-right px-5 py-4 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-brand-50 dark:hover:bg-brand-950/20 hover:border-brand-300 dark:hover:border-brand-900 transition-all flex items-center justify-between font-medium text-slate-700 dark:text-slate-200 cursor-pointer';
+            btn.innerHTML = `
+                <span>${opt.text}</span>
+                <i class="fa-regular fa-circle text-slate-300 dark:text-slate-700"></i>
+            `;
+            btn.onclick = () => selectQuizAnswer(opt.id, btn);
+            container.appendChild(btn);
+        });
+    }
+
+    function selectQuizAnswer(selectedId, selectedButton) {
+        if (answerSelected) return; // Prevent multiple clicks
+        answerSelected = true;
+
+        const question = quizQuestions[currentQuizIndex];
+        const feedback = document.getElementById('quiz-feedback');
+        const nextBtn = document.getElementById('quiz-next-btn');
+        const optionsButtons = document.getElementById('quiz-options-container').children;
+
+        // Disable all options and show correct/incorrect styling
+        for (let btn of optionsButtons) {
+            btn.onclick = null; // Disable future click events
+        }
+
+        if (selectedId === question.correct) {
+            // Correct Answer
+            quizScore++;
+            selectedButton.className = 'w-full text-right px-5 py-4 border-2 border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 rounded-2xl flex items-center justify-between font-bold';
+            selectedButton.innerHTML = `
+                <span>${selectedButton.innerText}</span>
+                <i class="fa-solid fa-circle-check text-emerald-500 text-lg"></i>
+            `;
+
+            feedback.className = 'mt-6 p-4 rounded-2xl border border-emerald-200 bg-emerald-50/50 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-400 text-sm leading-relaxed';
+            feedback.innerHTML = `<h5 class="font-bold text-base mb-1">כל הכבוד! תשובה נכונה.</h5> ${question.explanation}`;
+        } else {
+            // Incorrect Answer
+            selectedButton.className = 'w-full text-right px-5 py-4 border-2 border-rose-500 bg-rose-50 text-rose-800 dark:bg-rose-950/20 dark:text-rose-400 rounded-2xl flex items-center justify-between font-bold';
+            selectedButton.innerHTML = `
+                <span>${selectedButton.innerText}</span>
+                <i class="fa-solid fa-circle-xmark text-rose-500 text-lg"></i>
+            `;
+
+            // Highlight the correct one
+            for (let btn of optionsButtons) {
+                const optText = btn.innerText;
+                const matchesCorrectOption = question.options.find(o => o.text === optText && o.id === question.correct);
+                if (matchesCorrectOption) {
+                    btn.className = 'w-full text-right px-5 py-4 border border-emerald-500 bg-emerald-50/30 text-emerald-700 dark:bg-emerald-950/10 dark:text-emerald-400 rounded-2xl flex items-center justify-between font-semibold';
+                    btn.innerHTML = `
+                        <span>${btn.innerText}</span>
+                        <i class="fa-regular fa-circle-check text-emerald-500"></i>
+                    `;
+                }
+            }
+
+            feedback.className = 'mt-6 p-4 rounded-2xl border border-rose-200 bg-rose-50/50 text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-400 text-sm leading-relaxed';
+            feedback.innerHTML = `<h5 class="font-bold text-base mb-1">תשובה לא מדויקת.</h5> ${question.explanation}`;
+        }
+
+        // Update score badge in play state
+        document.getElementById('quiz-score').innerText = `ניקוד: ${quizScore}/${quizQuestions.length}`;
+
+        // Show feedback and next button
+        feedback.classList.remove('hidden');
+        nextBtn.classList.remove('hidden');
+        nextBtn.className = 'px-6 py-3 bg-brand-500 text-white font-semibold rounded-xl hover:bg-brand-600 transition-colors flex items-center gap-2 animate-bounce cursor-pointer';
+    }
+
+    document.getElementById('quiz-next-btn').onclick = () => {
+        currentQuizIndex++;
+        if (currentQuizIndex < quizQuestions.length) {
+            loadQuizQuestion();
+        } else {
+            // Quiz complete - Show results
+            document.getElementById('quiz-play-state').classList.add('hidden');
+            document.getElementById('quiz-result-state').classList.remove('hidden');
+            document.getElementById('quiz-final-score-text').innerText = `הצלחתם לזהות ${quizScore} מתוך ${quizQuestions.length} כשלים לוגיים בצורה נכונה.`;
+        }
+    };
+
+    function resetQuiz() {
+        initQuiz();
+    }
+
+    // Suggestion Form handler with fully active simulated pending/loader state
+    const suggestForm = document.getElementById('suggest-form');
+    const formFeedback = document.getElementById('form-feedback');
+
+    suggestForm.onsubmit = function(e) {
+        e.preventDefault();
+
+        const submitBtn = suggestForm.querySelector('button[type="submit"]');
+        const originalBtnContent = submitBtn.innerHTML;
+
+        // Toggle visual loading indicator
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+            <i class="fa-solid fa-circle-notch animate-spin"></i>
+            שולח הצעה...
+        `;
+
+        // Simulate network processing delay (1.2 seconds) to show live loader
+        setTimeout(() => {
+            const name = document.getElementById('suggest-name').value;
+            
+            // Render custom feedback alert
+            formFeedback.className = 'p-4 rounded-xl text-center font-semibold text-sm bg-emerald-50 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/30 dark:border-emerald-900 dark:text-emerald-400';
+            formFeedback.innerText = `תודה רבה! הצעתך עבור הכשל הלוגי "${name}" התקבלה בהצלחה ותיבדק על ידי צוות המגיהים הלוגיים שלנו בקרוב.`;
+            formFeedback.classList.remove('hidden');
+
+            // Reset form fields
+            suggestForm.reset();
+
+            // Restore action button state
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnContent;
+
+            // Automatically hide toast notification after 8 seconds
+            setTimeout(() => {
+                formFeedback.classList.add('hidden');
+            }, 8000);
+        }, 1200);
+    };
+</script>
+
+</body>
+</html>>
