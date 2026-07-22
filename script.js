@@ -16,6 +16,21 @@ const projects = [
     link: "https://acne-ai.onrender.com/",
   },
   {
+    id: "zhut-kdima",
+    category: "משחק לימוד",
+    title: "זכות קדימה",
+    description: "משחק תחרותי, ראש בראש מול חברים על שאלות תיאוריה",
+    technologies: [
+      "Bun",
+      "TypeScript",
+      "Express",
+      "Sqlite",
+      "HTML CSS JS",
+    ],
+    icon: "M12 3l9 9-9 9-9-9 9-9zM16.5 10.5l-4.5 4.5M12 15l-3-3",
+    link: "https://zhut-kdima.onrender.com/",
+  },
+  {
     id: "compiler-project",
     category: "קומפיילר",
     title: "MOE Compiler Project (Wrapper)",
