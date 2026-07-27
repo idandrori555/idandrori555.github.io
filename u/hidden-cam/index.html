@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" class="h-full">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>המצלמה הנסתרת - משחק חברה וזיהוי דפוסים</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts - Heebo & Assistant -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Heebo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Heebo', 'Assistant', 'sans-serif'],
+          },
+          colors: {
+            slate: {
+              850: '#111827',
+              900: '#0f172a',
+            }
+          },
+          animation: {
+            'card-pop': 'cardPop 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+            'spin-slow': 'spin 3s linear infinite',
+          },
+          keyframes: {
+            cardPop: {
+              '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
+              '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Clean Minimalist Styling & Modern Dark Glassmorphism */
+    body {
+      font-family: 'Heebo', sans-serif;
+      background-color: #0b0f19;
+      color: #f8fafc;
+      overflow-x: hidden;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .clean-glass {
+      background: rgba(18, 26, 43, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .clean-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .liquid-input {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: white;
+      transition: all 0.2s ease;
+    }
+
+    .liquid-input:focus {
+      outline: none;
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    }
+
+    /* Range slider styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+      border: 2px solid #ffffff;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.2);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+    }
+
+    .btn-press {
+      transition: transform 0.1s ease, filter 0.2s ease;
+    }
+    .btn-press:active {
+      transform: scale(0.97);
+    }
+  </style>
+</head>
+
+<body class="min-h-full flex flex-col justify-between items-center relative p-3 sm:p-6 select-none">
+
+  <!-- Soft background glows -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-40">
+    <div class="absolute -top-32 -right-32 w-80 h-80 bg-cyan-600/20 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 -left-32 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="w-full max-w-md mx-auto my-auto z-10 relative flex flex-col justify-center min-h-[92vh] py-2">
+
+    <!-- Header / Logo Area -->
+    <header class="text-center mb-5">
+      <!-- <div class="inline-flex items-center gap-2 bg-slate-800/80 border border-slate-700/60 px-3 py-1 rounded-full text-xs font-semibold text-cyan-300 mb-2"> -->
+      <!--   <i class="fa-solid fa-wand-magic-sparkles text-cyan-400"></i> -->
+      <!--   <span>מופעל ע"י AI • המצלמה הנסתרת</span> -->
+      <!-- </div> -->
+      <h1 class="text-3xl font-black tracking-tight text-white">
+        המצלמה הנסתרת
+      </h1>
+      <p class="text-xs text-slate-400 font-medium mt-1">
+        גלו את החוק הסודי של הנחקר!
+      </p>
+    </header>
+
+    <!-- SCREEN 1: SETUP -->
+    <section id="screen-setup" class="clean-glass rounded-3xl p-5 shadow-xl transition-all duration-300 space-y-5">
+      
+      <!-- Timer Card -->
+      <div class="clean-card rounded-2xl p-4 space-y-2">
+        <div class="flex justify-between items-center">
+          <label class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-stopwatch text-indigo-400"></i> זמן חקירה:
+          </label>
+          <span id="timer-val" class="text-lg font-black text-indigo-300 bg-indigo-950/80 px-3 py-0.5 rounded-lg border border-indigo-800/50">2:00 ד'</span>
+        </div>
+        <input type="range" id="slider-timer" min="60" max="300" step="30" value="120" class="w-full" oninput="app.updateSetupUI()">
+        <div class="flex justify-between text-[11px] text-slate-400">
+          <span>דקה 1</span>
+          <span>5 דקות</span>
+        </div>
+      </div>
+
+      <!-- Rule Categories Selector -->
+      <div class="space-y-2">
+        <label class="text-xs font-bold text-slate-300 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-cyan-400"></i> קטגוריית חוקים:
+        </label>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button onclick="app.toggleCategory('speech')" id="cat-speech" class="p-2.5 rounded-xl border flex items-center justify-center gap-2 transition-all btn-press bg-cyan-950/60 border-cyan-500/50 text-cyan-300 font-bold">
+            <i class="fa-solid fa-comment-dots"></i> שפה ודיבור
+          </button>
+          <button onclick="app.toggleCategory('body')" id="cat-body" class="p-2.5 rounded-xl border flex items-center justify-center gap-2 transition-all btn-press bg-indigo-950/60 border-indigo-500/50 text-indigo-300 font-bold">
+            <i class="fa-solid fa-child"></i> שפת גוף
+          </button>
+          <button onclick="app.toggleCategory('acting')" id="cat-acting" class="p-2.5 rounded-xl border flex items-center justify-center gap-2 transition-all btn-press bg-purple-950/60 border-purple-500/50 text-purple-300 font-bold">
+            <i class="fa-solid fa-masks-theater"></i> משחק ואופי
+          </button>
+          <button onclick="app.toggleCategory('subtle')" id="cat-subtle" class="p-2.5 rounded-xl border flex items-center justify-center gap-2 transition-all btn-press bg-amber-950/60 border-amber-500/50 text-amber-300 font-bold">
+            <i class="fa-solid fa-eye"></i> תחכום גבוה
+          </button>
+        </div>
+      </div>
+
+      <!-- Include Topic Toggle Card -->
+      <div class="clean-card rounded-2xl p-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-2.5 text-xs font-bold text-slate-200">
+          <i class="fa-solid fa-comments text-cyan-400 text-base"></i>
+          <div>
+            <div class="text-white font-bold">כולל נושא חקירה ושאלות</div>
+            <div class="text-[10px] text-slate-400 font-normal">קבלת נושא לשיחה ורעיונות לשאלות בחקירה</div>
+          </div>
+        </div>
+        <input type="checkbox" id="toggle-topic" checked onchange="app.toggleTopicSetting()" class="w-5 h-5 accent-cyan-500 rounded cursor-pointer">
+      </div>
+
+      <!-- API Key Input Card -->
+      <div class="clean-card rounded-2xl p-4 space-y-2">
+        <div class="flex justify-between items-center">
+          <label for="input-api-key" class="text-xs font-bold text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-key text-amber-400"></i> מפתח Gemini API:
+          </label>
+          <span class="text-[10px] text-slate-400">(לייצור חוקים ב-AI)</span>
+        </div>
+        <div class="relative flex items-center">
+          <input type="password" id="input-api-key" placeholder="הכנס מפתח API (AIzaSy...)" class="w-full px-3 py-2 rounded-xl liquid-input text-xs pl-8" oninput="app.saveApiKey()">
+          <button type="button" onclick="app.toggleApiKeyVisibility()" class="absolute left-2 text-slate-400 hover:text-white text-xs">
+            <i id="api-key-eye-icon" class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+        <p class="text-[10px] text-slate-400 leading-tight">
+          המפתח נשמר בדפדפן בלבד. אם יישאר ריק, המשחק יעבוד במצב אופליין עם המאגר המובנה.
+        </p>
+      </div>
+
+      <!-- AI Dynamic Mode Indicator -->
+      <div class="clean-card rounded-2xl p-3 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2 text-slate-300">
+          <i class="fa-solid fa-brain text-cyan-400 text-sm"></i>
+          <div>
+            <div class="font-bold text-white">ייצור תוכן בלתי מוגבל (Gemini AI)</div>
+            <div id="ai-status-text" class="text-[10px] text-slate-400">הכנס מפתח API כדי להפעיל מחולל AI</div>
+          </div>
+        </div>
+        <span id="ai-status-dot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+      </div>
+
+      <!-- Start Game Button -->
+      <button onclick="app.startNewGame()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-600 hover:opacity-95 text-white font-black text-lg shadow-lg shadow-cyan-950/50 btn-press flex items-center justify-center gap-2">
+        <i class="fa-solid fa-play"></i> התחל סיבוב חדש
+      </button>
+
+    </section>
+
+    <!-- LOADING OVERLAY -->
+    <section id="screen-loading" class="hidden clean-glass rounded-3xl p-8 shadow-xl text-center space-y-4">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400 text-2xl animate-spin-slow">
+        <i class="fa-solid fa-sparkles"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-white">מייצר חוק ונושא סודי...</h2>
+        <p class="text-xs text-slate-400 mt-1">Gemini AI מכין לכם אתגרי חקירה חדשים</p>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: PASS PHONE & REVEAL -->
+    <section id="screen-reveal-role" class="hidden clean-glass rounded-3xl p-6 shadow-xl text-center space-y-5 animate-card-pop">
+      
+      <div class="inline-flex items-center gap-2 bg-indigo-950/80 border border-indigo-700/60 px-3 py-1 rounded-full text-xs font-bold text-indigo-300">
+        <i class="fa-solid fa-mobile-screen-button"></i> העבר את הטלפון לשחקן שעוד לא שיחק
+      </div>
+
+      <div id="role-display-card" class="space-y-4 text-right">
+        <div class="clean-card p-4 rounded-2xl border border-cyan-500/30 space-y-2">
+          <div class="flex items-center justify-between border-b border-white/10 pb-2">
+            <span class="text-xs font-bold text-cyan-300 flex items-center gap-1">
+              <i class="fa-solid fa-user-secret"></i> תפקידך: הנחקר
+            </span>
+            <span class="text-[10px] bg-red-500/20 text-red-300 px-2.5 py-0.5 rounded-full border border-red-500/30 font-bold">סודי ביותר</span>
+          </div>
+
+          <p class="text-xs text-slate-400 mt-1">החוק הסודי שעליך לפעול לפיו:</p>
+          <div id="secret-rule-text" class="text-lg font-black text-yellow-300 my-2 leading-snug bg-slate-900/80 p-3 rounded-xl border border-yellow-500/30">
+            -- טוען חוק --
+          </div>
+
+          <p id="secret-rule-tip" class="text-xs text-slate-300 bg-cyan-950/40 p-2 rounded-lg border border-cyan-800/40">
+            💡 <b>טיפ:</b> נסה לשלב את החוק בטבעיות כדי לא להיתפס מיד!
+          </p>
+        </div>
+
+        <div id="topic-reveal-card" class="clean-card p-3 rounded-xl text-xs text-slate-300">
+          <span class="font-bold text-indigo-300">נושא החקירה:</span>
+          <div id="investigation-topic-reveal" class="font-bold text-white text-sm mt-0.5">-- נושא --</div>
+        </div>
+
+        <button onclick="app.confirmRoleAndStartTimer()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-95 text-white font-black text-base shadow-lg btn-press">
+          הבנתי! התחל חקירה <i class="fa-solid fa-play mr-1"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: INVESTIGATION PHASE -->
+    <section id="screen-investigation" class="hidden clean-glass rounded-3xl p-5 shadow-xl space-y-4 animate-card-pop">
+      
+      <!-- Countdown Header -->
+      <div class="flex items-center justify-between bg-slate-900/90 p-3 rounded-2xl border border-slate-700/60">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400 text-base">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+          <div>
+            <div class="text-[10px] text-slate-400 font-bold uppercase">זמן נותר</div>
+            <div id="investigation-timer" class="text-2xl font-black text-cyan-300 tracking-wider">02:00</div>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="app.toggleTimerPause()" id="btn-pause-timer" class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm btn-press">
+            <i class="fa-solid fa-pause"></i>
+          </button>
+          <button onclick="app.playClickSound()" class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm btn-press">
+            <i class="fa-solid fa-volume-high"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Current Topic Card -->
+      <div id="investigation-topic-card" class="clean-card p-4 rounded-2xl border border-indigo-500/30 text-right space-y-1.5">
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-bold text-indigo-300 uppercase"><i class="fa-solid fa-magnifying-glass ml-1"></i> נושא החקירה:</span>
+          <span id="target-player-badge" class="text-xs font-bold text-cyan-300 bg-cyan-950 px-2.5 py-0.5 rounded-full border border-cyan-800">חקירת הנחקר הסודי</span>
+        </div>
+        <h3 id="investigation-topic-title" class="text-xl font-black text-white">-- טוען נושא --</h3>
+        <p id="investigation-topic-desc" class="text-xs text-slate-300 leading-relaxed">-- תיאור --</p>
+      </div>
+
+      <!-- Question Ideas Helper -->
+      <div id="investigation-prompt-card" class="clean-card p-3.5 rounded-2xl text-right space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-bold text-slate-300"><i class="fa-solid fa-lightbulb text-yellow-400 ml-1"></i> רעיון לשאלה:</span>
+          <button onclick="app.cycleQuestionPrompt()" class="text-[11px] text-cyan-400 hover:underline flex items-center gap-1">
+            <i class="fa-solid fa-rotate"></i> שאלה אחרת
+          </button>
+        </div>
+        
+        <div id="prompt-question-box" class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs font-semibold text-slate-100 min-h-[46px] flex items-center">
+          "מה הדבר הראשוני שתעשה בסיטואציה הזו?"
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button onclick="app.finishInvestigationEarly()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-95 text-white font-bold text-base shadow-lg btn-press flex items-center justify-center gap-2">
+        <i class="fa-solid fa-bullhorn"></i> החוקרים מוכנים לנחש!
+      </button>
+
+    </section>
+
+    <!-- SCREEN 4: GUESS & REVEAL -->
+    <section id="screen-reveal-result" class="hidden clean-glass rounded-3xl p-6 shadow-xl text-center space-y-5 animate-card-pop">
+      
+      <div class="space-y-1">
+        <span class="text-[11px] font-extrabold text-amber-400 uppercase tracking-widest bg-amber-950 px-3 py-0.5 rounded-full border border-amber-800/50">חשיפת התשובה</span>
+        <h2 class="text-2xl font-black text-white">מה היה החוק הסודי?</h2>
+        <p class="text-xs text-slate-400">נחשו בקול רם, ואז חשפו את החוק!</p>
+      </div>
+
+      <!-- Pre-reveal Action -->
+      <div id="pre-reveal-box" class="py-2">
+        <button onclick="app.revealSecretRuleFinal()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-95 text-white font-black text-lg shadow-lg btn-press">
+          <i class="fa-solid fa-lock-open ml-2"></i> חשוף את החוק הסודי!
+        </button>
+      </div>
+
+      <!-- Revealed Result Box -->
+      <div id="post-reveal-box" class="hidden space-y-4 text-right">
+        <div class="clean-card p-4 rounded-2xl border border-yellow-500/40 bg-slate-900/90 space-y-1">
+          <div class="text-xs font-bold text-yellow-400 uppercase flex items-center gap-1">
+            <i class="fa-solid fa-camera"></i> החוק הסודי שהיה:
+          </div>
+          <div id="final-revealed-rule" class="text-lg font-black text-yellow-200 leading-snug py-1">
+            -- החוק --
+          </div>
+          <div id="final-rule-category" class="text-[11px] text-slate-400 border-t border-slate-800 pt-2 mt-1">
+            קטגוריה: <span class="text-cyan-300 font-bold">שפת גוף</span>
+          </div>
+        </div>
+
+        <button onclick="app.returnToMainScreen()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-95 text-white font-bold text-base shadow-md btn-press">
+          חזרה למסך הראשי להגדרות <i class="fa-solid fa-sliders mr-1"></i>
+        </button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- JavaScript App Logic -->
+  <script>
+    /* Web Audio Sound Synthesizer */
+    class SoundManager {
+      constructor() {
+        this.ctx = null;
+      }
+
+      initCtx() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playClick() {
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.05);
+          gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.05);
+        } catch (e) {}
+      }
+
+      playReveal() {
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } catch (e) {}
+      }
+
+      playBuzzer() {
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(150, now);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        } catch (e) {}
+      }
+    }
+
+    const sfx = new SoundManager();
+
+    /* Offline Fallback Data Bank */
+    const OFFLINE_RULES_BANK = [
+      { cat: 'speech', text: 'בכל תשובה שלך, המילה השנייה במשפט חייבת להתחיל באות מ\'' },
+      { cat: 'speech', text: 'אתה חייב להשתמש במילת קישור למקום ("פה", "שם", "למעלה") בכל תשובה' },
+      { cat: 'speech', text: 'תשנה את נטיית הדיבור שלך - דבר בלשון רבים בלבד ("אנחנו חשבנו", "הלכנו")' },
+      { cat: 'speech', text: 'כל המשפטים שלך חייבים להסתיים בשאלה בחזרה למתחקר' },
+      { cat: 'speech', text: 'אתה חייב לשרבב שם של ירק או פרי בכל פעם שאתה עונה' },
+      { cat: 'body', text: 'בכל פעם שאתה אומר את המילה "כן" או "לא", גע באוזן שמאל שלך' },
+      { cat: 'body', text: 'הימנע מליצור קשר עין ישיר עם מי ששואל אותך - תביט רק למי שיושב לידו' },
+      { cat: 'body', text: 'שלב את הידיים בכל פעם שמישהו אומר את השם שלך' },
+      { cat: 'body', text: 'הנהן בראשך פעמיים בהתלהבות לפני כל תשובה' },
+      { cat: 'acting', text: 'ענה על כל השאלות כאילו אתה חושד שכולם מנסים למכור לך משהו' },
+      { cat: 'acting', text: 'התנהג בצורה מוגזמת ונלהבת כאילו שמעת את החדשות הטובות בחייך' },
+      { cat: 'acting', text: 'ענה כאילו אתה בלש שחוקר בחזרה את החוקרים שלו' },
+      { cat: 'subtle', text: 'השתמש במשפטים בני 4 מילים בדיוק בכל תשובה שתיתן' },
+      { cat: 'subtle', text: 'חזור על המילה האחרונה של השאלה ששאלו אותך מיד בתחילת התשובה שלך' }
+    ];
+
+    const OFFLINE_TOPICS_BANK = [
+      {
+        title: "חופשה חלומית ששתקעה",
+        desc: "אתם מתכננים טיול משותף, אך נתקעתם בשדה התעופה ל-24 שעות. איך תעבירו את הזמן?",
+        questions: [
+          "מה הדבר הראשון שתקנה בדיוטי פרי?",
+          "איך תגיב אם יבשרו שהטיסה מבוטלת?",
+          "מי בקבוצה הכי סביר שימצא פינה לישון על הרצפה?"
+        ]
+      },
+      {
+        title: "הישרדות באי בודד",
+        desc: "הספינה שלכם נטרפה והגעתם לאי בודד. יש לכם רק 3 חפצים בכל הקבוצה.",
+        questions: [
+          "מה התפקיד שתקח על עצמך במחנה?",
+          "איזה חפץ אישי היית מקריב למען הקבוצה?",
+          "מה הדבר הראשוני שתחפש באי?"
+        ]
+      },
+      {
+        title: "מסעדה מוזרה",
+        desc: "פתחתם יחד מסעדה חדשה אך התברר שהשף מכין רק מנות בצבע ירוק.",
+        questions: [
+          "איך תמתגו את המסעדה לקהל?",
+          "מה תהיה מנת הדגל בתפריט?",
+          "איך תתמודדו עם סועד שמתלונן?"
+        ]
+      }
+    ];
+
+    /* Main App Controller */
+    class GameApp {
+      constructor() {
+        this.timerSeconds = 120;
+        this.selectedCategories = ['speech', 'body', 'acting', 'subtle'];
+        this.includeTopic = true;
+        this.apiKey = localStorage.getItem('gemini_api_key') || '';
+        
+        this.usedRules = [];
+        this.usedTopics = [];
+
+        this.currentRule = null;
+        this.currentTopic = null;
+        this.promptIndex = 0;
+
+        this.timerInterval = null;
+        this.secondsLeft = 0;
+        this.isPaused = false;
+      }
+
+      init() {
+        const keyInput = document.getElementById('input-api-key');
+        if (keyInput) keyInput.value = this.apiKey;
+        this.updateAiStatusUI();
+        this.updateSetupUI();
+      }
+
+      saveApiKey() {
+        const val = document.getElementById('input-api-key').value.trim();
+        this.apiKey = val;
+        localStorage.setItem('gemini_api_key', val);
+        this.updateAiStatusUI();
+      }
+
+      toggleApiKeyVisibility() {
+        const input = document.getElementById('input-api-key');
+        const icon = document.getElementById('api-key-eye-icon');
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.className = 'fa-solid fa-eye-slash';
+        } else {
+          input.type = 'password';
+          icon.className = 'fa-solid fa-eye';
+        }
+      }
+
+      updateAiStatusUI() {
+        const dot = document.getElementById('ai-status-dot');
+        const text = document.getElementById('ai-status-text');
+        if (this.apiKey) {
+          dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400";
+          text.innerText = "מחולל Gemini AI פעיל ומחובר";
+        } else {
+          dot.className = "w-2.5 h-2.5 rounded-full bg-slate-500";
+          text.innerText = "הכנס מפתח API כדי להפעיל מחולל AI (או שחק באופליין)";
+        }
+      }
+
+      toggleCategory(cat) {
+        sfx.playClick();
+        if (this.selectedCategories.includes(cat)) {
+          if (this.selectedCategories.length > 1) {
+            this.selectedCategories = this.selectedCategories.filter(c => c !== cat);
+          }
+        } else {
+          this.selectedCategories.push(cat);
+        }
+        this.updateCategoryButtons();
+      }
+
+      updateCategoryButtons() {
+        const cats = ['speech', 'body', 'acting', 'subtle'];
+        cats.forEach(c => {
+          const btn = document.getElementById(`cat-${c}`);
+          if (!btn) return;
+          if (this.selectedCategories.includes(c)) {
+            btn.classList.add('border-cyan-500/80', 'bg-cyan-950/70', 'opacity-100');
+            btn.classList.remove('opacity-40', 'border-slate-800');
+          } else {
+            btn.classList.remove('border-cyan-500/80', 'bg-cyan-950/70', 'opacity-100');
+            btn.classList.add('opacity-40', 'border-slate-800');
+          }
+        });
+      }
+
+      toggleTopicSetting() {
+        sfx.playClick();
+        this.includeTopic = document.getElementById('toggle-topic').checked;
+      }
+
+      updateSetupUI() {
+        const sliderVal = parseInt(document.getElementById('slider-timer').value, 10);
+        this.timerSeconds = sliderVal;
+        const mins = Math.floor(sliderVal / 60);
+        const secs = sliderVal % 60;
+        document.getElementById('timer-val').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs} ד'`;
+        this.updateCategoryButtons();
+      }
+
+      showScreen(id) {
+        const screens = ['screen-setup', 'screen-loading', 'screen-reveal-role', 'screen-investigation', 'screen-reveal-result'];
+        screens.forEach(s => {
+          const el = document.getElementById(s);
+          if (el) el.classList.add('hidden');
+        });
+        const target = document.getElementById(id);
+        if (target) target.classList.remove('hidden');
+      }
+
+      /* AI Generation Logic */
+      async generateAiGameRound() {
+        if (!this.apiKey) {
+          return this.getOfflineFallbackRound();
+        }
+
+        try {
+          const prompt = `
+אתה מחולל תוכן למשחק חברה בעברית בשם "המצלמה הנסתרת".
+במשחק זה, שחקן אחד מבלף או משחק לפי חוק סודי (כמו חוק שפה, שפת גוף או דפוס התנהגות), והשאר חוקרים אותו.
+
+אנא צור:
+1. חוק סודי יצירתי, מצחיק ומקורי לשחקן לפי הקטגוריות הבאות: ${this.selectedCategories.join(', ')}.
+2. נושא חקירה מעניין לשיחה עם 3 שאלות מנחות למשתתפים.
+
+חוקים ואזהרות:
+- אל תשתמש בחוקים הבאים שכבר הופיעו: ${JSON.stringify(this.usedRules)}
+- אל תשתמש בנושאים הבאים שכבר הופיעו: ${JSON.stringify(this.usedTopics)}
+
+החזר אך ורק אובייקט JSON במבנה המדויק הבא:
+{
+  "rule": {
+    "cat": "${this.selectedCategories[0] || 'speech'}",
+    "text": "תיאור החוק הסודי בעברית"
+  },
+  "topic": {
+    "title": "כותרת הנושא",
+    "desc": "תיאור קצר של הסיטואציה",
+    "questions": [
+      "שאלה מנחה 1",
+      "שאלה מנחה 2",
+      "שאלה מנחה 3"
+    ]
+  }
+}
+          `;
+
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: "application/json" }
+            })
+          });
+
+          if (!response.ok) throw new Error("API Request Failed");
+
+          const data = await response.json();
+          const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          const parsed = JSON.parse(jsonText);
+
+          if (parsed && parsed.rule && parsed.rule.text) {
+            this.usedRules.push(parsed.rule.text);
+            if (parsed.topic && parsed.topic.title) this.usedTopics.push(parsed.topic.title);
+            return parsed;
+          } else {
+            throw new Error("Invalid JSON structure");
+          }
+        } catch (err) {
+          console.warn("Gemini API fallback triggered:", err);
+          return this.getOfflineFallbackRound();
+        }
+      }
+
+      getOfflineFallbackRound() {
+        // Filter rules by chosen categories & unused
+        let availableRules = OFFLINE_RULES_BANK.filter(r => 
+          this.selectedCategories.includes(r.cat) && !this.usedRules.includes(r.text)
+        );
+        if (availableRules.length === 0) {
+          availableRules = OFFLINE_RULES_BANK.filter(r => this.selectedCategories.includes(r.cat));
+        }
+        const rule = availableRules[Math.floor(Math.random() * availableRules.length)] || OFFLINE_RULES_BANK[0];
+        this.usedRules.push(rule.text);
+
+        // Filter topics
+        let availableTopics = OFFLINE_TOPICS_BANK.filter(t => !this.usedTopics.includes(t.title));
+        if (availableTopics.length === 0) availableTopics = OFFLINE_TOPICS_BANK;
+        const topic = availableTopics[Math.floor(Math.random() * availableTopics.length)];
+        this.usedTopics.push(topic.title);
+
+        return { rule, topic };
+      }
+
+      /* Game Controls */
+      async startNewGame() {
+        sfx.playClick();
+        this.showScreen('screen-loading');
+
+        const content = await this.generateAiGameRound();
+        this.currentRule = content.rule;
+        this.currentTopic = content.topic;
+        this.promptIndex = 0;
+
+        this.showScreen('screen-reveal-role');
+        document.getElementById('secret-rule-text').innerText = this.currentRule.text;
+        
+        const topicRevealCard = document.getElementById('topic-reveal-card');
+        if (this.includeTopic && this.currentTopic) {
+          topicRevealCard.classList.remove('hidden');
+          document.getElementById('investigation-topic-reveal').innerText = this.currentTopic.title;
+        } else {
+          topicRevealCard.classList.add('hidden');
+        }
+      }
+
+      confirmRoleAndStartTimer() {
+        sfx.playClick();
+        this.showScreen('screen-investigation');
+
+        const topicCard = document.getElementById('investigation-topic-card');
+        const promptCard = document.getElementById('investigation-prompt-card');
+
+        if (this.includeTopic && this.currentTopic) {
+          topicCard.classList.remove('hidden');
+          promptCard.classList.remove('hidden');
+
+          document.getElementById('investigation-topic-title').innerText = this.currentTopic.title;
+          document.getElementById('investigation-topic-desc').innerText = this.currentTopic.desc;
+          
+          this.promptIndex = 0;
+          this.updatePromptUI();
+        } else {
+          topicCard.classList.add('hidden');
+          promptCard.classList.add('hidden');
+        }
+
+        this.startInvestigationTimer();
+      }
+
+      startInvestigationTimer() {
+        clearInterval(this.timerInterval);
+        this.secondsLeft = this.timerSeconds;
+        this.isPaused = false;
+        this.updateTimerDisplay();
+
+        this.timerInterval = setInterval(() => {
+          if (!this.isPaused) {
+            this.secondsLeft--;
+            this.updateTimerDisplay();
+
+            if (this.secondsLeft <= 0) {
+              clearInterval(this.timerInterval);
+              sfx.playBuzzer();
+              this.prepareRevealScreen();
+            }
+          }
+        }, 1000);
+      }
+
+      toggleTimerPause() {
+        sfx.playClick();
+        this.isPaused = !this.isPaused;
+        const icon = document.querySelector('#btn-pause-timer i');
+        if (icon) {
+          icon.className = this.isPaused ? 'fa-solid fa-play' : 'fa-solid fa-pause';
+        }
+      }
+
+      updateTimerDisplay() {
+        const mins = Math.floor(this.secondsLeft / 60);
+        const secs = this.secondsLeft % 60;
+        const timerEl = document.getElementById('investigation-timer');
+        if (timerEl) {
+          timerEl.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+          if (this.secondsLeft <= 15) {
+            timerEl.classList.add('text-red-400');
+            timerEl.classList.remove('text-cyan-300');
+          } else {
+            timerEl.classList.remove('text-red-400');
+            timerEl.classList.add('text-cyan-300');
+          }
+        }
+      }
+
+      cycleQuestionPrompt() {
+        sfx.playClick();
+        if (!this.currentTopic || !this.currentTopic.questions) return;
+        this.promptIndex = (this.promptIndex + 1) % this.currentTopic.questions.length;
+        this.updatePromptUI();
+      }
+
+      updatePromptUI() {
+        if (this.currentTopic && this.currentTopic.questions) {
+          document.getElementById('prompt-question-box').innerText = `"${this.currentTopic.questions[this.promptIndex]}"`;
+        }
+      }
+
+      finishInvestigationEarly() {
+        sfx.playClick();
+        clearInterval(this.timerInterval);
+        this.prepareRevealScreen();
+      }
+
+      prepareRevealScreen() {
+        this.showScreen('screen-reveal-result');
+        document.getElementById('pre-reveal-box').classList.remove('hidden');
+        document.getElementById('post-reveal-box').classList.add('hidden');
+      }
+
+      revealSecretRuleFinal() {
+        sfx.playReveal();
+        document.getElementById('pre-reveal-box').classList.add('hidden');
+        document.getElementById('post-reveal-box').classList.remove('hidden');
+
+        document.getElementById('final-revealed-rule').innerText = this.currentRule.text;
+        
+        let catName = "חוק AI סודי";
+        if (this.currentRule.cat === 'speech') catName = "שפה ודיבור";
+        if (this.currentRule.cat === 'body') catName = "שפת גוף";
+        if (this.currentRule.cat === 'acting') catName = "משחק ואופי";
+        if (this.currentRule.cat === 'subtle') catName = "תחכום גבוה";
+
+        document.getElementById('final-rule-category').innerHTML = `קטגוריה: <span class="text-cyan-300 font-bold">${catName}</span>`;
+      }
+
+      returnToMainScreen() {
+        sfx.playClick();
+        this.showScreen('screen-setup');
+      }
+
+      playClickSound() {
+        sfx.playClick();
+      }
+    }
+
+    /* Initialize Application on DOM Load */
+    let app;
+    window.addEventListener('DOMContentLoaded', () => {
+      app = new GameApp();
+      app.init();
+    });
+  </script>
+</body>
+
+</html>
