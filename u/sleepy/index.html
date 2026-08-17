@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>מחשבון שינה חכם</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #03000a;
+            --accent-purple: #8b5cf6;
+            --accent-glow: rgba(167, 139, 250, 0.4);
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            -webkit-tap-highlight-color: transparent;
+            overflow: hidden; 
+            touch-action: none; 
+        }
+
+        /* --- העלמת החיצים משדות מספר --- */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+        /* =========================================
+           ✨ BACKGROUND MAGIC (Aurora & Galaxy)
+           ========================================= */
+        .bg-base {
+            position: absolute; inset: 0; z-index: -5;
+            background-color: #050110;
+        }
+
+        /* אורות צפון רכים (Mesh Gradient) */
+        .aurora-container {
+            position: absolute; inset: 0; z-index: -4;
+            overflow: hidden;
+            filter: blur(60px); /* טשטוש עוצמתי ליצירת מראה ענן/גז */
+            opacity: 0.7;
+        }
+        
+        .aurora {
+            position: absolute; border-radius: 50%;
+            animation: float-aurora 20s infinite alternate ease-in-out;
+            will-change: transform;
+        }
+
+        /* צבעים עמוקים של לילה */
+        .aurora-1 { top: -20%; left: -20%; width: 70vw; height: 70vw; background: #3b0764; animation-duration: 25s; }
+        .aurora-2 { bottom: -20%; right: -20%; width: 80vw; height: 80vw; background: #0f172a; animation-direction: alternate-reverse; }
+        .aurora-3 { top: 30%; left: 40%; width: 60vw; height: 60vw; background: #1e1b4b; animation-duration: 30s; }
+        .aurora-4 { bottom: 20%; left: -10%; width: 50vw; height: 50vw; background: #2e1065; animation-delay: -5s; }
+
+        @keyframes float-aurora {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(5vw, 5vh) scale(1.1); }
+            100% { transform: translate(-5vw, 10vh) scale(0.9); }
+        }
+
+        /* כוכבים מנצנצים */
+        .twinkle-star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle var(--duration) ease-in-out infinite alternate;
+            z-index: -3;
+        }
+        
+        @keyframes twinkle {
+            0% { transform: scale(0.5); opacity: 0.1; box-shadow: none; }
+            100% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 6px rgba(255,255,255,0.8); }
+        }
+
+        /* כוכב נופל (Shooting Star) - נדיר וקסום */
+        .shooting-star {
+            position: absolute; width: 120px; height: 2px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.9), transparent);
+            border-radius: 50%;
+            transform: rotate(-45deg);
+            animation: shooting 8s infinite linear; /* ארוך כדי שלא יהיה מציק */
+            opacity: 0; z-index: -2;
+        }
+
+        .shooting-star:nth-child(1) { top: 10%; right: 20%; animation-delay: 2s; }
+        .shooting-star:nth-child(2) { top: 40%; right: 10%; animation-delay: 7s; }
+
+        @keyframes shooting {
+            0% { transform: translate(100px, -100px) rotate(-45deg) scale(1); opacity: 1; }
+            10% { transform: translate(-300px, 300px) rotate(-45deg) scale(0.2); opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        /* =========================================
+           UI & GLASSMORPHISM
+           ========================================= */
+        .glass-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 36px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        .toggle-btn { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .toggle-btn.active {
+            background: var(--accent-purple); color: white;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .action-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .action-btn:active { transform: scale(0.85); background: rgba(255,255,255,0.2); }
+
+        .delay-btn { transition: all 0.3s ease; }
+        .delay-btn.active {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(139, 92, 246, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -5px rgba(139, 92, 246, 0.3);
+        }
+        .delay-btn.active .emoji { animation: bounceEmoji 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        @keyframes bounceEmoji {
+            0% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.3) translateY(-4px); }
+            100% { transform: scale(1) translateY(0); }
+        }
+
+        .text-gradient {
+            background: linear-gradient(180deg, #ffffff 0%, #c4b5fd 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .glow-target { text-shadow: 0 0 45px var(--accent-glow); transition: all 0.3s ease; }
+        
+        .pulse-dot {
+            width: 6px; height: 6px; background-color: #34d399; border-radius: 50%;
+            box-shadow: 0 0 10px #34d399; animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .pop-anim { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); filter: brightness(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        #customDelayInput:focus {
+            background: rgba(139, 92, 246, 0.25);
+            border-color: rgba(139, 92, 246, 0.9);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+    </style>
+</head>
+<body class="h-[100dvh] w-full flex flex-col justify-between items-center px-4 py-6 md:py-10 relative">
+
+    <!-- ✨ רקע יוקרתי (Aurora & Stars) -->
+    <div class="bg-base"></div>
+    <div class="aurora-container">
+        <div class="aurora aurora-1"></div>
+        <div class="aurora aurora-2"></div>
+        <div class="aurora aurora-3"></div>
+        <div class="aurora aurora-4"></div>
+    </div>
+    
+    <!-- כוכבים נופלים -->
+    <div class="shooting-star"></div>
+    <div class="shooting-star"></div>
+    
+    <div id="stars-container"></div>
+
+    <!-- 1. הזמן הנוכחי -->
+    <header class="flex flex-col items-center mt-2 z-10 w-full shrink-0">
+        <div class="flex items-center gap-2 mb-1">
+            <!-- <div class="pulse-dot"></div> -->
+            <span class="text-indigo-200/70 text-xs font-bold tracking-[0.2em] uppercase">השעה עכשיו</span>
+        </div>
+        <div id="currentTime" class="text-4xl font-light tracking-[0.2em] opacity-90 transition-opacity ml-2">--:--</div>
+    </header>
+
+    <!-- 2. מרכז שליטה ראשי -->
+    <main class="glass-card w-full max-w-sm px-6 py-8 flex flex-col gap-8 z-10 my-auto">
+        
+        <!-- Toggle Mode -->
+        <div class="flex flex-col gap-5">
+            <div class="flex bg-black/50 rounded-full p-1 relative w-4/5 mx-auto border border-white/10 shadow-inner">
+                <button onclick="setMode('cycles')" id="btnModeCycles" class="toggle-btn active flex-1 text-sm py-2.5 rounded-full font-medium">מחזורים</button>
+                <button onclick="setMode('hours')" id="btnModeHours" class="toggle-btn flex-1 text-sm py-2.5 rounded-full font-medium text-white/50">שעות</button>
+            </div>
+
+            <!-- הקפסולה המרכזית -->
+            <div class="flex items-center justify-between bg-white/5 rounded-3xl p-3 border border-white/5 shadow-[inset_0_2px_15px_rgba(0,0,0,0.3)] mx-2">
+                <button onclick="adjustSleep(-1)" class="action-btn w-14 h-14 flex items-center justify-center rounded-2xl bg-white/5 text-3xl text-indigo-300 pb-1">-</button>
+                
+                <div class="flex flex-col items-center flex-1">
+                    <span id="sleepValueDisplay" class="text-5xl font-extrabold text-white tracking-tight">5</span>
+                    <span id="sleepUnitDisplay" class="text-[11px] text-indigo-200/70 mt-1 font-semibold tracking-wider uppercase">7.5 שעות</span>
+                </div>
+                
+                <button onclick="adjustSleep(1)" class="action-btn w-14 h-14 flex items-center justify-center rounded-2xl bg-white/5 text-3xl text-indigo-300 pb-1">+</button>
+            </div>
+        </div>
+
+        <div class="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+
+        <!-- עיכוב (Routine) -->
+        <div class="flex flex-col gap-3">
+            <span class="text-xs text-center text-indigo-200/60 font-medium tracking-wide">זמן התארגנות במיטה</span>
+            <div class="flex justify-between gap-3">
+                <button onclick="setDelay(15)" id="btnDelay15" class="delay-btn active flex-1 py-3.5 rounded-2xl bg-black/30 border border-transparent flex flex-col items-center gap-1.5 backdrop-blur-md">
+                    <span class="emoji text-2xl">🌙</span>
+                    <span class="text-[11px] font-medium text-white/80">15 דק'</span>
+                </button>
+                <button onclick="setDelay(30)" id="btnDelay30" class="delay-btn flex-1 py-3.5 rounded-2xl bg-black/30 border border-transparent flex flex-col items-center gap-1.5 opacity-70 backdrop-blur-md">
+                    <span class="emoji text-2xl">📖</span>
+                    <span class="text-[11px] font-medium text-white/80">30 דק'</span>
+                </button>
+                
+                <!-- קלט מותאם אישית -->
+                <div class="flex-1 relative" id="customDelayContainer">
+                    <button onclick="openCustomDelay()" id="btnDelayCustom" class="delay-btn w-full h-full py-3.5 rounded-2xl bg-black/30 border border-transparent flex flex-col items-center gap-1.5 opacity-70 backdrop-blur-md">
+                        <span class="emoji text-xl mt-0.5">⏱️</span>
+                        <span class="text-[11px] font-medium text-white/80">אחר</span>
+                    </button>
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="customDelayInput" placeholder="דק'" class="absolute inset-0 w-full h-full bg-[#1e153f]/90 border border-indigo-400/60 rounded-2xl text-center text-white text-xl font-bold focus:outline-none hidden transition-all backdrop-blur-xl" onblur="applyCustomDelay()" oninput="applyCustomDelayRealTime()">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 3. התוצאה -->
+    <footer class="flex flex-col items-center z-10 w-full shrink-0 pb-2">
+        <span class="text-xs font-semibold text-indigo-300/80 mb-2 uppercase tracking-[0.15em]">כוון מעורר לשעה</span>
+        <div class="relative">
+            <!-- <span class="absolute -top-3 -right-6 text-2xl origin-bottom" style="animation: swing 2.5s ease-in-out infinite;">⏰</span> -->
+            <h1 id="alarmTime" class="text-7xl font-extrabold glow-target text-gradient tracking-tighter drop-shadow-lg" dir="ltr">--:--</h1>
+        </div>
+        <p id="alarmDesc" class="text-xs text-indigo-200/50 mt-4 text-center leading-relaxed h-8 max-w-[250px] font-medium">
+            <!-- טקסט דינמי -->
+        </p>
+    </footer>
+
+    <style>
+        @keyframes swing {
+            0%, 100% { transform: rotate(-8deg); }
+            50% { transform: rotate(12deg); }
+        }
+    </style>
+
+    <script>
+        // יצירת גלקסיית כוכבים מציאותית יותר
+        const starsContainer = document.getElementById('stars-container');
+        const starColors = ['#ffffff', '#e2e8f0', '#c7d2fe']; // לבן, תכלת חיוור, כסוף
+        
+        for(let i=0; i<35; i++) {
+            let star = document.createElement('div');
+            star.className = 'twinkle-star';
+            
+            // גדלים רנדומליים (עדינים)
+            let size = Math.random() * 2 + 0.5;
+            star.style.width = size + 'px';
+            star.style.height = size + 'px';
+            
+            // מיקום
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            
+            // צבע ואנימציה
+            star.style.backgroundColor = starColors[Math.floor(Math.random() * starColors.length)];
+            star.style.setProperty('--duration', (Math.random() * 4 + 2) + 's');
+            star.style.animationDelay = (Math.random() * 5) + 's'; // כדי שלא כולם יהבהבו יחד
+            
+            starsContainer.appendChild(star);
+        }
+
+        const state = {
+            mode: 'cycles', 
+            cycles: 5,     
+            hours: 7.5,
+            delay: 15     
+        };
+        const CYCLE_MINS = 90;
+
+        const ui = {
+            currentTime: document.getElementById('currentTime'),
+            btnModeCycles: document.getElementById('btnModeCycles'),
+            btnModeHours: document.getElementById('btnModeHours'),
+            sleepValueDisplay: document.getElementById('sleepValueDisplay'),
+            sleepUnitDisplay: document.getElementById('sleepUnitDisplay'),
+            btnDelay15: document.getElementById('btnDelay15'),
+            btnDelay30: document.getElementById('btnDelay30'),
+            btnDelayCustom: document.getElementById('btnDelayCustom'),
+            customDelayInput: document.getElementById('customDelayInput'),
+            alarmTime: document.getElementById('alarmTime'),
+            alarmDesc: document.getElementById('alarmDesc')
+        };
+
+        // שעון זמן נוכחי 
+        setInterval(() => {
+            const now = new Date();
+            ui.currentTime.textContent = now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+            calculateAlarm(now);
+        }, 1000);
+
+        function calculateAlarm(nowDate = new Date()) {
+            let sleepMins = state.mode === 'cycles' ? state.cycles * CYCLE_MINS : state.hours * 60;
+            let totalMinsToAdd = state.delay + sleepMins;
+            const target = new Date(nowDate.getTime() + totalMinsToAdd * 60000);
+            
+            const newTimeString = target.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+            if (ui.alarmTime.textContent !== newTimeString && ui.alarmTime.textContent !== '--:--') {
+                triggerPopAnimation();
+            }
+            
+            ui.alarmTime.textContent = newTimeString;
+            updateDescription(sleepMins);
+        }
+
+        function setMode(mode) {
+            state.mode = mode;
+            ui.btnModeCycles.classList.toggle('active', mode === 'cycles');
+            ui.btnModeCycles.classList.toggle('text-white/50', mode !== 'cycles');
+            ui.btnModeHours.classList.toggle('active', mode === 'hours');
+            ui.btnModeHours.classList.toggle('text-white/50', mode !== 'hours');
+            updateSleepDisplay();
+            calculateAlarm();
+        }
+
+        function adjustSleep(direction) {
+            if (state.mode === 'cycles') {
+                state.cycles = Math.max(1, Math.min(8, state.cycles + direction));
+            } else {
+                state.hours = Math.max(1, Math.min(12, state.hours + (direction * 0.5)));
+            }
+            updateSleepDisplay();
+            calculateAlarm();
+        }
+
+        function updateSleepDisplay() {
+            if (state.mode === 'cycles') {
+                ui.sleepValueDisplay.textContent = state.cycles;
+                let hrs = (state.cycles * CYCLE_MINS) / 60;
+                ui.sleepUnitDisplay.textContent = `${hrs} שעות`;
+            } else {
+                ui.sleepValueDisplay.textContent = state.hours;
+                let cycl = (state.hours * 60) / CYCLE_MINS;
+                ui.sleepUnitDisplay.textContent = `${cycl} מחזורים`;
+            }
+            
+            ui.sleepValueDisplay.classList.remove('pop-anim');
+            void ui.sleepValueDisplay.offsetWidth;
+            ui.sleepValueDisplay.classList.add('pop-anim');
+        }
+
+        function setDelay(mins) {
+            state.delay = mins;
+            ui.customDelayInput.classList.add('hidden');
+            ui.btnDelayCustom.classList.remove('hidden');
+            ui.customDelayInput.value = '';
+            updateDelayUI(mins);
+            calculateAlarm();
+        }
+
+        function openCustomDelay() {
+            ui.btnDelayCustom.classList.add('hidden');
+            ui.customDelayInput.classList.remove('hidden');
+            ui.customDelayInput.focus();
+            updateDelayUI('custom');
+        }
+
+        function applyCustomDelayRealTime() {
+            let val = parseInt(ui.customDelayInput.value);
+            if (!isNaN(val) && val >= 0) {
+                state.delay = val;
+                calculateAlarm();
+            }
+        }
+
+        function applyCustomDelay() {
+            let val = parseInt(ui.customDelayInput.value);
+            if (isNaN(val) || val < 0) {
+                setDelay(15);
+            } else {
+                updateDelayUI('custom');
+            }
+        }
+
+        function updateDelayUI(activeVal) {
+            const buttons = [
+                { el: ui.btnDelay15, val: 15 },
+                { el: ui.btnDelay30, val: 30 },
+                { el: ui.btnDelayCustom, val: 'custom' }
+            ];
+
+            buttons.forEach(b => {
+                let isActive = b.val === activeVal;
+                b.el.classList.toggle('active', isActive);
+                b.el.classList.toggle('opacity-70', !isActive);
+            });
+        }
+
+        function updateDescription(sleepMins) {
+            let delayText = state.delay === 0 ? "ללא התארגנות" : `ו-${state.delay} דק' התארגנות`;
+            let sleepText = state.mode === 'cycles' ? `${state.cycles} מחזורים` : `${state.hours} שעות`;
+            ui.alarmDesc.innerHTML = `${sleepText} <span class="opacity-50 mx-1">•</span> ${delayText}`;
+        }
+
+        function triggerPopAnimation() {
+            ui.alarmTime.classList.remove('pop-anim');
+            void ui.alarmTime.offsetWidth;
+            ui.alarmTime.classList.add('pop-anim');
+        }
+
+        // Init
+        const initialNow = new Date();
+        ui.currentTime.textContent = initialNow.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+        calculateAlarm(initialNow);
+        updateSleepDisplay(); 
+
+    </script>
+</body>
+</html>
