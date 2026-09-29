@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>איזה תירוץ רועי יבחר היום?</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts: Heebo & Rubik -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&family=Rubik:ital,wght@0,400;0,700;0,900;1,800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Heebo', 'Rubik', 'sans-serif'],
+                        display: ['Rubik', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            900: '#090d16',
+                            800: '#111827',
+                            700: '#1f2937',
+                            600: '#374151'
+                        },
+                        neon: {
+                            blue: '#00f2fe',
+                            cyan: '#4facfe',
+                            pink: '#ff0844',
+                            purple: '#b142fe',
+                            amber: '#ffb302',
+                            emerald: '#00e676'
+                        }
+                    },
+                    boxShadow: {
+                        'neon-blue': '0 0 25px rgba(0, 242, 254, 0.4)',
+                        'neon-pink': '0 0 25px rgba(255, 8, 68, 0.4)',
+                        'neon-amber': '0 0 25px rgba(255, 179, 2, 0.4)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 2s infinite alternate',
+                        'bounce-subtle': 'bounceSubtle 1.5s infinite alternate',
+                        'spin-slow': 'spin 12s linear infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%': { filter: 'drop-shadow(0 0 8px rgba(0, 242, 254, 0.3))' },
+                            '100%': { filter: 'drop-shadow(0 0 22px rgba(0, 242, 254, 0.8))' }
+                        },
+                        bounceSubtle: {
+                            '0%': { transform: 'translateY(0)' },
+                            '100%': { transform: 'translateY(-6px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: #070a12;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(0, 242, 254, 0.12) 0px, transparent 50%),
+                radial-gradient(at 90% 20%, rgba(177, 66, 254, 0.12) 0px, transparent 50%),
+                radial-gradient(at 50% 80%, rgba(255, 8, 68, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: #f3f4f6;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(17, 24, 39, 0.8);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        /* Metallic Rim Effect */
+        .metallic-rim {
+            background: conic-gradient(
+                #2a3342 0deg, 
+                #4b5563 45deg, 
+                #1e293b 90deg, 
+                #64748b 135deg, 
+                #111827 180deg, 
+                #4b5563 225deg, 
+                #1e293b 270deg, 
+                #64748b 315deg, 
+                #2a3342 360deg
+            );
+        }
+
+        /* Glowing text effects */
+        .text-glow-blue {
+            text-shadow: 0 0 12px rgba(0, 242, 254, 0.6);
+        }
+        .text-glow-amber {
+            text-shadow: 0 0 12px rgba(255, 179, 2, 0.6);
+        }
+
+        /* Glassmorphism containers */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(31, 41, 55, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Custom Triangle Pointer */
+        .pointer-arrow {
+            width: 0;
+            height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 32px solid #ffb302;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));
+        }
+
+        /* Modal scale transitions */
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.92);
+            pointer-events: none;
+        }
+        .modal-active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
+
+    <!-- App Header -->
+    <header class="w-full pt-5 pb-3 px-4 text-center flex flex-col items-center justify-center relative z-10">
+        <div class="inline-flex items-center gap-2 bg-gradient-to-r from-sky-950/80 to-purple-950/80 border border-cyan-500/30 text-cyan-400 text-xs sm:text-sm font-bold px-4 py-1.5 rounded-full mb-3 shadow-lg backdrop-blur-md">
+            <i class="fa-solid fa-car-on text-cyan-400 animate-pulse"></i>
+            <span>מחולל התירוצים הבלעדי של רועי בזבוזים</span>
+        </div>
+
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
+            איזה תירוץ <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-400 to-purple-400 text-glow-blue">רועי</span> יבחר היום?
+        </h1>
+        
+        <p class="text-slate-400 text-xs sm:text-sm mt-2 max-w-md font-medium">
+            תסובבו את הגלגל, תגלו למה רועי לא יכול להקפיץ אותנו היום! 🚗
+        </p>
+    </header>
+
+    <!-- Main Interactive Area -->
+    <main class="flex-1 flex flex-col items-center justify-center px-4 py-2 relative w-full max-w-md mx-auto my-auto z-10">
+        
+        <!-- Wheel Outer Frame -->
+        <div class="relative w-full aspect-square max-w-[340px] sm:max-w-[390px] flex items-center justify-center my-2">
+            
+            <!-- Wheel Pointer / Indicator -->
+            <div id="wheelPointer" class="absolute -top-4 z-30 left-1/2 -translate-x-1/2 transition-transform duration-75 origin-top">
+                <div class="relative flex flex-col items-center">
+                    <div class="w-7 h-7 rounded-full bg-amber-400 border-2 border-white shadow-lg flex items-center justify-center -mb-2 z-10">
+                        <div class="w-2 h-2 rounded-full bg-slate-900"></div>
+                    </div>
+                    <div class="pointer-arrow"></div>
+                </div>
+            </div>
+
+            <!-- Outer Metallic Decorative Ring -->
+            <div class="w-full h-full p-3.5 rounded-full metallic-rim shadow-2xl relative flex items-center justify-center animate-pulse-glow">
+                
+                <!-- Inner Glow Ring -->
+                <div class="w-full h-full rounded-full bg-slate-950 p-1.5 relative flex items-center justify-center border border-slate-700/80 shadow-inner">
+                    
+                    <!-- Decorative Studs Around Wheel Rim -->
+                    <div class="absolute inset-0 rounded-full pointer-events-none flex items-center justify-center">
+                        <div class="w-full h-full relative">
+                            <!-- JS dynamically injects LED studs here -->
+                            <div id="wheelStudsContainer" class="w-full h-full relative"></div>
+                        </div>
+                    </div>
+
+                    <!-- Main Wheel Canvas -->
+                    <canvas id="wheelCanvas" class="w-full h-full rounded-full cursor-pointer transition-transform duration-100 touch-none"></canvas>
+                    
+                    <!-- Center Spin Button (Hub) -->
+                    <button id="centerSpinBtn" onclick="spinWheel()" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-gradient-to-b from-slate-800 via-slate-900 to-black border-4 border-cyan-400 text-cyan-300 flex flex-col items-center justify-center font-black shadow-neon-blue hover:scale-105 active:scale-95 transition-all z-20 group">
+                        <i class="fa-solid fa-car-burst text-xl sm:text-2xl group-hover:rotate-12 transition-transform text-cyan-400"></i>
+                        <span class="text-[11px] sm:text-xs tracking-wider font-extrabold mt-0.5 text-white">סובב!</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons Section -->
+        <div class="w-full mt-4 flex flex-col items-center gap-3">
+            
+            <!-- Main Big Spin Button -->
+            <button id="spinBtn" onclick="spinWheel()" class="w-full bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xl py-3.5 px-6 rounded-2xl shadow-neon-blue active:scale-95 transition-all flex items-center justify-center gap-3 border border-cyan-300 relative overflow-hidden group">
+                <span class="absolute inset-0 w-full h-full bg-white/25 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></span>
+                <i class="fa-solid fa-arrows-spin text-2xl animate-spin-slow"></i>
+                <span class="tracking-wide">סובב את גלגל התירוצים!</span>
+            </button>
+
+            <!-- Quick Action Toolbar -->
+            <div class="grid grid-cols-3 gap-2 w-full text-xs font-semibold">
+                <button onclick="openModal('excusesModal')" class="glass-panel hover:bg-slate-800/90 text-slate-200 py-3 px-2 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-700/60 shadow-md">
+                    <i class="fa-solid fa-list-check text-cyan-400 text-sm"></i>
+                    <span>ניהול תירוצים</span>
+                </button>
+                
+                <button onclick="openModal('historyModal')" class="glass-panel hover:bg-slate-800/90 text-slate-200 py-3 px-2 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-700/60 shadow-md">
+                    <i class="fa-solid fa-clock-rotate-left text-amber-400 text-sm"></i>
+                    <span>היסטוריה</span>
+                </button>
+
+                <button id="soundToggleBtn" onclick="toggleSound()" class="glass-panel hover:bg-slate-800/90 text-slate-200 py-3 px-2 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-700/60 shadow-md">
+                    <i id="soundIcon" class="fa-solid fa-volume-high text-emerald-400 text-sm"></i>
+                    <span id="soundText">סאונד</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-4 text-slate-500 text-xs font-medium z-10">
+        <p>רועי בזבוזים 2027 ©️</p>
+    </footer>
+
+    <!-- Win Result Modal -->
+    <div id="resultModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all duration-300 modal-enter">
+        <div class="glass-panel bg-slate-900/90 border-2 border-cyan-500/50 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl transform transition-all duration-300 relative overflow-hidden">
+            
+            <!-- Neon background blur blobs -->
+            <div class="absolute -top-16 -left-16 w-36 h-36 bg-cyan-500/30 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="absolute -bottom-16 -right-16 w-36 h-36 bg-purple-500/30 rounded-full blur-2xl pointer-events-none"></div>
+
+            <!-- Trophy Icon Badge -->
+            <div class="w-16 h-16 bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 border border-cyan-400/40 text-cyan-300 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 animate-bounce-subtle shadow-neon-blue">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+
+            <span class="text-xs font-black tracking-widest text-cyan-400 uppercase bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-800">
+                התירוץ הרשמי להיום!
+            </span>
+            
+            <h2 id="resultText" class="text-2xl sm:text-3xl font-black text-white my-4 leading-snug">
+                "הלכו הבלמים!"
+            </h2>
+
+            <p class="text-slate-300 text-xs sm:text-sm mb-6 leading-relaxed bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                אין לכם למה לחכות לרכב. מומלץ להזמין מונית או להישאר בבית! 😂
+            </p>
+
+            <div class="flex flex-col gap-2.5">
+                <button onclick="shareResultWhatsApp()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
+                    <i class="fa-brands fa-whatsapp text-xl"></i>
+                    <span>שתף את התירוץ ב-WhatsApp</span>
+                </button>
+                <button onclick="closeModal('resultModal')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 px-4 rounded-xl border border-slate-700 transition-all text-xs">
+                    סגור חלונית
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Excuses Manager Modal -->
+    <div id="excusesModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all duration-300 modal-enter">
+        <div class="glass-panel bg-slate-900/95 border border-slate-700/80 rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl flex flex-col max-h-[85vh]">
+            
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-sliders text-cyan-400 text-lg"></i>
+                    <h3 class="text-lg font-black text-white">ניהול תירוצים</h3>
+                </div>
+                <button onclick="closeModal('excusesModal')" class="text-slate-400 hover:text-white p-1 rounded-lg transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Add new excuse form -->
+            <form onsubmit="addNewExcuse(event)" class="my-4 flex gap-2">
+                <input type="text" id="newExcuseInput" placeholder="הוסף תירוץ חדש..." required maxlength="32" class="flex-1 bg-slate-950/80 border border-slate-700 text-white placeholder-slate-500 text-xs sm:text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-cyan-400 transition-colors">
+                <button type="submit" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-colors flex items-center justify-center gap-1 shadow-md">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>הוסף</span>
+                </button>
+            </form>
+
+            <!-- Excuses List Scroll Area -->
+            <div class="flex-1 overflow-y-auto space-y-2 my-2 pr-1" id="excusesListContainer">
+                <!-- Items populated dynamically -->
+            </div>
+
+            <!-- Footer options -->
+            <div class="pt-3 border-t border-slate-800 flex justify-between items-center text-xs">
+                <button onclick="resetDefaultExcuses()" class="text-amber-400 hover:text-amber-300 font-medium underline transition-colors">
+                    שחזר תירוצי מחדל
+                </button>
+                <span id="excuseCountText" class="text-slate-400 font-semibold">0 תירוצים ברשימה</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spin History Modal -->
+    <div id="historyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all duration-300 modal-enter">
+        <div class="glass-panel bg-slate-900/95 border border-slate-700/80 rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl flex flex-col max-h-[80vh]">
+            
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-clock-rotate-left text-amber-400 text-lg"></i>
+                    <h3 class="text-lg font-black text-white">היסטוריית תירוצים</h3>
+                </div>
+                <button onclick="closeModal('historyModal')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto space-y-2 my-4 pr-1" id="historyListContainer">
+                <!-- History Items -->
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 flex justify-between items-center text-xs">
+                <span class="text-slate-500">20 הסיבובים האחרונים</span>
+                <button onclick="clearHistory()" class="text-rose-400 hover:text-rose-300 font-medium underline">
+                    נקה היסטוריה
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800/95 border border-cyan-500/50 text-white text-xs sm:text-sm font-bold px-4 py-3 rounded-2xl shadow-2xl z-50 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2.5 backdrop-blur-md">
+        <i class="fa-solid fa-circle-check text-cyan-400 text-base"></i>
+        <span id="toastMsg">הודעה</span>
+    </div>
+
+    <script>
+        // Default list of Roey's excuses
+        const DEFAULT_EXCUSES = [
+            "הלכו הבלמים ברכב 🛑",
+            "הכלב אכל את המפתח 🐶",
+            "אין לי ביטוח ליום שלישי 📋",
+            "נשאר לי רבע ליטר דלק ⛽",
+            "המצבר מת בנסיבות מחשידות 🔋",
+            "הרכב במוסך עד 2030 🛠️",
+            "אמא לקחה את המפתח 🗝️",
+            "יש פנצ'ר ב-4 הגלגלים 🏎️",
+            "נתפס לי הגב מהמזגן ❄️",
+            "חוסמים אותי בחניה 🚗",
+            "עלה לי החום ל-37.1 🌡️",
+            "אני באמצע סדרה מותחת 📺",
+            "הרכב מקרטע מ-2,000 סל\"ד 🚘"
+        ];
+
+        // Vibrant Dark Palette for Slices
+        const SLICE_COLORS = [
+            '#00f2fe', // Electric Cyan
+            '#b142fe', // Purple Neon
+            '#ff0844', // Neon Pink
+            '#00e676', // Emerald
+            '#ffb302', // Vibrant Amber
+            '#3b82f6', // Bright Blue
+            '#ec4899', // Pink
+            '#14b8a6', // Teal
+            '#8b5cf6', // Violet
+            '#f97316'  // Orange
+        ];
+
+        // App state
+        let excuses = [];
+        let history = [];
+        let soundEnabled = true;
+        let currentAngle = 0; // angle in radians
+        let isSpinning = false;
+        let currentWinningExcuse = "";
+
+        // Web Audio API context for high quality sound synthesis
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // Play crisp mechanical tick sound
+        function playTickSound() {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(700 + Math.random() * 150, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.03);
+
+                gain.gain.setValueAtTime(0.18, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.035);
+            } catch(e) {}
+        }
+
+        // Play win celebration chime sound
+        function playWinFanfare() {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+
+                const arpeggio = [261.63, 329.63, 392.00, 523.25, 659.25]; // C E G C E
+                arpeggio.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
+
+                    gain.gain.setValueAtTime(0, ctx.currentTime + idx * 0.08);
+                    gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + idx * 0.08 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.35);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc.start(ctx.currentTime + idx * 0.08);
+                    osc.stop(ctx.currentTime + idx * 0.08 + 0.35);
+                });
+            } catch(e) {}
+        }
+
+        window.onload = function() {
+            loadState();
+            createWheelStuds();
+            setupCanvas();
+            renderWheel();
+            renderExcusesList();
+            renderHistoryList();
+
+            // Handle viewport resize smoothly
+            window.addEventListener('resize', () => {
+                setupCanvas();
+                renderWheel();
+            });
+        };
+
+        function loadState() {
+            const savedExcuses = localStorage.getItem('roey_excuses_v2');
+            if (savedExcuses) {
+                try {
+                    excuses = JSON.parse(savedExcuses);
+                } catch(e) {
+                    excuses = [...DEFAULT_EXCUSES];
+                }
+            } else {
+                excuses = [...DEFAULT_EXCUSES];
+            }
+
+            const savedHistory = localStorage.getItem('roey_history_v2');
+            if (savedHistory) {
+                try {
+                    history = JSON.parse(savedHistory);
+                } catch(e) {
+                    history = [];
+                }
+            }
+        }
+
+        function saveExcuses() {
+            localStorage.setItem('roey_excuses_v2', JSON.stringify(excuses));
+        }
+
+        function saveHistory() {
+            localStorage.setItem('roey_history_v2', JSON.stringify(history));
+        }
+
+        // Generate decorative studs around rim
+        function createWheelStuds() {
+            const container = document.getElementById('wheelStudsContainer');
+            container.innerHTML = '';
+            const totalStuds = 12;
+            for (let i = 0; i < totalStuds; i++) {
+                const angle = (i * 360) / totalStuds;
+                const stud = document.createElement('div');
+                stud.className = 'absolute w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-slate-400 shadow-inner border border-slate-600';
+                stud.style.top = `${50 - 46.5 * Math.cos((angle * Math.PI) / 180)}%`;
+                stud.style.left = `${50 + 46.5 * Math.sin((angle * Math.PI) / 180)}%`;
+                stud.style.transform = 'translate(-50%, -50%)';
+                container.appendChild(stud);
+            }
+        }
+
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function setupCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+        }
+
+        function renderWheel() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const width = rect.width;
+            const height = rect.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = width / 2 - 4;
+
+            ctx.clearRect(0, 0, width, height);
+
+            if (excuses.length === 0) {
+                ctx.save();
+                ctx.fillStyle = '#111827';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = 'bold 16px Heebo';
+                ctx.textAlign = 'center';
+                ctx.fillText('אין תירוצים ברשימה', centerX, centerY);
+                ctx.restore();
+                return;
+            }
+
+            const numSlices = excuses.length;
+            const sliceAngle = (Math.PI * 2) / numSlices;
+
+            for (let i = 0; i < numSlices; i++) {
+                const angle = currentAngle + i * sliceAngle;
+
+                // Draw slice sector
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle);
+                ctx.closePath();
+
+                // Slice gradient fill
+                const sliceColor = SLICE_COLORS[i % SLICE_COLORS.length];
+                ctx.fillStyle = sliceColor;
+                ctx.fill();
+
+                // Sector outline border
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#090d16';
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle + sliceAngle / 2);
+
+                // Position text near the outer rim
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#000000'; // High contrast dark text on vibrant slices
+
+                // Calculate font size dynamically based on number of items
+                let fontSize = 13;
+                if (numSlices > 12) fontSize = 11;
+                if (numSlices > 16) fontSize = 10;
+
+                ctx.font = `900 ${fontSize}px Heebo, sans-serif`;
+
+                // Truncate text if needed to avoid overflow
+                let text = excuses[i];
+                const maxChars = numSlices > 12 ? 18 : 22;
+                if (text.length > maxChars) {
+                    text = text.substring(0, maxChars - 2) + '..';
+                }
+
+                // Draw text inside slice
+                ctx.fillText(text, radius - 16, 0);
+                ctx.restore();
+            }
+
+            // Outer Canvas Rim Outline
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.stroke();
+        }
+
+        let lastPassedSliceIndex = -1;
+
+        function spinWheel() {
+            if (isSpinning || excuses.length === 0) return;
+
+            getAudioContext(); // Initialize context on user gesture
+            isSpinning = true;
+
+            // UI feedback
+            const spinBtn = document.getElementById('spinBtn');
+            const centerBtn = document.getElementById('centerSpinBtn');
+            spinBtn.classList.add('opacity-50', 'pointer-events-none');
+            centerBtn.classList.add('opacity-50', 'pointer-events-none');
+
+            // Calculate spin parameters (realistic inertia)
+            const numSlices = excuses.length;
+            const sliceAngle = (Math.PI * 2) / numSlices;
+            
+            // Random spin target distance (between 5 to 8 full rotations + random angle)
+            const extraRotations = (5 + Math.random() * 3) * Math.PI * 2;
+            const targetAngle = currentAngle + extraRotations + Math.random() * Math.PI * 2;
+            
+            const startTime = performance.now();
+            const duration = 4500 + Math.random() * 1000; // 4.5 to 5.5 seconds
+            const startAngle = currentAngle;
+
+            function animateSpin(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Cubic ease-out friction formula for ultra-smooth realistic deceleration
+                const easeOut = 1 - Math.pow(1 - progress, 3.5);
+                currentAngle = startAngle + (targetAngle - startAngle) * easeOut;
+
+                // Ticker sound calculation
+                // Pointer is fixed at top: angle = -PI/2 (or 1.5 * PI)
+                const normalizedPointerAngle = (Math.PI * 1.5 - currentAngle + Math.PI * 100) % (Math.PI * 2);
+                const currentSliceIndex = Math.floor(normalizedPointerAngle / sliceAngle) % numSlices;
+
+                if (currentSliceIndex !== lastPassedSliceIndex) {
+                    playTickSound();
+                    
+                    // Physical pointer wiggling animation
+                    const pointer = document.getElementById('wheelPointer');
+                    pointer.style.transform = 'translateX(-50%) rotate(-14deg)';
+                    setTimeout(() => {
+                        pointer.style.transform = 'translateX(-50%) rotate(0deg)';
+                    }, 60);
+
+                    // Optional vibration
+                    if (navigator.vibrate) {
+                        navigator.vibrate(10);
+                    }
+
+                    lastPassedSliceIndex = currentSliceIndex;
+                }
+
+                renderWheel();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateSpin);
+                } else {
+                    // Spin complete
+                    isSpinning = false;
+                    spinBtn.classList.remove('opacity-50', 'pointer-events-none');
+                    centerBtn.classList.remove('opacity-50', 'pointer-events-none');
+
+                    finishSpinResult(currentSliceIndex);
+                }
+            }
+
+            requestAnimationFrame(animateSpin);
+        }
+
+        function finishSpinResult(winnerIndex) {
+            currentWinningExcuse = excuses[winnerIndex];
+
+            // Record to history
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+            history.unshift({ excuse: currentWinningExcuse, time: timeStr });
+            if (history.length > 20) history.pop();
+            saveHistory();
+            renderHistoryList();
+
+            // Victory sound & Confetti FX
+            playWinFanfare();
+            confetti({
+                particleCount: 90,
+                spread: 75,
+                origin: { y: 0.65 },
+                colors: ['#00f2fe', '#b142fe', '#ff0844', '#ffb302']
+            });
+
+            // Display winning dialog
+            document.getElementById('resultText').innerText = `"${currentWinningExcuse}"`;
+            openModal('resultModal');
+        }
+
+        // Share result to WhatsApp
+        function shareResultWhatsApp() {
+            const text = `רועי לא יכול להקפיץ אותנו היום! 🚗💨\nהתירוץ שלו: "${currentWinningExcuse}"\n\nתבדקו איזה תירוץ ייצא לכם:`;
+            const url = window.location.href;
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + url)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function renderExcusesList() {
+            const container = document.getElementById('excusesListContainer');
+            container.innerHTML = '';
+
+            excuses.forEach((excuse, index) => {
+                const item = document.createElement('div');
+                item.className = 'glass-card flex items-center justify-between p-3 rounded-xl text-xs sm:text-sm border border-slate-700/50';
+                item.innerHTML = `
+                    <span class="text-slate-100 font-semibold truncate ml-2">${excuse}</span>
+                    <button onclick="removeExcuse(${index})" class="text-rose-400 hover:text-rose-300 p-1.5 rounded-lg transition-colors hover:bg-rose-500/10" title="מחק">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+
+            document.getElementById('excuseCountText').innerText = `${excuses.length} תירוצים ברשימה`;
+        }
+
+        function addNewExcuse(e) {
+            e.preventDefault();
+            const input = document.getElementById('newExcuseInput');
+            const value = input.value.trim();
+
+            if (value) {
+                excuses.push(value);
+                saveExcuses();
+                renderExcusesList();
+                renderWheel();
+                input.value = '';
+                showToast('התירוץ נוסף בהצלחה!');
+            }
+        }
+
+        function removeExcuse(index) {
+            if (excuses.length <= 2) {
+                showToast('חייבים להישאר לפחות 2 תירוצים ברשימה!');
+                return;
+            }
+            excuses.splice(index, 1);
+            saveExcuses();
+            renderExcusesList();
+            renderWheel();
+            showToast('התירוץ הוסר');
+        }
+
+        function resetDefaultExcuses() {
+            excuses = [...DEFAULT_EXCUSES];
+            saveExcuses();
+            renderExcusesList();
+            renderWheel();
+            showToast('הרשימה שוחזרה לברירת המחדל');
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('historyListContainer');
+            container.innerHTML = '';
+
+            if (history.length === 0) {
+                container.innerHTML = '<p class="text-center text-slate-500 text-xs py-8 font-medium">טרם בוצעו סיבובים בגלגל</p>';
+                return;
+            }
+
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'glass-card flex items-center justify-between p-2.5 rounded-xl text-xs border border-slate-700/40';
+                div.innerHTML = `
+                    <span class="text-slate-200 font-semibold truncate ml-2">${item.excuse}</span>
+                    <span class="text-slate-400 text-[11px] font-mono">${item.time}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function clearHistory() {
+            history = [];
+            saveHistory();
+            renderHistoryList();
+            showToast('ההיסטוריה נוקתה');
+        }
+
+        // Toggle Sound Mute
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            const text = document.getElementById('soundText');
+            
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-emerald-400 text-sm';
+                showToast('סאונד מופעל');
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-slate-500 text-sm';
+                showToast('סאונד מושתק');
+            }
+        }
+
+        // Modal triggers
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('modal-enter');
+            modal.classList.add('modal-active');
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('modal-active');
+            modal.classList.add('modal-enter');
+        }
+
+        // Toast alert
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2300);
+        }
+    </script>
+</body>
+</html>
