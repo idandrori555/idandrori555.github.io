@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>מקלט קרוב 🛡️ | המקלט הציבורי הכי קרוב אליך</title>
+<meta name="description" content="מצא את המקלט הציבורי הקרוב אליך בישראל — 12,000+ מקלטים, ניווט מהיר בלחיצה, עובד גם אופליין." />
+<meta name="theme-color" content="#0b0b14" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="מקלט קרוב" />
+<link rel="apple-touch-icon" href="./icon-192.png" />
+<link rel="icon" type="image/svg+xml" href="./icon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+<div class="estrip"><span class="pulse-dot"></span><span>אזעקה? היכנסו למרחב מוגן · <a href="tel:104">104</a></span></div>
+
+<div id="map" aria-label="מפת מקלטים"></div>
+
+<!-- שכבת בקרה עליונה: פאנל יחיד -->
+<div class="top-ui">
+  <div class="top-panel">
+    <div class="t-row">
+      <span class="logo" title="מקלט קרוב">🛡️<span id="gpsDot" class="gps-dot wait"></span></span>
+      <input id="search" type="search" inputmode="search" autocomplete="off" placeholder="חיפוש רחוב, עיר, מקלט…" />
+      <a href="tel:104" class="hotline" aria-label="חיוג לפיקוד העורף">104</a>
+    </div>
+  </div>
+  <div id="offlineBar" class="offline-bar hidden">📴 אופליין — נתונים שמורים</div>
+</div>
+
+<!-- שכבה תחתונה: פעולה + כרטיסים -->
+<section class="bottom-ui">
+  <button id="findBtn" class="b-locate" type="button"><span>📍</span><span id="findTx">קרוב אליי</span></button>
+  <p id="countLine" class="count-line">טוען מקלטים…</p>
+  <div id="carousel" class="carousel">
+    <div class="c-card skel"></div>
+    <div class="c-card skel"></div>
+  </div>
+  <p class="tiles-credit">© Esri · HERE · Garmin · OpenStreetMap</p>
+</section>
+
+<!-- שיט פרטים -->
+<div id="sheet" class="hidden sheet" role="dialog" aria-modal="true">
+  <div id="sheetBg" class="sheet-bg"></div>
+  <div id="sheetCard" class="sheet-card">
+    <div class="grabber"><span></span></div>
+    <div id="sheetBody" class="sheet-body"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="./app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloaded) return;
+    reloaded = true;
+    location.reload();
+  });
+}
+</script>
+</body>
+</html>
