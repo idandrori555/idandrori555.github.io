@@ -1,0 +1,1559 @@
+<!doctype html>
+<!--
+  NOTEBOOK (milestone 1, mobile-first). One file, no build step.
+
+  STORED LOCALLY (IndexedDB, this browser only): subjects, notebooks, lessons,
+  compressed photos, transcripts, summaries, pending analysis jobs, settings,
+  and your Gemini API key.
+
+  SENT TO GOOGLE GEMINI API: each photo you analyze (compressed JPEG) plus the
+  subject name. Nothing else leaves the browser.
+
+  HOW TO DELETE EVERYTHING: Settings > Reset app, or clear this site's data in
+  the browser. Export a backup first if you want to keep anything.
+
+  SECURITY: the key is kept in IndexedDB and is readable by anyone with access
+  to this browser profile or the page's developer tools. Restrict the key in
+  Google AI Studio and do not publish this file with a key in it.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F4F0E6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
+<title>Notebook — study from the board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,500;9..144,0,600;9..144,0,700;9..144,1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: { extend: {
+      fontFamily: {
+        sans: ['Inter','-apple-system','BlinkMacSystemFont','system-ui','sans-serif'],
+        serif: ['Fraunces','Georgia','serif'],
+      },
+      colors: {
+        paper: '#F4F0E6',
+        cream: '#FFFEFB',
+        ink: '#1B1917',
+        moss: { 950:'#122B25', 900:'#1A3C34', 700:'#2A5A4D', 100:'#DDE9E2', 50:'#EFF5F1' },
+        clay: { 600:'#D34E2C', 500:'#E85D3A', 100:'#FDE9E1', 50:'#FFF3ED' },
+        sand: '#E8E1D3',
+        night: { 950:'#121110', 900:'#1C1B19', 800:'#262422' }
+      },
+      boxShadow: {
+        soft: '0 2px 16px -8px rgba(27,25,23,.20)',
+        lift: '0 12px 32px -12px rgba(27,25,23,.28)',
+        fab: '0 10px 24px -6px rgba(232,93,58,.55)',
+      }
+    } }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js"></script>
+<style>
+  html { -webkit-tap-highlight-color: transparent; }
+  body { overscroll-behavior-y: none; text-rendering: optimizeLegibility; }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:
+      radial-gradient(700px 320px at 15% -60px, rgba(232,93,58,.10), transparent 60%),
+      radial-gradient(800px 380px at 95% 0px, rgba(26,60,52,.10), transparent 60%);
+  }
+  .dark body::before, .dark::before{ }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+  .grain{
+    background-image: radial-gradient(rgba(27,25,23,.07) 1px, transparent 1px);
+    background-size: 14px 14px;
+  }
+  .dark .grain{ background-image: radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px); }
+  .shimmer { background: linear-gradient(90deg, transparent, rgba(148,163,184,.22), transparent); background-size: 200% 100%; animation: sh 1.3s infinite; }
+  @keyframes sh { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+  @keyframes up { from { transform: translateY(26px); opacity: 0 } to { transform: none; opacity: 1 } }
+  @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes pop { 0%{transform:scale(.96);opacity:0} 100%{transform:scale(1);opacity:1} }
+  .anim-up { animation: up .30s cubic-bezier(.2,.9,.25,1) }
+  .anim-fade { animation: fade .18s ease-out }
+  .anim-pop { animation: pop .22s cubic-bezier(.2,.9,.25,1) }
+  .press { transition: transform .14s ease, filter .14s ease } .press:active { transform: scale(.97) }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  :focus-visible { outline: 2.5px solid #E85D3A; outline-offset: 2px; border-radius: 14px; }
+  input[type="date"]{ min-height:54px; }
+  .line-clamp-2{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  /* dock — clean equal tabs, no overlap */
+  #nav-bar{ height:72px; }
+  /* keep content clear of dock + floating action pills on all screens */
+  #app{ padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  @media (min-width: 768px){ #app{ padding-bottom: 120px; } }
+  .docklink{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:3px; min-height:60px; min-width:0; border-radius:18px;
+    color: rgba(27,25,23,.55);
+    transition: color .18s ease, background .18s ease, transform .14s ease;
+  }
+  .dark .docklink{ color: rgba(242,238,230,.60); }
+  .docklink:active{ transform: scale(.96); }
+  .docklink .dock-ic{
+    width:52px; height:30px; display:grid; place-items:center; border-radius:999px;
+  }
+  .docklink .dock-label{ font-size:11px; font-weight:600; letter-spacing:.02em; line-height:1; white-space:nowrap; }
+  .docklink[data-on="true"]{ color:#1A3C34; }
+  .dark .docklink[data-on="true"]{ color:#FFFEFB; }
+  .docklink[data-on="true"] .dock-label{ font-weight:800; }
+  .docklink[data-on="true"] .dock-ic{ background:transparent; }
+  .docklink[data-on="false"] .dock-ic{ background:transparent; }
+  .docklink .cap-circle{
+    width:48px; height:48px; border-radius:999px;
+    display:grid; place-items:center;
+    background:#E85D3A; color:#fff;
+    box-shadow: 0 10px 24px -6px rgba(232,93,58,.55);
+    margin-top:0;
+    border:3px solid #FFFEFB;
+  }
+  .dark .docklink .cap-circle{ border-color:#1C1B19; }
+  /* subtle motion: view transitions, staggered entrances, true 3D card flip */
+  @keyframes viewIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .view-enter { animation: viewIn .22s ease-out; }
+  .flip-scene { perspective: 1200px; }
+  .flip-inner { display: grid; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.25,.7,.3,1); }
+  .flip-inner.is-flipped { transform: rotateY(180deg); }
+  .flip-face { grid-area: 1 / 1; backface-visibility: hidden; -webkit-backface-visibility: hidden; min-width: 0; }
+  .flip-back { transform: rotateY(180deg); }
+</style>
+</head>
+<body class="bg-paper dark:bg-night-950 text-ink dark:text-[#F2EEE6] font-sans antialiased min-h-screen">
+
+<!-- ambient top glow for mobile -->
+<div class="fixed inset-x-0 top-0 h-44 pointer-events-none z-0 bg-gradient-to-b from-clay-500/10 via-transparent to-transparent dark:from-white/5"></div>
+
+<main id="app" class="relative z-10 w-full max-w-md md:max-w-2xl lg:max-w-4xl mx-auto min-h-screen"></main>
+
+<!-- Floating dock nav (mobile-first, responsive) -->
+<nav id="nav" aria-label="Primary" class="fixed bottom-0 inset-x-0 z-40 px-3 md:px-6 pb-[max(env(safe-area-inset-bottom),12px)] pt-2 pointer-events-none">
+  <div id="nav-bar" class="pointer-events-auto mx-auto w-full max-w-md md:max-w-xl rounded-[24px] bg-cream/95 dark:bg-night-900/95 backdrop-blur-xl shadow-lift border border-sand dark:border-white/10 px-1.5 grid grid-cols-4 items-stretch">
+    <a href="#/" data-r="#/" data-on="false" class="docklink">
+      <span class="dock-ic">
+        <svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      </span><span class="dock-label">Home</span></a>
+    <a href="#/search" data-r="#/search" data-on="false" class="docklink">
+      <span class="dock-ic">
+        <svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      </span><span class="dock-label">Search</span></a>
+    <a href="#/settings" data-r="#/settings" data-on="false" class="docklink">
+      <span class="dock-ic">
+        <svg viewBox="0 0 24 24" class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>
+      </span><span class="dock-label">Settings</span></a>
+    <a href="#/capture" data-r="#/capture" data-on="false" class="docklink" aria-label="Capture a lesson">
+      <span class="cap-circle">
+        <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </span><span class="dock-label">Capture</span></a>
+  </div>
+</nav>
+
+<div id="toast" class="fixed bottom-[104px] start-1/2 -translate-x-1/2 z-[70] w-max max-w-[calc(100vw-48px)] rounded-full bg-ink dark:bg-cream text-paper dark:text-ink text-[14px] font-medium px-5 py-3 shadow-lift opacity-0 transition-opacity duration-200 pointer-events-none text-center border border-white/10 break-words" role="status" aria-live="polite"></div>
+
+<script type="module">
+/* ============================================================
+   1. DATA LAYER (IndexedDB via Dexie)
+   ============================================================ */
+const GEMINI_MODEL = 'gemini-3-flash-preview'; // Change here if Google retires the model.
+const COLORS = ['#1A3C34', '#E85D3A', '#7C5CBF', '#0E7AA5', '#C08A00', '#D6456E', '#2A9D8F', '#4A5568'];
+
+const db = new Dexie('notebook-app');
+db.version(1).stores({
+  subjects: 'id,order,createdAt',
+  notebooks: 'id,subjectId,createdAt',
+  lessons: 'id,notebookId,date,status,createdAt',
+  pages: 'id,lessonId,order,createdAt',
+  summaryBlocks: 'id,lessonId,sourcePageId,order',
+  settings: 'key',
+  pendingJobs: 'id,pageId,createdAt'
+});
+db.version(2).stores({
+  learnSets: 'id,lessonId,createdAt'
+});
+
+const uid = () => {
+  try {
+    if (crypto?.randomUUID) return crypto.randomUUID();
+    if (crypto?.getRandomValues) {
+      const b = crypto.getRandomValues(new Uint8Array(16));
+      b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+      const h = [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+      return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+    }
+  } catch {}
+  return `id-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e12).toString(36)}`;
+};
+const now = () => Date.now();
+const today = () => new Date().toISOString().slice(0, 10);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = d => new Date(d + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+const fmtLong = d => new Date(d + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+const greeting = () => { const h = new Date().getHours(); if (h < 12) return 'Good morning'; if (h < 18) return 'Good afternoon'; return 'Good evening'; };
+
+const getSetting = async (k, d = null) => { const r = await db.settings.get(k); return r ? r.value : d; };
+const setSetting = (k, v) => db.settings.put({ key: k, value: v });
+
+async function removeLessons(lessonIds) {
+  if (!lessonIds.length) return;
+  const pageIds = await db.pages.where('lessonId').anyOf(lessonIds).primaryKeys();
+  await db.transaction('rw', [db.lessons, db.pages, db.summaryBlocks, db.pendingJobs, db.learnSets], async () => {
+    await db.pendingJobs.bulkDelete(pageIds);
+    await db.summaryBlocks.where('lessonId').anyOf(lessonIds).delete();
+    await db.pages.where('lessonId').anyOf(lessonIds).delete();
+    await db.learnSets.where('lessonId').anyOf(lessonIds).delete();
+    await db.lessons.bulkDelete(lessonIds);
+  });
+}
+
+async function pendingLessonIds() {
+  const jobs = await db.pendingJobs.toArray();
+  if (!jobs.length) return new Set();
+  const pages = await db.pages.bulkGet(jobs.map(j => j.pageId));
+  return new Set(pages.filter(Boolean).map(p => p.lessonId));
+}
+
+/* ============================================================
+   2. IMAGES
+   ============================================================ */
+async function compress(file, max, quality) {
+  let img;
+  try { img = await createImageBitmap(file); }
+  catch { throw { userMessage: "This photo format isn't supported. Try a JPEG or PNG." }; }
+  const s = Math.min(1, max / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+  if (!c.width || !c.height) throw { userMessage: "That photo couldn't be processed. Try a different one." };
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', quality));
+  if (!blob) throw { userMessage: "That photo couldn't be processed. Try a different one." };
+  return blob;
+}
+const blobToDataURL = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(b); });
+const blobToB64 = async b => (await blobToDataURL(b)).split(',')[1];
+
+/* ============================================================
+   3. AI (Gemini). The key is never logged.
+   ============================================================ */
+const SYSTEM = `You read photos of classroom whiteboards and handouts.
+Rules:
+- Use only content visible in the photo. Never add facts that are not on the board.
+- If text is unreadable, put it in "uncertain" instead of guessing.
+- Region coordinates are fractions of the image from 0 to 1.
+- Return JSON only.`;
+
+const BLOCK_TYPES = ['heading', 'definition', 'formula', 'point', 'example'];
+const SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    title: { type: 'STRING' },
+    transcript: { type: 'STRING' },
+    summary: { type: 'STRING' },
+    subjectGuess: { type: 'STRING' },
+    confidence: { type: 'NUMBER' },
+    blocks: { type: 'ARRAY', items: { type: 'OBJECT', properties: {
+      type: { type: 'STRING', enum: BLOCK_TYPES },
+      text: { type: 'STRING' },
+      region: { type: 'OBJECT', nullable: true, properties: { x: { type: 'NUMBER' }, y: { type: 'NUMBER' }, w: { type: 'NUMBER' }, h: { type: 'NUMBER' } } }
+    }, required: ['type', 'text'] } },
+    uncertain: { type: 'ARRAY', items: { type: 'OBJECT', properties: { text: { type: 'STRING' }, reason: { type: 'STRING' } }, required: ['text', 'reason'] } }
+  },
+  required: ['title', 'transcript', 'blocks', 'summary', 'uncertain', 'subjectGuess', 'confidence']
+};
+
+function validate(o) {
+  const ok = o && typeof o.title === 'string' && typeof o.summary === 'string' && typeof o.transcript === 'string'
+    && Array.isArray(o.blocks) && Array.isArray(o.uncertain)
+    && o.blocks.every(b => BLOCK_TYPES.includes(b.type) && typeof b.text === 'string');
+  if (!ok) throw new Error('BAD_SHAPE');
+  return { title: o.title, transcript: o.transcript, summary: o.summary, blocks: o.blocks, uncertain: o.uncertain };
+}
+
+async function analyzeImage(blob, subjectName) {
+  const key = (await getSetting('geminiApiKey') || '').trim();
+  if (!key) throw new Error('NO_KEY');
+  if (!blob) throw { userMessage: "That photo couldn't be processed. Try a different one." };
+  const body = {
+    systemInstruction: { parts: [{ text: SYSTEM }] },
+    contents: [{ role: 'user', parts: [
+      { inline_data: { mime_type: 'image/jpeg', data: await blobToB64(blob) } },
+      { text: `Subject: ${subjectName || 'unknown'}. Analyze this photo.` }
+    ] }],
+    generationConfig: { responseMimeType: 'application/json', responseSchema: SCHEMA }
+  };
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(key)}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  const text = (data.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
+  let parsed;
+  try { parsed = JSON.parse(text.replace(/```json|```/g, '').trim()); }
+  catch { throw new Error('BAD_JSON'); }
+  return validate(parsed);
+}
+
+const RETRYABLE = m => m === 'BAD_SHAPE' || m === 'BAD_JSON' || m === 'HTTP 429' || /^HTTP 5/.test(m);
+
+function friendlyError(m) {
+  if (m === 'NO_KEY') return 'Add your Gemini key in Settings to read this photo. Your lesson is saved.';
+  if (m === 'HTTP 400' || m === 'HTTP 403') return 'Gemini rejected the key or request. Check your key in Settings.';
+  if (m === 'HTTP 429' || /^HTTP 5/.test(m)) return 'Gemini is busy right now. We will retry automatically.';
+  return "Couldn't read this photo. Try again closer to the board, with better light?";
+}
+
+async function analyzePage(pageId) {
+  const page = await db.pages.get(pageId);
+  const job = await db.pendingJobs.get(pageId);
+  if (!page) { await db.pendingJobs.delete(pageId); return; }
+  const lesson = await db.lessons.get(page.lessonId);
+  if (!lesson) { await db.pendingJobs.delete(pageId); return; }
+  const nb = await db.notebooks.get(lesson.notebookId);
+  const subj = nb && await db.subjects.get(nb.subjectId);
+
+  let result = null, err = null;
+  for (let i = 0; i < 2 && !result; i++) {
+    try { result = await analyzeImage(page.imageBlob, subj?.name); }
+    catch (e) { err = e; if (!(RETRYABLE(e.message) || e instanceof TypeError)) break; }
+  }
+  if (result) {
+    await saveResult(page, lesson, result);
+    await db.pendingJobs.delete(pageId);
+    return;
+  }
+  const m = err?.message || '';
+  if (m === 'NO_KEY' || err instanceof TypeError || RETRYABLE(m)) {
+    await db.pendingJobs.put({ id: pageId, pageId, attempts: (job?.attempts || 0) + 1, lastError: m || 'NETWORK', createdAt: job?.createdAt || now() });
+    // Don't leave the lesson saying "Reading…" with no explanation.
+    const reason = m === 'NO_KEY' ? friendlyError(m)
+      : (err instanceof TypeError && !lesson.reason ? 'Waiting for a connection. Reading resumes automatically.' : undefined);
+    if (reason) await db.lessons.update(lesson.id, { reason, updatedAt: now() });
+    return;
+  }
+  await db.pendingJobs.delete(pageId);
+  await db.lessons.update(lesson.id, { status: 'needs_review', reason: friendlyError(m), updatedAt: now() });
+}
+
+async function saveResult(page, lesson, r) {
+  await db.transaction('rw', [db.pages, db.summaryBlocks, db.lessons], async () => {
+    await db.summaryBlocks.where('sourcePageId').equals(page.id).delete();
+    await db.summaryBlocks.bulkAdd(r.blocks.map((b, i) => ({
+      id: uid(), lessonId: lesson.id, sourcePageId: page.id, type: b.type, text: b.text,
+      sourceRegion: b.region || null, order: i
+    })));
+    await db.pages.update(page.id, { transcript: r.transcript, summary: r.summary, uncertain: r.uncertain });
+    const patch = { status: 'ready', reason: null, updatedAt: now() };
+    if (!lesson.title || lesson.title === 'Untitled lesson') patch.title = r.title || lesson.title;
+    await db.lessons.update(lesson.id, patch);
+  });
+}
+
+/* ============================================================
+   3b. LEARN (NotebookLM-style study guide, generated per lesson)
+   ============================================================ */
+const LEARN_SYSTEM = `You are a warm, patient tutor teaching a student from their class notes.
+Rules:
+- Use only the lesson content given. Never add facts that are not in it.
+- Explain simply, in short sections, as if speaking to the student.
+- Flashcards: term or question on front, one short explanation on back.
+- Quiz: each question has exactly 4 options with exactly one correct answer.
+- Return JSON only.`;
+
+const LEARN_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    teach: { type: 'STRING' },
+    cards: { type: 'ARRAY', items: { type: 'OBJECT', properties: {
+      front: { type: 'STRING' }, back: { type: 'STRING' }
+    }, required: ['front', 'back'] } },
+    quiz: { type: 'ARRAY', items: { type: 'OBJECT', properties: {
+      question: { type: 'STRING' },
+      options: { type: 'ARRAY', items: { type: 'STRING' } },
+      answer: { type: 'NUMBER' }
+    }, required: ['question', 'options', 'answer'] } }
+  },
+  required: ['teach', 'cards', 'quiz']
+};
+
+function validateLearn(o) {
+  const okCard = c => c && typeof c.front === 'string' && typeof c.back === 'string' && (c.front + c.back).trim();
+  const okQ = q => q && typeof q.question === 'string' && Array.isArray(q.options)
+    && q.options.length === 4 && q.options.every(t => typeof t === 'string')
+    && Number.isInteger(q.answer) && q.answer >= 0 && q.answer < 4;
+  if (!o || typeof o.teach !== 'string' || !o.teach.trim() || !Array.isArray(o.cards) || !Array.isArray(o.quiz)) throw new Error('BAD_SHAPE');
+  const cards = o.cards.filter(okCard).slice(0, 12).map(c => ({ front: c.front.trim(), back: c.back.trim() }));
+  const quiz = o.quiz.filter(okQ).slice(0, 6).map(q => ({ question: q.question.trim(), options: q.options.map(t => t.trim()), answer: q.answer }));
+  if (!cards.length && !quiz.length) throw new Error('BAD_SHAPE');
+  return { teach: o.teach.trim(), cards, quiz };
+}
+
+function buildLearnContent(pages, blocks) {
+  const parts = pages.map((p, i) => {
+    const bs = blocks.filter(b => b.sourcePageId === p.id).map(b => `- ${b.text}`).join('\n');
+    return [`Photo ${i + 1} transcript:`, p.transcript || '(none)',
+      `Photo ${i + 1} summary:`, p.summary || '(none)',
+      bs ? `Photo ${i + 1} notes:\n${bs}` : ''].filter(Boolean).join('\n');
+  });
+  return parts.join('\n\n').slice(0, 12000);
+}
+
+async function generateLearn(lesson, content) {
+  const key = (await getSetting('geminiApiKey') || '').trim();
+  if (!key) throw new Error('NO_KEY');
+  const nb = await db.notebooks.get(lesson.notebookId);
+  const subj = nb && await db.subjects.get(nb.subjectId);
+  const body = {
+    systemInstruction: { parts: [{ text: LEARN_SYSTEM }] },
+    contents: [{ role: 'user', parts: [{ text:
+      `Subject: ${subj?.name || 'unknown'}\nLesson: ${lesson.title}\n\nLesson content:\n${content}\n\nTeach this lesson, then make up to 12 flashcards and up to 6 quiz questions.` }] }],
+    generationConfig: { responseMimeType: 'application/json', responseSchema: LEARN_SCHEMA }
+  };
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(key)}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  const text = (data.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
+  let parsed;
+  try { parsed = JSON.parse(text.replace(/```json|```/g, '').trim()); }
+  catch { throw new Error('BAD_JSON'); }
+  return validateLearn(parsed);
+}
+
+let busy = false;
+async function processPending() {
+  if (busy) return console.debug('[notebook] queue: already running');
+  if (!navigator.onLine) return console.debug('[notebook] queue: offline, waiting for connection');
+  if (!((await getSetting('geminiApiKey') || '').trim())) return console.debug('[notebook] queue: no API key saved');
+  busy = true;
+  let did = false;
+  try {
+    const jobs = await db.pendingJobs.orderBy('createdAt').toArray();
+    console.debug('[notebook] queue: processing', jobs.length, 'job(s)');
+    for (const j of jobs) {
+      if (!navigator.onLine) break;
+      try { await analyzePage(j.pageId); }
+      catch (e) { console.debug('[notebook] queue: job failed', j.pageId, e?.message || e); }
+      did = true;
+    }
+  } finally { busy = false; }
+  if (did) route();
+}
+
+/* ============================================================
+   4. UI KIT — warm editorial system, mobile-first
+   ============================================================ */
+const $app = document.getElementById('app');
+let keepNextScroll = false;
+const keepScroll = () => { keepNextScroll = true; };
+const put = html => {
+  const animate = !keepNextScroll;
+  const y = keepNextScroll ? window.scrollY : 0;
+  keepNextScroll = false;
+  $app.innerHTML = html;
+  bindGestures();
+  if (animate) {
+    $app.classList.remove('view-enter');
+    void $app.offsetWidth;
+    $app.classList.add('view-enter');
+  }
+  window.scrollTo({ top: y });
+};
+const go = h => { if (location.hash === h) route(); else location.hash = h; };
+const ic = (d, cls = 'w-5 h-5') => `<svg viewBox="0 0 24 24" class="${cls}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const I = {
+  back: ic('<path d="M15 18l-6-6 6-6"/>', 'w-5 h-5'),
+  more: `<svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>`,
+  search: ic('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>'),
+  chevron: ic('<path d="M9 6l6 6-6 6"/>', 'w-5 h-5'),
+  camera: ic('<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>', 'w-7 h-7'),
+  image: ic('<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/>'),
+  warn: ic('<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.5h0"/>', 'w-4 h-4'),
+  book: ic('<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/>', 'w-7 h-7'),
+  pen: ic('<path d="M4 20h4L19 9l-4-4L4 16z"/>', 'w-6 h-6'),
+  spark: ic('<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>', 'w-6 h-6'),
+  check: ic('<path d="M5 13l4 4L19 7"/>', 'w-4 h-4'),
+};
+
+function setActiveNav(path) {
+  document.querySelectorAll('#nav a').forEach(a => {
+    const r = a.dataset.r;
+    if (!r) return;
+    const on = r === '#/' ? path === '#/' : path.startsWith(r);
+    a.dataset.on = on ? 'true' : 'false';
+    if (on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+  });
+}
+
+const primary = 'min-h-[54px] px-6 rounded-[18px] bg-moss-900 dark:bg-cream text-white dark:text-ink text-[16px] font-semibold press inline-flex items-center justify-center gap-2 shadow-soft active:brightness-110';
+const primaryCoral = 'min-h-[54px] px-6 rounded-[18px] bg-clay-500 text-white text-[16px] font-semibold press inline-flex items-center justify-center gap-2 shadow-fab';
+const secondary = 'min-h-[54px] px-5 rounded-[18px] bg-cream dark:bg-night-800 border border-sand dark:border-white/10 text-[15px] font-semibold press inline-flex items-center justify-center gap-2 shadow-soft';
+const ghostBtn = 'min-h-[44px] px-4 rounded-full text-[14px] font-semibold press inline-flex items-center justify-center gap-1.5';
+const inputCls = 'w-full min-h-[54px] rounded-[18px] bg-cream dark:bg-night-800 border border-sand dark:border-white/10 px-4 text-[16px] shadow-soft outline-none focus:border-moss-700 focus:ring-4 focus:ring-moss-900/10 dark:focus:ring-white/10 placeholder:text-ink/35 dark:placeholder:text-white/30';
+const card = 'rounded-[24px] bg-cream dark:bg-night-900 border border-sand/90 dark:border-white/10 shadow-soft';
+const cardPad = 'rounded-[24px] bg-cream dark:bg-night-900 border border-sand/90 dark:border-white/10 shadow-soft p-5';
+
+const sectionHead = (label, action='') => `<div class="px-5 md:px-2 mt-8 mb-3 flex items-end justify-between gap-3 min-w-0">
+  <h2 class="min-w-0 flex-1 font-serif text-[20px] md:text-[22px] font-semibold tracking-tight truncate">${esc(label)}</h2>${action}</div>`;
+
+const brandMark = `<span class="w-10 h-10 rounded-2xl bg-ink dark:bg-cream text-paper dark:text-ink grid place-items-center font-serif font-bold text-[20px] shadow-soft shrink-0">N</span>`;
+
+function heroHeader({ eyebrowText, title, statsHtml='' }) {
+  return `<header class="px-5 md:px-2 pt-[max(env(safe-area-inset-top),16px)]">
+    <div class="flex items-center gap-3">
+      ${brandMark}
+      <div class="flex-1 min-w-0">
+        <p class="text-[12px] font-bold uppercase tracking-[0.14em] text-ink/50 dark:text-white/50">${esc(eyebrowText)}</p>
+        <h1 class="font-serif text-[32px] md:text-[40px] leading-[1.05] font-semibold tracking-tight -mt-0.5">${title}</h1>
+      </div>
+      <a href="#/search" aria-label="Search" class="w-11 h-11 shrink-0 rounded-full bg-cream dark:bg-night-900 border border-sand dark:border-white/10 shadow-soft grid place-items-center press">${I.search}</a>
+    </div>
+    ${statsHtml}
+  </header>`;
+}
+
+const topBar = (title, back, right = '') => `<div class="sticky top-0 z-30 bg-paper/85 dark:bg-night-950/85 backdrop-blur-xl pt-[env(safe-area-inset-top)] border-b border-ink/[.06] dark:border-white/[.06]">
+  <div class="flex items-center gap-2 h-[60px] px-3 md:px-2 max-w-md md:max-w-2xl lg:max-w-4xl mx-auto">
+    ${back ? `<a href="${back}" class="w-10 h-10 grid place-items-center rounded-full bg-cream dark:bg-night-900 border border-sand dark:border-white/10 shadow-soft press shrink-0" aria-label="Back">${I.back}</a>` : '<span class="w-10 shrink-0"></span>'}
+    <h1 class="flex-1 min-w-0 text-center font-serif font-semibold truncate text-[19px] tracking-tight px-1">${esc(title)}</h1>
+    ${right || '<span class="w-10 shrink-0"></span>'}
+  </div></div>`;
+const menuBtn = (kind, id, label) => `<button data-act="menu" data-kind="${kind}" data-id="${id}" class="w-10 h-10 grid place-items-center rounded-full bg-cream dark:bg-night-900 border border-sand dark:border-white/10 shadow-soft press shrink-0" aria-label="${esc(label)}">${I.more}</button>`;
+
+const empty = (icon, title, text = '', action = '') => `<div class="w-full rounded-[28px] border-2 border-dashed border-ink/15 dark:border-white/15 bg-cream/60 dark:bg-night-900/60 px-6 py-10 text-center">
+  <div class="mx-auto w-14 h-14 rounded-2xl bg-moss-900/[.07] dark:bg-white/10 grid place-items-center text-moss-900 dark:text-cream">${icon}</div>
+  <p class="mt-3 font-serif font-semibold text-[20px] tracking-tight text-balance">${esc(title)}</p>${text ? `<p class="mt-1.5 text-ink/60 dark:text-white/60 text-[15px] leading-relaxed max-w-[34ch] mx-auto text-balance">${esc(text)}</p>` : ''}${action ? `<div class="pt-3">${action}</div>`:''}</div>`;
+
+const chip = ({ act, id, label, sel, color }) => `<button type="button" data-act="${act}" data-id="${id}"
+  class="shrink-0 min-h-[46px] pl-3 pr-4 rounded-full text-[15px] font-semibold press border flex items-center gap-2 ${sel ? 'bg-ink dark:bg-cream text-paper dark:text-ink border-ink dark:border-cream shadow-soft' : 'bg-cream dark:bg-night-900 text-ink/80 dark:text-white/80 border-sand dark:border-white/10 shadow-soft'}"
+  aria-pressed="${!!sel}"><span class="w-3 h-3 rounded-full shrink-0" style="background:${color || '#1A3C34'}"></span>${esc(label)}</button>`;
+
+const skeleton = () => `<div class="px-5 md:px-2 grid grid-cols-2 lg:grid-cols-3 gap-3" aria-busy="true">${[1,2,3,4,5,6].map(() => `<div class="rounded-[24px] overflow-hidden bg-cream dark:bg-night-900 border border-sand dark:border-white/10"><div class="h-24 shimmer"></div><div class="p-4 space-y-2"><div class="h-3 rounded-full bg-ink/10 dark:bg-white/10 w-3/4"></div><div class="h-3 rounded-full bg-ink/10 dark:bg-white/10 w-1/2"></div></div></div>`).join('')}</div>`;
+
+const toastTimer = { t: null };
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.remove('opacity-0');
+  clearTimeout(toastTimer.t);
+  toastTimer.t = setTimeout(() => t.classList.add('opacity-0'), 2600);
+}
+
+/* tiny haptics + celebration — all guarded, all subtle */
+const buzz = p => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
+function confetti() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const colors = ['#E85D3A', '#1A3C34', '#EAB308', '#10B981', '#7C5CBF', '#FFFEFB'];
+  const layer = document.createElement('div');
+  layer.className = 'fixed inset-0 z-[80] pointer-events-none overflow-hidden';
+  document.body.append(layer);
+  const cx = innerWidth / 2;
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('span');
+    const s = 6 + Math.random() * 8;
+    p.style.cssText = `position:absolute;left:${cx}px;top:30%;width:${s}px;height:${s * (Math.random() > .5 ? 1 : .45)}px;border-radius:${Math.random() > .5 ? '50%' : '2px'};background:${colors[i % colors.length]}`;
+    layer.append(p);
+    const ang = Math.random() * Math.PI * 2, v = 120 + Math.random() * 230;
+    p.animate([
+      { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+      { transform: `translate(${Math.cos(ang) * v}px,${Math.sin(ang) * v + 170}px) rotate(${Math.random() * 720 - 360}deg)`, opacity: 0 }
+    ], { duration: 900 + Math.random() * 700, easing: 'cubic-bezier(.2,.7,.3,1)' }).onfinish = () => p.remove();
+  }
+  setTimeout(() => layer.remove(), 2400);
+}
+
+/* swipe gestures (touch only) + photo position dots. Bound fresh after every render. */
+let suppressClickUntil = 0;
+const suppressNextClick = () => { suppressClickUntil = Date.now() + 400; };
+const TAB_ORDER = ['summary', 'pages', 'transcript', 'learn'];
+function handleSwipe(kind, dir) {
+  if (kind === 'tabs') {
+    const i = TAB_ORDER.indexOf(lessonTab);
+    const n = i + (dir === 'left' ? 1 : -1);
+    if (n < 0 || n >= TAB_ORDER.length || n === i) return;
+    lessonTab = TAB_ORDER[n]; buzz(8); keepScroll(); route();
+  } else if (kind === 'cards') {
+    A.learnCardNav({ d: dir === 'left' ? 1 : -1 });
+  }
+}
+function bindGestures() {
+  document.querySelectorAll('[data-swipe]').forEach(el => {
+    let x0 = 0, y0 = 0;
+    el.addEventListener('touchstart', e => {
+      const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY;
+    }, { passive: true });
+    el.addEventListener('touchend', e => {
+      if (e.target.closest && (e.target.closest('[data-nogesture]') || e.target.closest('[data-swipe]') !== el)) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - x0, dy = t.clientY - y0;
+      if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+      if (el.dataset.swipe === 'cards') suppressNextClick();
+      handleSwipe(el.dataset.swipe, dx < 0 ? 'left' : 'right');
+    }, { passive: true });
+  });
+  document.querySelectorAll('[data-pages-rail]').forEach(rail => {
+    const dots = rail.parentElement?.querySelectorAll('[data-pages-dots] > span');
+    if (!dots?.length) return;
+    const paint = () => {
+      const max = rail.scrollWidth - rail.clientWidth;
+      const p = max > 0 ? rail.scrollLeft / max : 0;
+      const idx = Math.round(p * (dots.length - 1));
+      dots.forEach((d, di) => {
+        const on = di === idx;
+        d.style.width = on ? '20px' : '6px';
+        d.style.opacity = on ? '1' : '.25';
+      });
+    };
+    rail.addEventListener('scroll', paint, { passive: true });
+    paint();
+  });
+}
+
+const urls = [];
+const objUrl = b => { const u = URL.createObjectURL(b); urls.push(u); return u; };
+const revokeUrls = () => { urls.splice(0).forEach(u => URL.revokeObjectURL(u)); };
+
+function statusInfo(l, pending) {
+  if (pending) return ['To read', 'bg-amber-500', 'bg-amber-500/12 text-amber-700 dark:text-amber-300 border-amber-500/25'];
+  if (l.status === 'ready') return ['Ready', 'bg-emerald-500', 'bg-emerald-500/12 text-emerald-700 dark:text-emerald-300 border-emerald-500/25'];
+  if (l.status === 'needs_review') return ['Needs review', 'bg-clay-500', 'bg-clay-500/12 text-clay-600 dark:text-orange-300 border-clay-500/25'];
+  return ['Reading…', 'bg-moss-700 animate-pulse', 'bg-moss-900/10 text-moss-700 dark:text-emerald-200 border-moss-900/20'];
+}
+const statusPill = (l, pending) => { const [t, dot, cls] = statusInfo(l, pending); return `<span class="inline-flex items-center gap-1.5 text-[12.5px] font-semibold px-2.5 py-1 rounded-full border ${cls}"><span class="w-1.5 h-1.5 rounded-full ${dot}"></span>${t}</span>`; };
+
+/* Bottom sheet: the single overlay pattern used everywhere. */
+function sheet(html, resolve, bind) {
+  const wrap = document.createElement('div');
+  wrap.className = 'fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-ink/40 backdrop-blur-[2px] anim-fade p-0 sm:p-6';
+  wrap.innerHTML = `<div class="anim-up w-full max-w-md max-h-[92dvh] overflow-y-auto overscroll-contain bg-paper dark:bg-night-900 rounded-t-[28px] sm:rounded-[28px] px-5 pt-2.5 pb-[calc(env(safe-area-inset-bottom)+20px)] shadow-lift border border-ink/10 dark:border-white/10" role="dialog" aria-modal="true">
+    <div class="mx-auto mb-3 mt-1 h-1.5 w-11 rounded-full bg-ink/15 dark:bg-white/20"></div>${html}</div>`;
+  document.body.append(wrap);
+  const close = v => { wrap.remove(); resolve(v); };
+  wrap.addEventListener('click', e => {
+    if (e.target === wrap) return close(null);
+    const c = e.target.closest('[data-close]');
+    if (c) close(c.dataset.close || null);
+  });
+  wrap.addEventListener('keydown', e => { if (e.key === 'Escape') close(null); });
+  bind?.(wrap, close);
+  setTimeout(()=>wrap.querySelector('input,textarea')?.focus(), 60);
+}
+
+function formSheet({ title, message = '', fields = [], ok = 'Save', danger = false }) {
+  return new Promise(resolve => sheet(`
+    <h2 class="font-serif text-[24px] font-semibold tracking-tight">${esc(title)}</h2>
+    ${message ? `<p class="mt-1.5 text-[15px] leading-relaxed text-ink/60 dark:text-white/60">${esc(message)}</p>` : ''}
+    <form class="mt-5 space-y-3">
+      ${fields.map(f => `<label class="block text-start"><span class="block mb-1.5 px-1 text-[13px] font-semibold text-ink/55 dark:text-white/55">${esc(f.label)}</span>
+        ${f.multi
+          ? `<textarea name="${f.name}" rows="4" ${f.required ? 'required' : ''} class="${inputCls} py-3.5 !bg-cream dark:!bg-night-800">${esc(f.value ?? '')}</textarea>`
+          : `<input name="${f.name}" value="${esc(f.value ?? '')}" ${f.required ? 'required' : ''} placeholder="${esc(f.placeholder || '')}" class="${inputCls} !bg-cream dark:!bg-night-800">`}
+      </label>`).join('')}
+      <div class="grid grid-cols-2 gap-3 pt-2">
+        <button type="button" data-close class="${secondary}">Cancel</button>
+        <button class="${danger ? primaryCoral : primary}">${esc(ok)}</button>
+      </div></form>`, resolve, (wrap, close) => {
+    wrap.querySelector('form').onsubmit = e => { e.preventDefault(); close(Object.fromEntries(new FormData(e.target))); };
+  }));
+}
+
+function pick(title, items) {
+  return new Promise(resolve => sheet(`
+    <p class="text-[13px] font-semibold uppercase tracking-[0.12em] text-ink/50 dark:text-white/50 text-center mb-3">${esc(title)}</p>
+    <div class="rounded-[22px] overflow-hidden bg-cream dark:bg-night-800 border border-sand dark:border-white/10 divide-y divide-ink/[.06] dark:divide-white/[.07]">
+      ${items.map(it => `<button data-close="${it.v}" class="w-full min-h-[58px] text-[16px] font-semibold ${it.danger ? 'text-clay-600' : 'text-moss-900 dark:text-cream'} press">${esc(it.label)}</button>`).join('')}
+    </div>
+    <button data-close class="${secondary} w-full mt-3">Cancel</button>`, resolve));
+}
+
+function applyTheme(t) {
+  const dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.classList.toggle('dark', dark);
+}
+
+function recovery(err) {
+  const quota = err?.name === 'QuotaExceededError' ? ' Your browser storage is full.' : '';
+  put(topBar('Something went wrong') + `<div class="px-5 md:px-2 mt-6 space-y-4 max-w-lg mx-auto">
+    <div class="${cardPad} space-y-2"><p class="font-serif font-semibold text-[20px]">Notebook couldn't open your saved data.${quota}</p>
+    <p class="text-ink/60 dark:text-white/60 text-[15px]">Export a backup if you can, then reset the app to start fresh.</p></div>
+    <button class="${primary} w-full" data-act="export">Export backup</button>
+    <button class="${secondary} w-full !text-clay-600" data-act="reset">Reset app</button></div>`);
+}
+
+/* ============================================================
+   5. VIEWS
+   ============================================================ */
+function blockIcon(type){
+  const base = 'w-7 h-7 rounded-xl grid place-items-center shrink-0 text-[13px] font-bold';
+  if (type==='heading') return `<span class="${base} bg-ink text-paper dark:bg-cream dark:text-ink font-serif">H</span>`;
+  if (type==='definition') return `<span class="${base} bg-moss-900 text-white">≡</span>`;
+  if (type==='formula') return `<span class="${base} bg-clay-500 text-white font-mono">ƒ</span>`;
+  if (type==='example') return `<span class="${base} bg-amber-400/90 text-ink">✎</span>`;
+  return `<span class="${base} bg-ink/10 dark:bg-white/15">•</span>`;
+}
+function blockView(b) {
+  let inner;
+  if (b.type === 'heading') inner = `<div class="flex items-start gap-3 min-w-0">${blockIcon(b.type)}<h3 class="min-w-0 flex-1 font-serif text-[21px] font-semibold leading-snug tracking-tight pt-0.5 break-words text-balance">${esc(b.text)}</h3></div>`;
+  else if (b.type === 'definition') inner = `<div class="rounded-[18px] bg-moss-50 dark:bg-emerald-950/30 border border-moss-900/15 dark:border-emerald-200/15 p-4 min-w-0"><div class="flex items-center gap-2 mb-1.5">${blockIcon(b.type)}<p class="text-[11px] uppercase tracking-[0.12em] font-bold text-moss-900 dark:text-emerald-200">Definition</p></div><p class="font-serif text-[17px] leading-relaxed break-words">${esc(b.text)}</p></div>`;
+  else if (b.type === 'formula') inner = `<div class="rounded-[18px] bg-ink dark:bg-black text-paper p-4 overflow-x-auto min-w-0"><div class="flex items-center gap-2 mb-2 opacity-70">${blockIcon(b.type)}<span class="text-[11px] uppercase tracking-[0.12em] font-bold">Formula</span></div><pre class="font-mono text-[14.5px] leading-relaxed whitespace-pre-wrap break-words">${esc(b.text)}</pre></div>`;
+  else if (b.type === 'example') inner = `<div class="flex gap-3 rounded-[18px] bg-amber-100/60 dark:bg-amber-400/10 border border-amber-500/20 p-4 min-w-0">${blockIcon(b.type)}<p class="min-w-0 flex-1 italic text-[15.5px] leading-relaxed text-ink/85 dark:text-white/85 break-words">${esc(b.text)}</p></div>`;
+  else inner = `<div class="flex gap-3 text-[15.5px] leading-relaxed px-0.5 min-w-0"><span class="mt-[9px] w-1.5 h-1.5 rounded-full bg-clay-500 shrink-0"></span><span class="min-w-0 flex-1 break-words">${esc(b.text)}</span></div>`;
+  return `<div class="anim-pop">
+    <div role="button" tabindex="0" data-act="editBlock" data-id="${b.id}" class="cursor-pointer press rounded-[18px]">${inner}</div>
+    ${b.sourceRegion ? `<button data-act="locate" data-id="${b.id}" class="mt-2 inline-flex items-center gap-1.5 text-[13px] font-semibold text-moss-900 dark:text-emerald-200 min-h-[36px] px-2 -ml-2 rounded-full">${I.image} Show on photo</button>` : ''}
+  </div>`;
+}
+
+let lessonTab = 'summary';
+let activeBlock = null;
+let scrollToPage = null;
+let learnMode = 'menu';
+let learnCard = 0;
+let learnFlipped = false;
+let learnAnswers = {};
+let learnOrder = [];
+let learnLock = false;
+let learnLen = 1;
+let learnLoading = false;
+let learnLoadingFor = null;
+let lastLearnLesson = null;
+
+async function learnBody(l) {
+  if (learnLoading && learnLoadingFor === l.id)
+    return `<div class="${cardPad} text-center py-12">
+      <span class="mx-auto block w-11 h-11 rounded-full border-[3px] border-ink/15 border-t-moss-900 dark:border-white/15 dark:border-t-cream animate-spin"></span>
+      <p class="mt-4 font-serif font-semibold text-[19px] tracking-tight">Building your study guide…</p></div>`;
+  const set = await db.learnSets.where('lessonId').equals(l.id).first();
+  if (!set) return empty(I.spark, 'Nothing to study yet', '',
+    `<button data-act="learnGen" data-id="${l.id}" class="${primary} w-full mt-1">Generate study guide</button>`);
+  const backBtn = `<button data-act="learnOpen" data-m="menu" class="${ghostBtn} bg-cream dark:bg-night-900 border border-sand dark:border-white/10 shadow-soft">← Study tools</button>`;
+
+  if (learnMode === 'teach') {
+    return `<div>${backBtn}<article class="${cardPad} mt-3">
+      <p class="whitespace-pre-wrap break-words font-serif text-[16.5px] leading-[1.75]">${esc(set.teach)}</p></article></div>`;
+  }
+
+  if (learnMode === 'cards') {
+    if (!set.cards.length) return `<div>${backBtn}<div class="mt-3">${empty(I.book, 'No flashcards', '')}</div></div>`;
+    learnLen = set.cards.length;
+    if (!learnOrder.length || learnOrder.length !== set.cards.length) learnOrder = set.cards.map((_, ci) => ci);
+    const i = Math.min(learnCard, set.cards.length - 1);
+    learnCard = i;
+    const c = set.cards[learnOrder[i]];
+    return `<div>${backBtn}
+      <div class="mt-3 mb-2.5 px-1 flex items-center gap-3"><span class="text-[12px] font-bold uppercase tracking-[0.12em] text-ink/50 dark:text-white/50">Card ${i + 1} of ${set.cards.length}</span><span class="h-px flex-1 bg-ink/10 dark:bg-white/10"></span><button data-act="learnShuffle" class="shrink-0 text-[12px] font-bold uppercase tracking-[0.12em] text-moss-900 dark:text-emerald-200 min-h-[36px] px-2 press">Shuffle</button></div>
+      <button data-act="learnFlip" data-swipe="cards" class="${card} w-full press text-center overflow-hidden select-none" aria-live="polite">
+        <span class="flip-scene block p-6">
+          <span data-flip-inner class="flip-inner${learnFlipped ? ' is-flipped' : ''}">
+            <span class="flip-face min-h-[190px] flex flex-col items-center justify-center gap-3">
+              <span class="text-[11px] font-bold uppercase tracking-[0.14em] text-ink/45 dark:text-white/45">Question</span>
+              <span class="font-serif text-[20px] font-semibold leading-snug tracking-tight break-words text-balance">${esc(c.front)}</span>
+              <span class="text-[12px] font-semibold text-ink/40 dark:text-white/40">Tap to flip</span></span>
+            <span class="flip-face flip-back min-h-[190px] flex flex-col items-center justify-center gap-3">
+              <span class="text-[11px] font-bold uppercase tracking-[0.14em] text-moss-900 dark:text-emerald-200">Answer</span>
+              <span class="font-serif text-[17px] leading-snug break-words text-balance">${esc(c.back)}</span>
+              <span class="text-[12px] font-semibold text-ink/40 dark:text-white/40">Tap to flip back</span></span>
+          </span></span></button>
+      <div class="grid grid-cols-2 gap-3 mt-3">
+        <button data-act="learnCardNav" data-d="-1" class="${secondary}">← Prev</button>
+        <button data-act="learnCardNav" data-d="1" class="${secondary}">Next →</button></div></div>`;
+  }
+
+  if (learnMode === 'quiz') {
+    if (!set.quiz.length) return `<div>${backBtn}<div class="mt-3">${empty(I.pen, 'No quiz yet', '')}</div></div>`;
+    const done = set.quiz.filter((_, qi) => learnAnswers[qi] !== undefined).length;
+    const score = set.quiz.filter((q, qi) => learnAnswers[qi] === q.answer).length;
+    const opts = set.quiz.map((q, qi) => {
+      const picked = learnAnswers[qi];
+      const btns = q.options.map((t, oi) => {
+        let cls = 'bg-cream dark:bg-night-900 border-sand dark:border-white/10';
+        if (picked !== undefined) {
+          if (oi === q.answer) cls = 'bg-emerald-500/12 border-emerald-500/40 text-emerald-800 dark:text-emerald-200';
+          else if (oi === picked) cls = 'bg-clay-500/12 border-clay-500/40 text-clay-600 dark:text-orange-300';
+          else cls = 'bg-cream dark:bg-night-900 border-sand dark:border-white/10 opacity-50';
+        }
+        return `<button data-act="learnAnswer" data-q="${qi}" data-o="${oi}" class="w-full text-start min-h-[50px] px-4 py-3 rounded-[16px] border text-[15px] font-medium press break-words ${cls}">${esc(t)}</button>`;
+      }).join('');
+      return `<section class="${cardPad} !p-4"><p class="font-bold text-[15.5px] leading-snug break-words">${esc(q.question)}</p>
+        <div class="mt-3 space-y-2">${btns}</div></section>`;
+    }).join('');
+    return `<div>
+      <div class="flex items-center gap-2">
+        <div class="flex-1 min-w-0">${backBtn}</div>
+        ${done ? `<button data-act="learnRestart" class="${ghostBtn} shrink-0 bg-cream dark:bg-night-900 border border-sand dark:border-white/10 shadow-soft">Restart</button>` : ''}
+      </div>
+      <div class="${card} mt-3 px-4 py-3.5 flex items-center gap-3">
+        <span class="font-serif font-semibold text-[22px] leading-none">${score}<span class="text-ink/40 dark:text-white/40 text-[16px]">/${set.quiz.length}</span></span>
+        <span class="text-[13px] font-semibold text-ink/55 dark:text-white/55">${done === set.quiz.length ? (score === set.quiz.length ? 'Perfect — nicely done' : 'Finished — try again?') : `${done} of ${set.quiz.length} answered`}</span></div>
+      <div class="mt-3 space-y-3">${opts}</div></div>`;
+  }
+
+  const toolRow = (m, icon, title, meta) => `<button data-act="learnOpen" data-m="${m}" class="${card} w-full p-4 flex items-center gap-3.5 press text-start min-w-0">
+    <span class="w-11 h-11 rounded-2xl bg-moss-900/[.08] dark:bg-white/10 text-moss-900 dark:text-cream grid place-items-center shrink-0">${icon}</span>
+    <span class="flex-1 min-w-0"><span class="block font-bold text-[16px]">${title}</span>
+    <span class="block text-[13px] text-ink/55 dark:text-white/55 mt-0.5">${meta}</span></span>
+    <span class="w-8 h-8 rounded-full bg-ink/[.05] dark:bg-white/10 grid place-items-center text-ink/40 shrink-0">${I.chevron}</span></button>`;
+  return `<div class="space-y-2.5">
+    ${toolRow('teach', I.book, 'Teach me', 'Walkthrough in plain language')}
+    ${toolRow('cards', I.pen, 'Flashcards', set.cards.length ? `${set.cards.length} cards` : 'No cards')}
+    ${toolRow('quiz', I.spark, 'Quiz me', set.quiz.length ? `${set.quiz.length} questions` : 'No questions')}
+    <button data-act="learnGen" data-id="${l.id}" class="${ghostBtn} w-full text-ink/50 dark:text-white/50">Regenerate study guide</button></div>`;
+}
+
+async function viewHome() {
+  put(heroHeader({eyebrowText:'Loading', title:'Notebook', sub:''}) + `<div class="mt-5">`+skeleton()+`</div>`);
+  const [subjects, notebooks, lessons] = await Promise.all([
+    db.subjects.orderBy('order').toArray(), db.notebooks.toArray(), db.lessons.toArray()
+  ]);
+  const nbSubj = Object.fromEntries(notebooks.map(n => [n.id, n.subjectId]));
+  const stats = {};
+  for (const l of lessons) {
+    const sid = nbSubj[l.notebookId]; if (!sid) continue;
+    const s = (stats[sid] ??= { n: 0, last: '', review: 0 });
+    s.n++; if (l.date > s.last) s.last = l.date;
+    if (l.status === 'needs_review') s.review++;
+  }
+  const attention = lessons.filter(l => l.status === 'needs_review').sort((a, b) => b.date.localeCompare(a.date));
+  const dateStr = new Date().toLocaleDateString(undefined,{ weekday:'short', month:'short', day:'numeric'});
+  const statsHtml = subjects.length ? `<div class="mt-4 flex flex-wrap gap-2">
+      <span class="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full bg-ink text-paper dark:bg-cream dark:text-ink shadow-soft"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>${subjects.length} ${subjects.length===1?'subject':'subjects'}</span>
+      <span class="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full bg-cream dark:bg-night-900 border border-sand dark:border-white/10 shadow-soft">${lessons.length} ${lessons.length===1?'lesson':'lessons'}</span>
+      ${attention.length ? `<span class="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full bg-clay-500/12 border border-clay-500/25 text-clay-600 dark:text-orange-300">${attention.length} to review</span>`:''}
+    </div>` : '';
+
+  const attentionHtml = attention.length ? `${sectionHead('Needs a look', `<a href="#/search" class="${ghostBtn} !min-h-[36px] shrink-0 bg-cream dark:bg-night-900 border border-sand dark:border-white/10 shadow-soft">View all</a>`)}
+    <div class="px-5 md:px-2 flex gap-3 overflow-x-auto no-scrollbar snap-x pb-1">
+    ${attention.slice(0, 6).map(l => `<a href="#/lesson/${l.id}" class="snap-start shrink-0 w-[78vw] max-w-[270px] ${card} p-4 flex gap-3 items-start press text-start">
+      <span class="w-10 h-10 rounded-2xl bg-clay-500/12 text-clay-600 dark:text-orange-300 grid place-items-center shrink-0 border border-clay-500/20">${I.warn}</span>
+      <span class="min-w-0 flex-1"><span class="block font-semibold truncate text-[15px]">${esc(l.title)}</span>
+      <span class="block text-[13px] leading-snug text-ink/60 dark:text-white/60 line-clamp-2 mt-0.5 break-words">${esc(l.reason || 'Some text could not be read.')}</span>
+      <span class="inline-flex mt-2 text-[12px] font-bold text-clay-600 dark:text-orange-300">Fix now →</span></span></a>`).join('')}</div>` : '';
+
+  let gridHtml;
+  if (subjects.length) {
+    gridHtml = `${sectionHead('Subjects', `<button data-act="newSubject" class="${ghostBtn} !min-h-[36px] shrink-0 bg-ink dark:bg-cream text-paper dark:text-ink shadow-soft">+ New</button>`)}
+    <div class="px-5 md:px-2 grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 items-stretch">
+      ${subjects.map((s, idx) => {
+        const st = stats[s.id] || { n: 0, last: '', review: 0 };
+        const letter = (s.name||'?').trim().charAt(0).toUpperCase();
+        return `<div class="relative min-w-0 anim-up" style="animation-delay:${Math.min(idx * 45, 270)}ms">
+          <a href="#/subject/${s.id}" class="block h-full rounded-[24px] overflow-hidden bg-cream dark:bg-night-900 border border-sand dark:border-white/10 shadow-soft press">
+            <span class="grain block h-[92px] md:h-[104px] relative overflow-hidden" style="background-color:${s.color}">
+              <span aria-hidden="true" class="absolute -right-2 -bottom-5 font-serif font-bold text-[92px] leading-none text-white/25 select-none pointer-events-none">${esc(letter)}</span>
+              ${st.review ? `<span class="absolute top-3 right-3 inline-flex items-center gap-1 bg-white text-ink text-[11px] font-bold px-2 py-1 rounded-full shadow-soft"><span class="w-1.5 h-1.5 rounded-full bg-clay-500"></span>${st.review}</span>` : ''}
+            </span>
+            <span class="block p-3.5 pe-12">
+              <span class="block font-bold text-[16px] leading-tight truncate">${esc(s.name)}</span>
+              <span class="mt-1 block text-[13px] text-ink/55 dark:text-white/55 truncate">${st.n} ${st.n === 1 ? 'lesson' : 'lessons'}${st.last ? `<span class="hidden min-[360px]:inline"> · ${fmt(st.last)}</span>` : ''}</span>
+            </span>
+          </a>
+          <button data-act="menu" data-kind="subject" data-id="${s.id}" class="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-ink/[.06] dark:bg-white/10 grid place-items-center press" aria-label="More options for ${esc(s.name)}">${I.more}</button>
+        </div>`;
+      }).join('')}
+      <button data-act="newSubject" class="anim-up rounded-[24px] border-2 border-dashed border-ink/15 dark:border-white/15 min-h-[172px] h-full text-ink/50 dark:text-white/50 flex flex-col items-center justify-center gap-2 press bg-cream/40 dark:bg-night-900/40 px-4 text-center" style="animation-delay:${Math.min(subjects.length * 45, 270)}ms">
+        <span class="w-11 h-11 rounded-full bg-ink dark:bg-cream text-paper dark:text-ink grid place-items-center text-[22px] leading-none font-medium">+</span><span class="text-[14px] font-semibold">New subject</span></button>
+    </div>`;
+  } else {
+    gridHtml = `<div class="mt-6 mx-5 md:mx-2">${empty(I.book, 'No subjects yet', '',
+        `<button class="${primaryCoral} mt-2" data-act="newSubject">+ Add subject</button>`)}</div>`;
+  }
+
+  put(heroHeader({ eyebrowText: `${greeting()} · ${dateStr}`, title: 'Notebook', statsHtml })
+    + attentionHtml
+    + gridHtml
+    + `<div class="h-2"></div>`);
+}
+
+async function viewSubject(id) {
+  const s = await db.subjects.get(id); if (!s) return notFound();
+  const nbs = (await db.notebooks.where('subjectId').equals(id).toArray())
+    .sort((a, b) => (a.term || '').localeCompare(b.term || '') || a.title.localeCompare(b.title));
+  const counts = {};
+  for (const l of await db.lessons.where('notebookId').anyOf(nbs.map(n => n.id)).toArray()) counts[l.notebookId] = (counts[l.notebookId] || 0) + 1;
+
+  put(topBar(s.name, '#/', menuBtn('subject', id, 'Subject options'))
+    + `<div class="px-5 md:px-2 pt-5 max-w-2xl mx-auto">
+      <div class="rounded-[26px] overflow-hidden shadow-soft border border-sand dark:border-white/10">
+        <div class="grain min-h-[112px] md:min-h-[128px] relative flex items-end p-5 overflow-hidden" style="background:linear-gradient(135deg, ${s.color}, ${s.color}CC)">
+          <span aria-hidden="true" class="absolute right-3 -bottom-4 font-serif font-bold text-[110px] leading-[0.8] text-white/20 select-none pointer-events-none">${esc((s.name||'?').charAt(0).toUpperCase())}</span>
+          <div class="relative min-w-0"><p class="text-white/75 text-[12px] font-bold uppercase tracking-[0.14em]">${nbs.length} ${nbs.length===1?'notebook':'notebooks'}</p>
+          <h2 class="mt-1 font-serif text-white font-semibold text-[28px] min-[380px]:text-[30px] leading-[1.05] tracking-tight line-clamp-2 break-words">${esc(s.name)}</h2></div>
+        </div>
+      </div>
+    </div>`
+    + (nbs.length
+      ? `${sectionHead('Notebooks', `<span class="text-[13px] font-semibold text-ink/50 dark:text-white/50 shrink-0">${nbs.length} total</span>`)}
+        <div class="px-5 md:px-2 grid gap-2.5 md:grid-cols-2 max-w-2xl mx-auto items-start"><div class="${card} overflow-hidden divide-y divide-ink/[.06] dark:divide-white/[.07] md:col-span-2">${nbs.map(n => `
+        <a href="#/notebook/${n.id}" class="flex items-center gap-3.5 p-4 press group min-w-0">
+          <span class="w-11 h-11 rounded-2xl grid place-items-center shrink-0 text-white font-serif font-bold text-[18px]" style="background:${s.color}">${esc((n.title||'?').charAt(0).toUpperCase())}</span>
+          <span class="flex-1 min-w-0"><span class="block font-bold text-[16px] truncate">${esc(n.title)}</span>
+          <span class="block text-[13px] text-ink/55 dark:text-white/55 mt-0.5 truncate">${esc(n.term || 'No term')} · ${counts[n.id] || 0} ${counts[n.id] === 1 ? 'lesson' : 'lessons'}</span></span>
+          <span class="w-8 h-8 rounded-full bg-ink/[.05] dark:bg-white/10 grid place-items-center text-ink/50 dark:text-white/60 group-active:translate-x-0.5 transition shrink-0">${I.chevron}</span></a>`).join('')}</div></div>`
+      : `<div class="px-5 md:px-2 max-w-2xl mx-auto mt-6">${empty(I.book, 'No notebooks yet', '')}</div>`)
+    + `<div class="px-5 md:px-2 mt-6 max-w-2xl mx-auto"><button data-act="newNotebook" data-subject="${id}" class="${primary} w-full">+ New notebook</button></div>`);
+}
+
+async function viewNotebook(id) {
+  const nb = await db.notebooks.get(id); if (!nb) return notFound();
+  const subj = await db.subjects.get(nb.subjectId);
+  const lessons = (await db.lessons.where('notebookId').equals(id).toArray())
+    .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
+  const pages = await db.pages.where('lessonId').anyOf(lessons.map(l => l.id)).sortBy('order');
+  const firstPage = {};
+  for (const p of pages) firstPage[p.lessonId] ??= p;
+  const pend = await pendingLessonIds();
+  const groups = {};
+  for (const l of lessons) (groups[l.date] ??= []).push(l);
+
+  const row = l => {
+    const fp = firstPage[l.id];
+    const thumb = fp ? `<img src="${objUrl(fp.thumbnailBlob)}" alt="" loading="lazy" class="w-[68px] h-[68px] rounded-2xl object-cover shrink-0 border border-ink/10 dark:border-white/10">`
+      : `<div class="w-[68px] h-[68px] rounded-2xl bg-ink/[.05] dark:bg-white/10 grid place-items-center text-ink/35 dark:text-white/40 shrink-0">${I.image}</div>`;
+    return `<a href="#/lesson/${l.id}" class="flex items-center gap-3.5 p-3 press group min-w-0">${thumb}
+      <span class="flex-1 min-w-0"><span class="block font-bold text-[15.5px] truncate leading-snug">${esc(l.title)}</span>
+      <span class="mt-1.5 block">${statusPill(l, pend.has(l.id))}</span></span>
+      <span class="w-8 h-8 rounded-full bg-ink/[.05] dark:bg-white/10 grid place-items-center text-ink/40 shrink-0">${I.chevron}</span></a>`;
+  };
+  const body = Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([d, ls]) => `<div class="px-5 md:px-2 mt-6 max-w-2xl mx-auto">
+      <div class="flex items-center gap-3 mb-2.5 px-1 min-w-0"><span class="min-w-0 truncate text-[12px] font-bold uppercase tracking-[0.12em] text-ink/50 dark:text-white/50">${esc(fmtLong(d))}</span><span class="h-px flex-1 bg-ink/10 dark:bg-white/10"></span><span class="shrink-0 text-[12px] font-bold text-ink/40 dark:text-white/40">${ls.length}</span></div>
+      <div class="${card} overflow-hidden divide-y divide-ink/[.06] dark:divide-white/[.07]">${ls.map(row).join('')}</div></div>`).join('');
+
+  put(topBar(nb.title, `#/subject/${nb.subjectId}`, menuBtn('notebook', id, 'Notebook options'))
+    + `<div class="px-5 md:px-2 pt-4 max-w-2xl mx-auto flex items-center gap-2 text-[13px] font-semibold text-ink/55 dark:text-white/55 min-w-0">
+        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${subj?.color||'#a1a1aa'}"></span><span class="truncate">${esc(subj?.name || '')}${nb.term ? ` · ${esc(nb.term)}` : ''}</span></div>`
+    + (lessons.length ? body : `<div class="px-5 md:px-2 max-w-2xl mx-auto mt-6">${empty(I.pen, 'No lessons yet', '')}</div>`)
+    + `<div class="px-5 md:px-2 mt-8 max-w-2xl mx-auto"><a href="#/capture?nb=${id}" class="${primaryCoral} w-full">+ Capture a lesson</a></div>`);
+}
+
+async function viewLesson(id) {
+  const l = await db.lessons.get(id); if (!l) return notFound();
+  const pages = await db.pages.where('lessonId').equals(id).sortBy('order');
+  const blocks = await db.summaryBlocks.where('lessonId').equals(id).sortBy('order');
+  const pend = (await pendingLessonIds()).has(id);
+  const nb = await db.notebooks.get(l.notebookId);
+  if (id !== lastLearnLesson) {
+    lastLearnLesson = id;
+    learnMode = 'menu'; learnCard = 0; learnFlipped = false; learnAnswers = {}; learnOrder = []; learnLock = false;
+  }
+  const jobs = pend ? await db.pendingJobs.bulkGet(pages.map(p => p.id)) : [];
+  const attempts = Math.max(0, ...jobs.filter(Boolean).map(j => j.attempts || 0));
+  const lastError = (jobs.find(j => j?.lastError) || {}).lastError || '';
+
+  const tabs = [
+    ['summary', 'Summary', ic('<path d="M7 3h8l4 4v14H7z"/><path d="M10 12h6M10 16h6M10 8h3"/>', 'w-[22px] h-[22px]')],
+    ['pages', 'Photos', I.image],
+    ['transcript', 'Text', I.pen],
+    ['learn', 'Learn', I.spark]
+  ];
+  const seg = `<div class="px-5 md:px-2 mt-4 max-w-2xl mx-auto"><div role="tablist" aria-label="Lesson views" class="${card} !rounded-[22px] grid grid-cols-4 p-1.5 gap-1">${tabs.map(([k, t, icon]) => {
+    const on = lessonTab === k;
+    return `
+    <button role="tab" aria-selected="${on}" data-act="tab" data-tab="${k}"
+      class="flex flex-col items-center gap-1 py-2 rounded-2xl transition press ${on ? 'text-ink dark:text-cream' : 'text-ink/40 dark:text-white/40'}">
+      <span class="grid place-items-center w-9 h-9 rounded-xl transition ${on ? 'bg-moss-900/[.09] dark:bg-white/10 text-moss-900 dark:text-emerald-200' : ''}">${icon}</span>
+      <span class="text-[11px] leading-none ${on ? 'font-extrabold' : 'font-semibold'}">${t}</span></button>`; }).join('')}</div></div>`;
+
+  let body = '';
+  if (lessonTab === 'summary') {
+    const secs = pages.map((p, i) => {
+      const bs = blocks.filter(b => b.sourcePageId === p.id);
+      const unc = (p.uncertain || []).map((u, idx) => `<button data-act="correct" data-page="${p.id}" data-idx="${idx}"
+        class="w-full text-start rounded-[18px] bg-amber-100/70 dark:bg-amber-400/10 border border-amber-500/25 p-3.5 flex gap-2.5 press min-w-0">
+        <span class="mt-0.5 w-8 h-8 rounded-xl bg-amber-400/25 text-amber-700 dark:text-amber-300 grid place-items-center shrink-0">${I.warn}</span>
+        <span class="min-w-0 flex-1 text-[14.5px]"><span class="font-semibold block leading-snug break-words">“${esc(u.text)}”</span><span class="block text-[13px] text-ink/55 dark:text-white/55 mt-0.5 break-words">${esc(u.reason)} · tap to fix</span></span></button>`).join('');
+      return `<article class="${cardPad} !p-5 space-y-4 anim-pop min-w-0">
+        <div class="flex items-center gap-2 min-w-0"><span class="shrink-0 text-[11px] font-bold uppercase tracking-[0.14em] text-ink/45 dark:text-white/45">Photo ${i + 1}</span><span class="h-px flex-1 bg-ink/[.07] dark:bg-white/10"></span></div>
+        ${p.summary ? `<p class="font-serif text-[17.5px] leading-relaxed text-ink/80 dark:text-white/85 break-words">${esc(p.summary)}</p>` : ''}
+        ${bs.map(blockView).join('<div class="h-px bg-ink/[.06] dark:bg-white/[.07]"></div>')}
+        ${unc ? `<div class="space-y-2 pt-1"><p class="text-[11px] font-bold uppercase tracking-[0.14em] text-amber-700 dark:text-amber-300">Double-check these</p>${unc}</div>` : ''}
+        ${!bs.length ? `<div class="rounded-[18px] bg-ink/[.04] dark:bg-white/[.06] p-4 text-[14.5px] text-ink/55 dark:text-white/55 flex items-center gap-2.5">${pend?'<span class="w-4 h-4 rounded-full border-2 border-ink/20 border-t-ink/70 animate-spin"></span>Reading this photo…':'No summary for this photo yet.'}</div>` : ''}
+      </article>`;
+    }).join('<div class="h-1"></div>');
+    body = secs ? `<div class="space-y-3.5">${secs}</div>` : empty(I.spark, 'Nothing here yet', '');
+  } else if (lessonTab === 'pages') {
+    body = pages.length ? `<div class="-mx-0 px-5 md:px-2 flex gap-3.5 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-2" data-pages-rail data-nogesture>${pages.map((p, i) => {
+      const reg = blocks.find(b => b.id === activeBlock && b.sourcePageId === p.id)?.sourceRegion;
+      return `<figure id="pg-${p.id}" class="snap-center shrink-0 w-[84vw] md:w-[420px] max-w-sm space-y-2.5">
+        <div class="relative rounded-[24px] overflow-hidden bg-ink/10 dark:bg-white/10 shadow-soft border border-ink/10 dark:border-white/10">
+          <img src="${objUrl(p.imageBlob)}" alt="Photo ${i + 1} of this lesson" class="w-full block">
+          ${reg ? `<div class="absolute border-[3px] border-clay-500 bg-clay-500/20 rounded-xl shadow-fab" style="left:${reg.x * 100}%;top:${reg.y * 100}%;width:${reg.w * 100}%;height:${reg.h * 100}%"></div>` : ''}
+        </div>
+        <figcaption class="flex items-center justify-center gap-2 text-[13px] font-semibold text-ink/50 dark:text-white/50"><span class="px-3 py-1 rounded-full bg-cream dark:bg-night-900 border border-sand dark:border-white/10 shadow-soft">Photo ${i + 1} of ${pages.length}</span></figcaption></figure>`;
+    }).join('')}</div>
+    <div class="flex justify-center gap-1.5 mt-2 text-ink dark:text-cream" data-pages-dots aria-hidden="true">${pages.map(() => `<span class="h-1.5 rounded-full bg-current block transition-all" style="width:6px;opacity:.25"></span>`).join('')}</div>`
+    : empty(I.image, 'No photos yet', '');
+  } else if (lessonTab === 'learn') {
+    body = await learnBody(l);
+  } else {
+    body = pages.length ? `<div class="space-y-3 min-w-0">`+pages.map((p, i) => `<section class="${cardPad} min-w-0">
+      <div class="flex items-center gap-2 mb-2 min-w-0"><span class="shrink-0 text-[11px] font-bold uppercase tracking-[0.14em] text-ink/45 dark:text-white/45">Photo ${i + 1} · transcript</span><span class="h-px flex-1 bg-ink/[.07] dark:bg-white/10"></span></div>
+      <p class="whitespace-pre-wrap break-words font-serif text-[16.5px] leading-[1.7]">${esc(p.transcript || (pend ? 'Reading…' : 'Not read yet.'))}</p></section>`).join('')+`</div>`
+      : empty(I.pen, 'No transcript yet', '');
+  }
+
+  const failed = l.status === 'needs_review' || (l.status !== 'ready' && !pend);
+  const showRetry = failed || pend;
+  const diagLine = pend && (attempts > 0 || lastError)
+    ? `<p class="px-1 mt-2 text-[12.5px] font-medium text-ink/45 dark:text-white/45">Queued for reading${attempts ? ` · attempt ${attempts + 1}` : ''}${lastError ? ` · last error: ${esc(lastError)}` : ''}</p>` : '';
+  put(topBar(nb ? l.title : 'Lesson', `#/notebook/${l.notebookId}`, menuBtn('lesson', id, 'Lesson options'))
+    + `<div class="px-5 md:px-2 pt-4 max-w-2xl mx-auto"><div class="${card} overflow-hidden">
+        <div class="p-5 flex gap-4 items-start min-w-0">
+          ${pages[0] ? `<img src="${objUrl(pages[0].thumbnailBlob)}" alt="" class="w-[76px] h-[76px] rounded-[20px] object-cover shadow-soft shrink-0 border border-ink/10 dark:border-white/10">`
+            : `<div class="w-[76px] h-[76px] rounded-[20px] bg-ink/[.05] dark:bg-white/10 grid place-items-center shrink-0 text-ink/30">${I.image}</div>`}
+          <div class="min-w-0 flex-1"><h2 class="font-serif text-[24px] min-[380px]:text-[26px] font-semibold leading-[1.1] tracking-tight line-clamp-2 break-words">${esc(l.title)}</h2>
+          <p class="text-[13.5px] font-medium text-ink/55 dark:text-white/55 mt-1 truncate">${fmt(l.date)} · ${pages.length} ${pages.length===1?'photo':'photos'}</p>
+          <div class="mt-2">${statusPill(l, pend)}</div></div>
+        </div>
+      </div></div>
+      ${l.reason || showRetry ? `<div class="px-5 md:px-2 mt-3 max-w-2xl mx-auto"><div class="rounded-[20px] bg-clay-500/10 border border-clay-500/25 p-4 flex items-start gap-3 min-w-0">
+        <p class="flex-1 min-w-0 text-[14.5px] leading-snug text-ink/80 dark:text-white/80 break-words">${esc(l.reason || (pend ? 'Waiting in the reading queue.' : 'This photo could not be read.'))}</p>
+        ${showRetry ? `<button data-act="retry" data-id="${id}" class="${secondary} !min-h-[42px] !px-4 text-[14px] shrink-0 mt-0.5">Retry</button>` : ''}</div>${diagLine}</div>` : ''}
+      ${seg}
+      <div class="px-5 md:px-2 mt-4 max-w-2xl mx-auto pb-2" data-swipe="tabs">${body}</div>
+      <div class="h-20"></div>
+      <div class="fixed bottom-[102px] inset-x-0 z-30 flex justify-center pointer-events-none px-5">
+        <label class="pointer-events-auto ${primaryCoral} !rounded-full !px-6 cursor-pointer shadow-fab anim-pop">${I.camera.replace('w-7 h-7', 'w-5 h-5')} Add photo
+          <input type="file" accept="image/*" capture="environment" class="sr-only" data-change="addPage"></label></div>`);
+
+  if (scrollToPage) {
+    document.getElementById('pg-' + scrollToPage)?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    scrollToPage = null;
+  }
+}
+
+let captureState = {};
+async function viewCapture() {
+  const q = new URLSearchParams(location.hash.split('?')[1] || '');
+  const subjects = await db.subjects.orderBy('order').toArray();
+  if (!subjects.length) {
+    put(topBar('New lesson', '#/') + `<div class="px-5 md:px-2 max-w-lg mx-auto mt-6">${empty(I.book, 'Make a subject first', '',
+      `<a href="#/" class="${primaryCoral} mt-3">Go to subjects</a>`)}</div>`);
+    return;
+  }
+  const want = q.get('nb') && await db.notebooks.get(q.get('nb'));
+  if (want) { captureState.subjectId = want.subjectId; captureState.nb = want.id; }
+  const subjectId = captureState.subjectId || await getSetting('lastSubjectId') || subjects[0].id;
+  const subjectObj = subjects.find(s => s.id === subjectId) || subjects[0];
+  const notebooks = await db.notebooks.where('subjectId').equals(subjectObj.id).toArray();
+  const nbId = notebooks.find(n => n.id === captureState.nb)?.id || notebooks[0]?.id || '';
+
+  const preview = captureState.url
+    ? `<div class="relative rounded-[26px] overflow-hidden shadow-lift border border-ink/10 dark:border-white/10 bg-ink">
+        <img src="${captureState.url}" alt="Your photo" class="w-full max-h-[46vh] min-h-[180px] object-contain block bg-ink">
+        <div class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/60 to-transparent flex justify-between items-center gap-2">
+          <span class="text-white text-[13px] font-semibold flex items-center gap-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span><span class="truncate">Looks good?</span></span>
+          <label class="shrink-0 min-h-[42px] px-4 rounded-full bg-white/95 text-ink text-[14px] font-bold grid place-items-center cursor-pointer press">Retake
+          <input type="file" accept="image/*" capture="environment" class="sr-only" data-change="pickPhoto"></label></div></div>`
+    : `<div class="grid grid-cols-2 gap-3 items-stretch">
+        <label class="${card} min-h-[172px] p-4 min-[380px]:p-5 flex flex-col items-center justify-center gap-2.5 cursor-pointer press !rounded-[26px] text-center">
+          <span class="w-14 h-14 rounded-2xl bg-moss-900 text-white grid place-items-center shadow-soft shrink-0">${I.camera}</span>
+          <span class="font-bold text-[15px] leading-tight">Take photo</span><span class="text-[12.5px] text-ink/50 dark:text-white/50 -mt-1">Use camera</span>
+          <input type="file" accept="image/*" capture="environment" class="sr-only" data-change="pickPhoto"></label>
+        <label class="${card} min-h-[172px] p-4 min-[380px]:p-5 flex flex-col items-center justify-center gap-2.5 cursor-pointer press !rounded-[26px] text-center">
+          <span class="w-14 h-14 rounded-2xl bg-clay-500/12 text-clay-600 dark:text-orange-300 grid place-items-center border border-clay-500/20 shrink-0">${I.image}</span>
+          <span class="font-bold text-[15px] leading-tight">From library</span><span class="text-[12.5px] text-ink/50 dark:text-white/50 -mt-1">Choose existing</span>
+          <input type="file" accept="image/*" class="sr-only" data-change="pickPhoto"></label></div>`;
+
+  put(topBar('New lesson', '#/')
+    + `<form id="capture-form" data-form="capture" class="px-5 md:px-2 pt-4 space-y-5 max-w-2xl mx-auto">
+      <div>
+        <div class="mt-2">${preview}</div>
+      </div>
+      <div>
+        <div class="-mx-5 md:mx-0 px-5 md:px-0 mt-2 flex gap-2 overflow-x-auto no-scrollbar pb-1">${subjects.map(s => chip({ act: 'pickSubject', id: s.id, label: s.name, sel: s.id === subjectObj.id, color: s.color })).join('')}</div>
+      </div>
+      <div>
+        <div class="-mx-5 md:mx-0 px-5 md:px-0 mt-2 flex gap-2 overflow-x-auto no-scrollbar pb-1">${notebooks.length
+          ? notebooks.map(n => chip({ act: 'pickNotebook', id: n.id, label: n.title, sel: n.id === nbId, color: subjectObj.color })).join('')
+          : ''}</div>
+      </div>
+      <div class="${card} p-4 grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
+        <label class="block min-w-0"><span class="block mb-1.5 px-1 text-[13px] font-semibold text-ink/55 dark:text-white/55">Date</span>
+          <input type="date" name="date" value="${today()}" class="${inputCls} !min-h-[50px]"></label>
+        <label class="block min-w-0"><span class="block mb-1.5 px-1 text-[13px] font-semibold text-ink/55 dark:text-white/55">Title <span class="font-normal opacity-60">(optional)</span></span>
+          <input name="title" placeholder="e.g. Fractions" class="${inputCls} !min-h-[50px]"></label>
+      </div>
+      <input type="hidden" name="subject" value="${subjectObj.id}">
+      <input type="hidden" name="notebook" value="${nbId}">
+      <div class="h-36"></div>
+    </form>
+    <div class="fixed bottom-[100px] inset-x-0 z-30 px-5 pointer-events-none">
+      <div class="max-w-md md:max-w-2xl mx-auto pointer-events-auto">
+        <button form="capture-form" class="${primaryCoral} w-full !min-h-[58px] !rounded-[20px] !text-[17px] ${captureState.url ? '' : 'opacity-50 saturate-50'}">Save lesson${captureState.url ? ' →' : ''}</button></div></div>`);
+}
+
+async function viewSearch() {
+  const q = new URLSearchParams(location.hash.split('?')[1] || '');
+  const term = (q.get('q') || '').trim().toLowerCase();
+  const sid = q.get('s') || '';
+  const [subjects, nbs, lessons, pages] = await Promise.all([db.subjects.toArray(), db.notebooks.toArray(), db.lessons.toArray(), db.pages.toArray()]);
+  const nbMap = Object.fromEntries(nbs.map(n => [n.id, n]));
+  const subjMap = Object.fromEntries(subjects.map(s => [s.id, s]));
+  const pagesBy = {};
+  for (const p of pages) (pagesBy[p.lessonId] ??= []).push(p);
+  const hits = lessons.filter(l => {
+    const nb = nbMap[l.notebookId];
+    if (sid && nb?.subjectId !== sid) return false;
+    if (!term) return true;
+    return [l.title, ...(pagesBy[l.id] || []).flatMap(p => [p.transcript, p.summary])].some(t => (t || '').toLowerCase().includes(term));
+  }).sort((a, b) => b.date.localeCompare(a.date));
+
+  const filt = (val, label, color) => `<button type="submit" name="s" value="${val}" class="shrink-0 min-h-[42px] pl-3 pr-4 rounded-full text-[14px] font-semibold press border flex items-center gap-2 ${sid === val ? 'bg-ink dark:bg-cream text-paper dark:text-ink border-ink dark:border-cream' : 'bg-cream dark:bg-night-900 border-sand dark:border-white/10 shadow-soft'}">${color?`<span class="w-2.5 h-2.5 rounded-full" style="background:${color}"></span>`:''}${esc(label)}</button>`;
+
+  put(heroHeader({eyebrowText:'Find anything', title:'Search'})
+    + `<form data-form="search" class="px-5 md:px-2 mt-4 space-y-3 max-w-2xl mx-auto">
+      <label class="relative block"><span class="absolute start-4 top-1/2 -translate-y-1/2 text-ink/40 dark:text-white/40">${I.search}</span>
+        <input name="q" type="search" value="${esc(q.get('q') || '')}" placeholder="Search lessons…" class="${inputCls} ps-11 !rounded-full !min-h-[54px]"></label>
+      <div class="-mx-5 md:mx-0 px-5 md:px-0 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        ${filt('', 'All')}${subjects.map(s => filt(s.id, s.name, s.color)).join('')}
+      </div></form>`
+    + `<div class="px-5 md:px-2 mt-4 max-w-2xl mx-auto">
+      ${hits.length ? `<div class="space-y-2.5">${hits.map(l => {
+        const s = subjMap[nbMap[l.notebookId]?.subjectId];
+        return `<a href="#/lesson/${l.id}" class="${card} flex items-stretch overflow-hidden press text-start min-w-0">
+          <span class="w-[6px] shrink-0" style="background:${s?.color || '#a1a1aa'}"></span>
+          <span class="p-4 min-w-0 flex-1"><span class="block font-bold text-[15.5px] truncate">${esc(l.title)}</span>
+          <span class="mt-1 flex items-center gap-1.5 text-[13px] text-ink/55 dark:text-white/55 min-w-0"><span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${s?.color||'#a1a1aa'}"></span><span class="truncate">${esc(s?.name || '')} · ${fmt(l.date)}</span></span></span>
+          <span class="self-center pe-3 text-ink/30 shrink-0">${I.chevron}</span></a>`;
+      }).join('')}</div>` : `<div class="mt-6">${empty(I.search, term ? 'No matches' : 'No lessons yet', '')}</div>`}</div>`);
+}
+
+async function viewSettings() {
+  const theme = await getSetting('theme', 'system');
+  const key = await getSetting('geminiApiKey', '');
+  const last = await getSetting('lastBackupAt', null);
+  const queued = await db.pendingJobs.count();
+  const est = (await navigator.storage?.estimate?.()) || { usage: 0, quota: 0 };
+  const pct = est.quota ? Math.min(100, Math.round(est.usage / est.quota * 100)) : 0;
+  const mb = n => (n / 1048576).toFixed(1) + ' MB';
+
+  const rowBtn = (act, title, sub, right='') => `<button data-act="${act}" class="w-full flex items-center gap-3 px-4 min-h-[62px] text-start press">
+    <span class="flex-1 min-w-0"><span class="block font-semibold text-[15.5px]">${title}</span>${sub?`<span class="block text-[13px] text-ink/55 dark:text-white/55 mt-0.5">${sub}</span>`:''}</span>${right}</button>`;
+
+  put(heroHeader({eyebrowText:'Make it yours', title:'Settings'})
+    + `<div class="px-5 md:px-2 mt-5 max-w-2xl mx-auto space-y-5">
+    <section><p class="text-[12px] font-bold uppercase tracking-[0.14em] text-ink/50 dark:text-white/50 px-1 mb-2">Gemini AI</p>
+      <div class="${card} overflow-hidden">
+        <div class="px-4 pt-4 pb-1 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-2xl bg-moss-900 text-white grid place-items-center shrink-0">${I.spark}</span>
+          <div class="min-w-0"><p class="font-bold text-[15.5px]">API key</p></div>
+        </div>
+        <form data-form="key" class="px-4 pb-4 pt-2 flex flex-col min-[480px]:flex-row gap-2">
+          <input name="key" type="password" value="${esc(key)}" autocomplete="off" placeholder="Paste your key…" aria-label="Gemini API key" class="${inputCls} !min-h-[48px] flex-1 min-w-0 !rounded-[16px]">
+          <div class="grid grid-cols-2 min-[480px]:flex gap-2 shrink-0">
+          <button type="button" class="${secondary} !min-h-[48px] !px-4 text-[14px] !rounded-[16px]" data-act="reveal">Show</button>
+          <button class="${primary} !min-h-[48px] !px-5 text-[14px] !rounded-[16px]">Save</button></div></form>
+        ${key?`<div class="mx-4 mb-4 rounded-[16px] bg-emerald-500/10 border border-emerald-500/25 px-3.5 py-2.5 flex items-center gap-2 text-[13.5px] font-semibold text-emerald-700 dark:text-emerald-300"><span class="text-emerald-600">${I.check}</span>Key saved</div>`
+        :`<div class="mx-4 mb-4 rounded-[16px] bg-amber-400/15 border border-amber-500/25 px-3.5 py-2.5 text-[13.5px] font-medium text-ink/70 dark:text-white/70">No key saved</div>`}
+        ${queued ? `<div class="mx-4 mb-4 rounded-[16px] bg-ink/[.04] dark:bg-white/[.06] border border-ink/10 dark:border-white/10 px-3.5 py-2.5 flex items-center gap-2.5">
+          <span class="text-[13.5px] font-medium flex-1 min-w-0">${queued} photo${queued === 1 ? '' : 's'} waiting to be read</span>
+          <button data-act="readNow" class="shrink-0 min-h-[40px] px-4 rounded-full bg-ink dark:bg-cream text-paper dark:text-ink text-[13.5px] font-bold press">Read now</button></div>` : ''}
+      </div></section>
+
+    <section><p class="text-[12px] font-bold uppercase tracking-[0.14em] text-ink/50 dark:text-white/50 px-1 mb-2">Appearance</p>
+      <div class="${card} p-1.5 grid grid-cols-3 gap-1">${[['system', 'System'], ['light', 'Light'], ['dark', 'Dark']].map(([v, t]) => `
+        <button data-act="theme" data-v="${v}" class="min-h-[48px] rounded-[16px] text-[15px] font-bold press ${v === theme ? 'bg-ink dark:bg-cream text-paper dark:text-ink shadow-soft' : 'text-ink/60 dark:text-white/60'}">${t}</button>`).join('')}</div></section>
+
+    <section><p class="text-[12px] font-bold uppercase tracking-[0.14em] text-ink/50 dark:text-white/50 px-1 mb-2">Storage</p>
+      <div class="${cardPad} space-y-3">
+        <div class="flex justify-between text-[14.5px] font-semibold"><span>${mb(est.usage)} used</span><span class="text-ink/50 dark:text-white/50 font-medium">of ${mb(est.quota)}</span></div>
+        <div class="h-2.5 rounded-full bg-ink/[.08] dark:bg-white/10 overflow-hidden"><div class="h-full rounded-full transition-all ${pct >= 80 ? 'bg-clay-500' : 'bg-moss-700 dark:bg-emerald-400'}" style="width:${pct}%"></div></div>
+        ${pct >= 80 ? `<p class="rounded-[16px] bg-amber-400/15 border border-amber-500/25 px-3.5 py-2.5 text-[13.5px] font-medium">Storage is getting full. Export a backup, then remove old lessons.</p>` : ''}</div></section>
+
+    <section><p class="text-[12px] font-bold uppercase tracking-[0.14em] text-ink/50 dark:text-white/50 px-1 mb-2">Backup</p>
+      <div class="${card} overflow-hidden divide-y divide-ink/[.06] dark:divide-white/[.07]">
+        ${rowBtn('export','Export backup','',`<span class="text-[13px] font-bold text-ink/45 dark:text-white/45">${last ? new Date(last).toLocaleDateString() : 'Never'}</span>`)}
+        <label class="w-full flex items-center px-4 min-h-[62px] font-semibold text-[15.5px] text-moss-900 dark:text-emerald-200 cursor-pointer press">Restore from file
+          <input type="file" accept="application/json,.json" class="sr-only" data-change="import"></label></div></section>
+
+    <section><p class="text-[12px] font-bold uppercase tracking-[0.14em] text-ink/50 dark:text-white/50 px-1 mb-2">Danger zone</p>
+      <div class="${card} overflow-hidden"><button data-act="reset" class="w-full min-h-[58px] text-clay-600 font-bold text-[15.5px] press">Reset app…</button></div></section>
+    </div>`);
+}
+
+function notFound() {
+  put(topBar('Not found', '#/') + `<div class="px-5 md:px-2 max-w-lg mx-auto mt-6">${empty(I.search, 'Not found', '', `<a href="#/" class="${primary} mt-3">Go home</a>`)}</div>`);
+}
+
+const ROUTES = [
+  [/^#\/?$/, viewHome],
+  [/^#\/subject\/([\w-]+)$/, viewSubject],
+  [/^#\/notebook\/([\w-]+)$/, viewNotebook],
+  [/^#\/lesson\/([\w-]+)$/, viewLesson],
+  [/^#\/capture$/, viewCapture],
+  [/^#\/search$/, viewSearch],
+  [/^#\/settings$/, viewSettings]
+];
+
+async function route() {
+  revokeUrls();
+  const path = (location.hash || '#/').split('?')[0];
+  setActiveNav(path);
+  for (const [re, fn] of ROUTES) {
+    const m = path.match(re);
+    if (m) return run(() => fn(...m.slice(1)));
+  }
+  go('#/');
+}
+
+async function run(fn) {
+  try { await fn(); }
+  catch (e) {
+    if (['QuotaExceededError', 'DatabaseClosedError', 'OpenFailedError', 'UnknownError'].includes(e.name)) return recovery(e);
+    toast(e.userMessage || 'Something went wrong. Please try again.');
+  }
+}
+
+/* ============================================================
+   6. ACTIONS, FORMS, CHANGES
+   ============================================================ */
+const cap = s => s[0].toUpperCase() + s.slice(1);
+
+const A = {
+  menu: async ({ kind, id }) => {
+    const choice = await pick(kind === 'lesson' ? 'Lesson' : kind === 'notebook' ? 'Notebook' : 'Subject', [
+      { v: 'rename', label: 'Rename' },
+      { v: 'delete', label: 'Delete', danger: true }
+    ]);
+    if (choice === 'rename') return A[`rename${cap(kind)}`]({ id });
+    if (choice === 'delete') return A[`delete${cap(kind)}`]({ id });
+  },
+  newSubject: async () => {
+    const v = await formSheet({ title: 'New subject', ok: 'Add subject', fields: [{ name: 'name', label: 'Name', required: true, placeholder: 'e.g. Biology' }] });
+    if (!v?.name?.trim()) return;
+    const n = await db.subjects.count();
+    await db.subjects.add({ id: uid(), name: v.name.trim(), color: COLORS[n % COLORS.length], icon: '', order: n, createdAt: now(), updatedAt: now() });
+    toast('Subject added');
+    route();
+  },
+  renameSubject: async ({ id }) => {
+    const s = await db.subjects.get(id);
+    const v = await formSheet({ title: 'Rename subject', fields: [{ name: 'name', label: 'Name', value: s.name, required: true }] });
+    if (!v?.name?.trim()) return;
+    await db.subjects.update(id, { name: v.name.trim(), updatedAt: now() }); route();
+  },
+  deleteSubject: async ({ id }) => {
+    const s = await db.subjects.get(id);
+    const nbIds = await db.notebooks.where('subjectId').equals(id).primaryKeys();
+    const lessonIds = nbIds.length ? await db.lessons.where('notebookId').anyOf(nbIds).primaryKeys() : [];
+    const ok = await formSheet({ title: `Delete ${s.name}?`, danger: true, ok: 'Delete',
+      message: `Removes ${nbIds.length} notebooks and ${lessonIds.length} lessons with their photos. This can't be undone.` });
+    if (!ok) return;
+    await removeLessons(lessonIds);
+    await db.notebooks.bulkDelete(nbIds);
+    await db.subjects.delete(id);
+    go('#/');
+  },
+  newNotebook: async ({ subject }) => {
+    const v = await formSheet({ title: 'New notebook', ok: 'Create', fields: [
+      { name: 'title', label: 'Title', value: 'Notebook', required: true },
+      { name: 'term', label: 'Term or unit', placeholder: 'e.g. Fall 2026' }] });
+    if (!v?.title?.trim()) return;
+    await db.notebooks.add({ id: uid(), subjectId: subject, title: v.title.trim(), term: (v.term || '').trim(), createdAt: now(), updatedAt: now() });
+    go(`#/subject/${subject}`);
+  },
+  renameNotebook: async ({ id }) => {
+    const nb = await db.notebooks.get(id);
+    const v = await formSheet({ title: 'Rename notebook', fields: [
+      { name: 'title', label: 'Title', value: nb.title, required: true },
+      { name: 'term', label: 'Term or unit', value: nb.term || '' }] });
+    if (!v?.title?.trim()) return;
+    await db.notebooks.update(id, { title: v.title.trim(), term: (v.term || '').trim(), updatedAt: now() }); route();
+  },
+  deleteNotebook: async ({ id }) => {
+    const nb = await db.notebooks.get(id);
+    const lessonIds = await db.lessons.where('notebookId').equals(id).primaryKeys();
+    const ok = await formSheet({ title: `Delete ${nb.title}?`, danger: true, ok: 'Delete',
+      message: `Removes ${lessonIds.length} lessons with their photos. This can't be undone.` });
+    if (!ok) return;
+    await removeLessons(lessonIds);
+    await db.notebooks.delete(id);
+    go(`#/subject/${nb.subjectId}`);
+  },
+  renameLesson: async ({ id }) => {
+    const l = await db.lessons.get(id);
+    const v = await formSheet({ title: 'Lesson title', fields: [{ name: 'title', label: 'Title', value: l.title, required: true }] });
+    if (!v?.title?.trim()) return;
+    await db.lessons.update(id, { title: v.title.trim(), updatedAt: now() }); route();
+  },
+  deleteLesson: async ({ id }) => {
+    const l = await db.lessons.get(id);
+    const ok = await formSheet({ title: `Delete ${l.title}?`, danger: true, ok: 'Delete', message: "Removes the photos and summary. This can't be undone." });
+    if (!ok) return;
+    await removeLessons([id]);
+    go(`#/notebook/${l.notebookId}`);
+  },
+  retry: async ({ id }) => {
+    const pageIds = await db.pages.where('lessonId').equals(id).primaryKeys();
+    await db.pendingJobs.bulkPut(pageIds.map(pid => ({ id: pid, pageId: pid, attempts: 0, lastError: null, createdAt: now() })));
+    await db.lessons.update(id, { status: 'processing', reason: null, updatedAt: now() });
+    toast('Trying again…');
+    route(); processPending();
+  },
+  readNow: async () => {
+    if (!((await getSetting('geminiApiKey') || '').trim())) return toast('Add your Gemini key first');
+    if (!navigator.onLine) return toast('You look offline — reconnect and try again');
+    if (!(await db.pendingJobs.count())) return toast('Nothing waiting — all caught up');
+    toast('Reading queued photos…');
+    route(); processPending();
+  },
+  tab: ({ tab }) => { lessonTab = tab; buzz(8); keepScroll(); route(); },
+  learnOpen: ({ m }) => { learnMode = m || 'menu'; learnCard = 0; learnFlipped = false; buzz(8); route(); },
+  learnFlip: () => {
+    learnFlipped = !learnFlipped;
+    buzz(12);
+    const inner = document.querySelector('[data-flip-inner]');
+    if (inner) inner.classList.toggle('is-flipped', learnFlipped);
+    else { keepScroll(); route(); }
+  },
+  learnCardNav: ({ d }) => {
+    learnCard = (((learnCard + (+d || 0)) % learnLen) + learnLen) % learnLen;
+    learnFlipped = false; buzz(10); keepScroll(); route();
+  },
+  learnShuffle: () => {
+    for (let i = learnOrder.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [learnOrder[i], learnOrder[j]] = [learnOrder[j], learnOrder[i]];
+    }
+    learnCard = 0; learnFlipped = false; buzz(15); keepScroll(); route();
+    toast('Shuffled');
+  },
+  learnAnswer: async ({ q, o }) => {
+    q = +q; o = +o;
+    if (learnAnswers[q] !== undefined || learnLock) return;
+    learnLock = true;
+    const set = await db.learnSets.where('lessonId').equals(lastLearnLesson).first();
+    const correct = set && set.quiz[q] && o === set.quiz[q].answer;
+    const btn = document.querySelector(`[data-act="learnAnswer"][data-q="${q}"][data-o="${o}"]`);
+    if (btn) {
+      btn.classList.remove('bg-cream', 'dark:bg-night-900', 'border-sand', 'dark:border-white/10');
+      btn.classList.add('anim-pop', ...(correct
+        ? ['bg-emerald-500/15', 'border-emerald-500/50']
+        : ['bg-clay-500/15', 'border-clay-500/50']));
+    }
+    buzz(correct ? 25 : [70, 40, 70]);
+    setTimeout(() => {
+      learnAnswers[q] = o;
+      learnLock = false;
+      if (set) {
+        const done = set.quiz.filter((_, qi) => learnAnswers[qi] !== undefined).length;
+        const score = set.quiz.filter((qu, qi) => learnAnswers[qi] === qu.answer).length;
+        if (done === set.quiz.length && score === set.quiz.length && set.quiz.length) {
+          confetti(); buzz([20, 60, 20, 60, 90]);
+          toast('Perfect score');
+        }
+      }
+      keepScroll(); route();
+    }, 340);
+  },
+  learnRestart: () => { learnAnswers = {}; keepScroll(); route(); },
+  learnGen: async ({ id }) => {
+    const l = await db.lessons.get(id); if (!l) return;
+    const pages = await db.pages.where('lessonId').equals(id).sortBy('order');
+    const blocks = await db.summaryBlocks.where('lessonId').equals(id).sortBy('order');
+    if (!buildLearnContent(pages, blocks).trim()) return toast('Wait until photos are read first');
+    learnLoading = true; learnLoadingFor = id; route();
+    try {
+      const set = await generateLearn(l, buildLearnContent(pages, blocks));
+      const old = await db.learnSets.where('lessonId').equals(id).first();
+      if (old) await db.learnSets.update(old.id, { ...set, updatedAt: now() });
+      else await db.learnSets.add({ id: uid(), lessonId: id, ...set, createdAt: now(), updatedAt: now() });
+      learnMode = 'menu'; learnCard = 0; learnFlipped = false; learnAnswers = {}; learnOrder = [];
+      toast('Study guide ready');
+    } catch (e) {
+      toast(e.userMessage || (e.message === 'NO_KEY' ? 'Add your Gemini key in Settings first' : friendlyError(e.message)));
+    } finally { learnLoading = false; learnLoadingFor = null; route(); }
+  },
+  locate: async ({ id }) => {
+    const b = await db.summaryBlocks.get(id);
+    activeBlock = id; lessonTab = 'pages'; scrollToPage = b.sourcePageId;
+    go(`#/lesson/${b.lessonId}`);
+  },
+  editBlock: async ({ id }) => {
+    const b = await db.summaryBlocks.get(id);
+    const v = await formSheet({ title: 'Edit note', fields: [{ name: 'text', label: 'Text', value: b.text, required: true, multi: true }] });
+    if (!v?.text?.trim()) return;
+    await db.summaryBlocks.update(id, { text: v.text.trim() }); route();
+  },
+  correct: async ({ page, idx }) => {
+    const p = await db.pages.get(page);
+    const u = p?.uncertain?.[+idx]; if (!u) return;
+    const v = await formSheet({ title: 'What does it say?', message: `Unclear: ${u.reason}`, ok: 'Save note',
+      fields: [{ name: 'text', label: 'Correct text', value: u.text, required: true, multi: true }] });
+    if (!v?.text?.trim()) return;
+    const count = await db.summaryBlocks.where('lessonId').equals(p.lessonId).count();
+    await db.transaction('rw', [db.pages, db.summaryBlocks], async () => {
+      await db.summaryBlocks.add({ id: uid(), lessonId: p.lessonId, sourcePageId: p.id, type: 'point', text: v.text.trim(), sourceRegion: null, order: 1000 + count });
+      await db.pages.update(p.id, { uncertain: p.uncertain.filter((_, i) => i !== +idx) });
+    });
+    toast('Saved to summary');
+    route();
+  },
+  pickSubject: ({ id }) => { captureState.subjectId = id; captureState.nb = ''; keepScroll(); route(); },
+  pickNotebook: ({ id }) => { captureState.nb = id; keepScroll(); route(); },
+  reveal: () => { const i = document.querySelector('input[name=key]'); if (i) i.type = i.type === 'password' ? 'text' : 'password'; },
+  theme: async ({ v }) => { await setSetting('theme', v); applyTheme(v); route(); },
+  export: async () => {
+    const [subjects, notebooks, lessons, pages, summaryBlocks, pendingJobs, learnSets] = await Promise.all([
+      db.subjects.toArray(), db.notebooks.toArray(), db.lessons.toArray(), db.pages.toArray(), db.summaryBlocks.toArray(), db.pendingJobs.toArray(), db.learnSets.toArray()]);
+    const pagesOut = [];
+    for (const { imageBlob, thumbnailBlob, ...p } of pages) {
+      pagesOut.push({ ...p, imageData: await blobToDataURL(imageBlob), thumbData: await blobToDataURL(thumbnailBlob) });
+    }
+    const settings = (await db.settings.toArray()).filter(s => s.key !== 'geminiApiKey');
+    const data = { app: 'notebook', version: 2, exportedAt: new Date().toISOString(), subjects, notebooks, lessons, pages: pagesOut, summaryBlocks, pendingJobs, learnSets, settings };
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' }));
+    a.download = `notebook-backup-${today()}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    await setSetting('lastBackupAt', now());
+    toast('Backup downloaded');
+    route();
+  },
+  reset: async () => {
+    const ok = await formSheet({ title: 'Reset Notebook?', danger: true, ok: 'Reset everything',
+      message: 'Deletes every subject, lesson, and photo in this browser. Export a backup first.' });
+    if (!ok) return;
+    await db.delete();
+    location.reload();
+  }
+};
+
+const FORMS = {
+  key: async form => {
+    const k = new FormData(form).get('key').trim();
+    await setSetting('geminiApiKey', k);
+    toast(k ? 'Key saved' : 'Key removed');
+    processPending();
+  },
+  search: (form, submitter) => {
+    const current = new URLSearchParams(location.hash.split('?')[1] || '');
+    const q = new FormData(form).get('q') || '';
+    const s = submitter?.name === 's' ? submitter.value : current.get('s') || '';
+    go(`#/search?q=${encodeURIComponent(q)}&s=${encodeURIComponent(s)}`);
+  },
+  capture: async form => {
+    const fd = new FormData(form);
+    if (!captureState.url) return toast('Take or choose a photo first');
+    const subjectId = fd.get('subject');
+    let nbId = fd.get('notebook');
+    const t = now();
+    if (!nbId) {
+      nbId = uid();
+      await db.notebooks.add({ id: nbId, subjectId, title: 'General', term: '', createdAt: t, updatedAt: t });
+    }
+    const lessonId = uid(), pageId = uid();
+    const [img, thumb] = await Promise.all([compress(captureState.file, 1600, 0.8), compress(captureState.file, 300, 0.7)]);
+    await db.lessons.add({ id: lessonId, notebookId: nbId, date: fd.get('date') || today(),
+      title: (fd.get('title') || '').trim() || 'Untitled lesson', status: 'processing', reason: null, createdAt: t, updatedAt: t });
+    await db.pages.add({ id: pageId, lessonId, imageBlob: img, thumbnailBlob: thumb, transcript: '', summary: '', uncertain: [], order: 0, createdAt: t });
+    await db.pendingJobs.put({ id: pageId, pageId, attempts: 0, lastError: null, createdAt: t });
+    await setSetting('lastSubjectId', subjectId);
+    URL.revokeObjectURL(captureState.url);
+    captureState = {};
+    toast('Saved. Reading the board…');
+    buzz(30);
+    go(`#/lesson/${lessonId}`);
+    processPending();
+  }
+};
+
+const CHANGES = {
+  pickPhoto: el => {
+    const f = el.files[0]; if (!f) return;
+    if (captureState.url) URL.revokeObjectURL(captureState.url);
+    captureState = { ...captureState, file: f, url: URL.createObjectURL(f) };
+    route();
+  },
+  addPage: async el => {
+    const f = el.files[0]; if (!f) return;
+    const lessonId = location.hash.split('?')[0].split('/')[2];
+    const n = await db.pages.where('lessonId').equals(lessonId).count();
+    const [img, thumb] = await Promise.all([compress(f, 1600, 0.8), compress(f, 300, 0.7)]);
+    const pid = uid(), t = now();
+    await db.pages.add({ id: pid, lessonId, imageBlob: img, thumbnailBlob: thumb, transcript: '', summary: '', uncertain: [], order: n, createdAt: t });
+    await db.pendingJobs.put({ id: pid, pageId: pid, attempts: 0, lastError: null, createdAt: t });
+    await db.lessons.update(lessonId, { status: 'processing', reason: null, updatedAt: t });
+    toast('Photo added. Reading it…');
+    route(); processPending();
+  },
+  import: async el => {
+    const f = el.files[0]; if (!f) return;
+    let d;
+    try { d = JSON.parse(await f.text()); }
+    catch { throw { userMessage: 'That file could not be read.' }; }
+    if (d.app !== 'notebook' || !Array.isArray(d.pages)) throw { userMessage: 'That is not a Notebook backup.' };
+    const ok = await formSheet({ title: 'Replace everything?', danger: true, ok: 'Replace',
+      message: 'Restoring replaces what is in this browser now. Your API key is kept.' });
+    if (!ok) return;
+    const key = await getSetting('geminiApiKey');
+    const pages = [];
+    for (const { imageData, thumbData, ...p } of d.pages) {
+      pages.push({ ...p, imageBlob: await (await fetch(imageData)).blob(), thumbnailBlob: await (await fetch(thumbData)).blob() });
+    }
+    await db.transaction('rw', db.tables, async () => {
+      await Promise.all(db.tables.map(t => t.clear()));
+      await db.subjects.bulkPut(d.subjects || []);
+      await db.notebooks.bulkPut(d.notebooks || []);
+      await db.lessons.bulkPut(d.lessons || []);
+      await db.pages.bulkPut(pages);
+      await db.summaryBlocks.bulkPut(d.summaryBlocks || []);
+      await db.learnSets.bulkPut(d.learnSets || []);
+      await db.pendingJobs.bulkPut(d.pendingJobs || []);
+      await db.settings.bulkPut((d.settings || []).filter(s => s.key !== 'geminiApiKey'));
+    });
+    if (key) await setSetting('geminiApiKey', key);
+    toast('Backup restored');
+    go('#/');
+  }
+};
+
+document.addEventListener('click', e => {
+  if (Date.now() < suppressClickUntil) { e.preventDefault(); suppressClickUntil = 0; return; }
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const fn = A[el.dataset.act];
+  if (!fn) return;
+  e.preventDefault();
+  run(() => fn(el.dataset));
+});
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role=button][data-act]')) {
+    e.preventDefault(); e.target.click();
+  }
+});
+document.addEventListener('submit', e => {
+  const f = e.target;
+  if (!f.dataset.form) return;
+  e.preventDefault();
+  run(() => FORMS[f.dataset.form](f, e.submitter));
+});
+document.addEventListener('change', e => {
+  const k = e.target.dataset.change;
+  if (k && CHANGES[k]) run(() => CHANGES[k](e.target));
+});
+
+/* ============================================================
+   7. BOOT
+   ============================================================ */
+(async function boot() {
+  try { await db.open(); }
+  catch (e) { return recovery(e); }
+  navigator.storage?.persist?.();
+  applyTheme(await getSetting('theme', 'system'));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async () => {
+    if ((await getSetting('theme', 'system')) === 'system') applyTheme('system');
+  });
+  window.addEventListener('hashchange', route);
+  window.addEventListener('online', processPending);
+  route();
+  processPending();
+})();
+</script>
+</body>
+</html>
