@@ -120,16 +120,16 @@ button { font-family: inherit; }
 .carousel {
   display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory;
   padding: 2px 2px 4px; scrollbar-width: none;
+  background: none;
   flex-direction: row-reverse; /* RTL: הקרוב ביותר ראשון מימין */
 }
 .carousel::-webkit-scrollbar { display: none; }
 .c-card {
   scroll-snap-align: start; flex: 0 0 248px;
   display: flex; align-items: center; gap: 10px; text-align: right;
-  background: var(--glass);
+  background: none;
   -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4);
   border: 1px solid var(--stroke); border-radius: 19px; padding: 12px;
-  box-shadow: var(--shadow); color: #fff; cursor: pointer;
 }
 .c-card.first { border-color: rgba(255,77,94,.55); background: linear-gradient(160deg, rgba(255,45,85,.22), rgba(16,16,28,.65)); }
 .c-card.skel { min-height: 76px; background: var(--glass); animation: skelPulse 1.4s infinite; }
